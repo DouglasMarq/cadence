@@ -1,0 +1,323 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
+
+use anyhow::{Result, anyhow};
+use cadence_core::model::{Song, SongListQuery};
+use cadence_core::queue::{QueueView, Uid};
+use cadence_player::PlayerEvent;
+use cadence_storage::settings::{ReplayGainSetting, Settings, UiSettings};
+use tokio::sync::{mpsc, oneshot};
+
+use super::recording_store::RecordingStore;
+use crate::audio::{AudioOutput, Track};
+use crate::controller::{Command, Controller, Deps, UiSink, UiUpdate};
+use crate::demo::{FakeServer, test_song};
+use crate::list_stream::{ListRow, SongSource};
+use crate::media::NoMediaSession;
+use crate::session::Session;
+use crate::store::{JsonStore, Store};
+
+const COMMAND_WAIT: Duration = Duration::from_secs(10);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) enum AudioCall {
+    Load(Uid, u64),
+    Preload(Uid),
+    ClearNext,
+    Play,
+    Pause,
+    Stop,
+    Seek(u64),
+    Mute(bool),
+}
+
+#[derive(Clone, Default)]
+pub(super) struct RecordingAudio {
+    calls: Arc<Mutex<Vec<AudioCall>>>,
+    crossfade_fails: Arc<AtomicBool>,
+    calls_fail: Arc<AtomicBool>,
+}
+
+impl RecordingAudio {
+    pub(super) fn fail_crossfade_changes(&self) {
+        self.crossfade_fails.store(true, Ordering::Relaxed);
+    }
+
+    pub(super) fn fail_every_call(&self) {
+        self.calls_fail.store(true, Ordering::Relaxed);
+    }
+
+    fn outcome(&self) -> Result<()> {
+        match self.calls_fail.load(Ordering::Relaxed) {
+            true => Err(anyhow!("the audio output is gone")),
+            false => Ok(()),
+        }
+    }
+
+    pub(super) fn take(&self) -> Vec<AudioCall> {
+        self.calls
+            .lock()
+            .map(|mut calls| calls.drain(..).collect())
+            .unwrap_or_default()
+    }
+
+    fn record(&self, call: AudioCall) -> Result<()> {
+        if let Ok(mut calls) = self.calls.lock() {
+            calls.push(call);
+        }
+        self.outcome()
+    }
+}
+
+impl AudioOutput for RecordingAudio {
+    fn load(&self, track: &Track, start_ms: u64) -> Result<()> {
+        self.record(AudioCall::Load(track.uid, start_ms))
+    }
+    fn preload_next(&self, track: &Track) -> Result<()> {
+        self.record(AudioCall::Preload(track.uid))
+    }
+    fn clear_next(&self) -> Result<()> {
+        self.record(AudioCall::ClearNext)
+    }
+    fn play(&self) -> Result<()> {
+        self.record(AudioCall::Play)
+    }
+    fn pause(&self) -> Result<()> {
+        self.record(AudioCall::Pause)
+    }
+    fn stop(&self) -> Result<()> {
+        self.record(AudioCall::Stop)
+    }
+    fn seek(&self, position_ms: u64) -> Result<()> {
+        self.record(AudioCall::Seek(position_ms))
+    }
+    fn set_volume(&self, _volume: u8) -> Result<()> {
+        Ok(())
+    }
+    fn set_muted(&self, is_muted: bool) -> Result<()> {
+        self.record(AudioCall::Mute(is_muted))
+    }
+    fn set_replay_gain(&self, _mode: ReplayGainSetting) -> Result<()> {
+        self.outcome()
+    }
+    fn set_audio_device(&self, _device: Option<&str>) -> Result<()> {
+        self.outcome()
+    }
+    fn set_crossfade(&self, _crossfade: Duration) -> Result<()> {
+        match self.crossfade_fails.load(Ordering::Relaxed) {
+            true => Err(anyhow!("no second audio output")),
+            false => Ok(()),
+        }
+    }
+}
+
+#[derive(Default)]
+pub(super) struct RecordingUi(Mutex<Vec<UiUpdate>>);
+
+impl UiSink for RecordingUi {
+    fn send(&self, update: UiUpdate) {
+        if let Ok(mut updates) = self.0.lock() {
+            updates.push(update);
+        }
+    }
+}
+
+impl RecordingUi {
+    pub(super) fn last_queue(&self) -> Option<Vec<Uid>> {
+        self.last_queue_view().map(|view| view.uids().collect())
+    }
+
+    pub(super) fn last_queue_view(&self) -> Option<QueueView> {
+        let updates = self.0.lock().ok()?;
+        updates.iter().rev().find_map(|update| match update {
+            UiUpdate::Queue(view) => Some(view.clone()),
+            _ => None,
+        })
+    }
+
+    pub(super) fn errors(&self) -> Vec<String> {
+        let updates = self.0.lock().unwrap();
+        updates
+            .iter()
+            .filter_map(|update| match update {
+                UiUpdate::Error(message) => Some(message.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    pub(super) fn clear(&self) {
+        self.0.lock().unwrap().clear();
+    }
+
+    pub(super) fn any(&self, predicate: impl Fn(&UiUpdate) -> bool) -> bool {
+        self.0.lock().unwrap().iter().any(predicate)
+    }
+}
+
+pub(super) struct Harness {
+    pub(super) controller: Controller,
+    pub(super) audio: RecordingAudio,
+    pub(super) ui: Arc<RecordingUi>,
+    pub(super) server: Arc<FakeServer>,
+    pub(super) commands: mpsc::UnboundedReceiver<Command>,
+    pub(super) store: Arc<JsonStore>,
+    pub(super) saves: mpsc::UnboundedReceiver<()>,
+    pub(super) session: Session,
+    pub(super) temp_dir: tempfile::TempDir,
+}
+
+pub(super) fn start_harness_with(
+    settings: Settings,
+    song_count: usize,
+    temp_dir: Option<tempfile::TempDir>,
+) -> Harness {
+    let temp_dir = temp_dir
+        .or_else(|| tempfile::tempdir().ok())
+        .unwrap_or_else(|| panic!("temp dir"));
+    let store = Arc::new(JsonStore::new(temp_dir.path()));
+    let stored = store.load_queue().ok().flatten();
+    let (recording_store, saves) = RecordingStore::new(Arc::clone(&store));
+    let server = Arc::new(FakeServer::new(song_count));
+    let session = Session::default();
+    session.set(Some(server.clone()));
+    let audio = RecordingAudio::default();
+    let ui = Arc::new(RecordingUi::default());
+    let (sender, commands) = mpsc::unbounded_channel();
+    let deps = Deps {
+        audio: Box::new(audio.clone()),
+        media: Box::new(NoMediaSession),
+        store: Arc::new(recording_store),
+        session: session.clone(),
+        ui: ui.clone(),
+        commands: sender,
+        covers: Arc::new(crate::covers::DemoCovers),
+    };
+    Harness {
+        controller: Controller::new(deps, settings, stored, Some(42)),
+        audio,
+        ui,
+        server,
+        commands,
+        store,
+        saves,
+        session,
+        temp_dir,
+    }
+}
+
+pub(super) fn start_harness(settings: Settings) -> Harness {
+    start_harness_with(settings, 100, None)
+}
+
+pub(super) fn test_settings(is_gapless: bool, is_scrobbling_enabled: bool) -> Settings {
+    let mut settings = Settings::default();
+    settings.playback.is_gapless = is_gapless;
+    settings.playback.is_scrobbling_enabled = is_scrobbling_enabled;
+    settings
+}
+
+pub(super) fn test_songs(count: usize, duration_ms: u64) -> Vec<Song> {
+    (0..count)
+        .map(|index| test_song(&format!("s{index}"), duration_ms))
+        .collect()
+}
+
+pub(super) fn song_ids(songs: &[Song]) -> Vec<String> {
+    songs.iter().map(|song| song.id.clone()).collect()
+}
+
+pub(super) async fn settle() {
+    for _ in 0..10 {
+        tokio::task::yield_now().await;
+    }
+}
+
+impl Harness {
+    pub(super) fn current_uid(&self) -> Option<Uid> {
+        self.controller.queue().current().map(|item| item.uid)
+    }
+
+    pub(super) fn current_id(&self) -> Option<String> {
+        self.controller
+            .queue()
+            .current()
+            .map(|item| item.track.song_id.to_string())
+    }
+
+    pub(super) fn queued_ids(&self) -> Vec<String> {
+        self.controller
+            .queue()
+            .display_order()
+            .iter()
+            .map(|item| item.track.song_id.to_string())
+            .collect()
+    }
+
+    pub(super) fn uid_of(&self, song_id: &str) -> Option<Uid> {
+        self.controller
+            .queue()
+            .display_order()
+            .iter()
+            .find(|item| item.track.song_id == song_id)
+            .map(|item| item.uid)
+    }
+
+    pub(super) fn player(&mut self, event: PlayerEvent) {
+        self.controller.handle(Command::Player(event));
+    }
+
+    pub(super) fn start_current(&mut self) -> Uid {
+        let uid = self.current_uid().unwrap_or(Uid::MAX);
+        self.player(PlayerEvent::Started { uid });
+        uid
+    }
+
+    pub(super) fn request_from_list(&mut self, query: SongListQuery, row: usize, song_id: &str) {
+        self.controller.handle(Command::PlayFromList {
+            source: SongSource::Library(query),
+            song_id: Some(song_id.to_owned()),
+            row_index: ListRow(row),
+        });
+    }
+
+    pub(super) async fn play_from_list(&mut self, query: SongListQuery, row: usize, song_id: &str) {
+        self.request_from_list(query, row, song_id);
+        self.finish_streams().await;
+    }
+
+    pub(super) async fn handle_next_command(&mut self) {
+        let next = tokio::time::timeout(COMMAND_WAIT, self.commands.recv()).await;
+        match next {
+            Ok(Some(command)) => {
+                self.controller.handle(command);
+            }
+            _ => panic!("no follow-up command arrived"),
+        }
+    }
+
+    pub(super) async fn finish_streams(&mut self) {
+        while self.controller.is_streaming() {
+            self.handle_next_command().await;
+        }
+    }
+
+    pub(super) fn connect(&mut self) {
+        self.controller.handle(Command::Connected {
+            config: FakeServer::config_for_demo(),
+            credential: None,
+        });
+    }
+
+    pub(super) fn shutdown_with_ui(&mut self, ui: UiSettings) -> oneshot::Receiver<()> {
+        let (done, finished) = oneshot::channel();
+        self.controller.handle(Command::Shutdown { ui, done });
+        assert!(!self.controller.is_running());
+        finished
+    }
+
+    pub(super) fn shutdown(&mut self) -> oneshot::Receiver<()> {
+        self.shutdown_with_ui(UiSettings::default())
+    }
+}

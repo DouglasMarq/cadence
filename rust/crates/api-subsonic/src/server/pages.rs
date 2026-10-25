@@ -1,0 +1,25 @@
+use cadence_core::model::{Page, Paging};
+
+pub fn server_page<T>(items: Vec<T>, paging: Paging, total_count: Option<usize>) -> Page<T> {
+    Page {
+        items,
+        start_index: paging.start_index,
+        total_count,
+    }
+}
+
+pub fn cloned_page<T: Clone>(page: Page<&T>) -> Page<T> {
+    Page {
+        items: page.items.into_iter().cloned().collect(),
+        start_index: page.start_index,
+        total_count: page.total_count,
+    }
+}
+
+pub fn wants_favorites_only(is_favorite: Option<bool>) -> bool {
+    is_favorite == Some(true)
+}
+
+pub fn non_empty_search(search: Option<&String>) -> Option<&str> {
+    search.map(String::as_str).filter(|term| !term.is_empty())
+}

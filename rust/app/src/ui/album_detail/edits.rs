@@ -1,0 +1,63 @@
+use std::sync::Arc;
+
+use cadence_api::MusicServer;
+use cadence_core::model::ItemKind;
+use slint::{ComponentHandle, SharedString};
+
+use super::super::{AlbumDetailState, AppWindow, Context, on_ui, rating_stars, show_status};
+
+fn shown_album(
+    window: &AppWindow,
+    context: &Context,
+) -> Option<(SharedString, Arc<dyn MusicServer>)> {
+    let album_id = window.global::<AlbumDetailState>().get_album_id();
+    let server = context.session.get().filter(|_| !album_id.is_empty())?;
+    Some((album_id, server))
+}
+
+pub fn toggle_favorite(window: &AppWindow, context: &Context) {
+    let Some((album_id, server)) = shown_album(window, context) else {
+        return;
+    };
+    let state = window.global::<AlbumDetailState>();
+    let is_favorite = !state.get_is_favorite();
+    state.set_is_favorite(is_favorite);
+    let weak_window = window.as_weak();
+    context.runtime.spawn(async move {
+        let result = server
+            .set_favorite(ItemKind::Album, &[album_id.to_string()], is_favorite)
+            .await;
+        if let Err(error) = result {
+            on_ui(&weak_window, move |window| {
+                let state = window.global::<AlbumDetailState>();
+                if state.get_album_id() == album_id {
+                    state.set_is_favorite(!is_favorite);
+                }
+                show_status(window, &tr!("Could not update favorite: {}", error));
+            });
+        }
+    });
+}
+
+pub fn set_rating(window: &AppWindow, context: &Context, rating: i32) {
+    let Some((album_id, server)) = shown_album(window, context) else {
+        return;
+    };
+    let state = window.global::<AlbumDetailState>();
+    let previous = state.get_rating();
+    let stars = rating_stars(rating);
+    state.set_rating(i32::from(stars));
+    let weak_window = window.as_weak();
+    context.runtime.spawn(async move {
+        let result = server.set_rating(ItemKind::Album, &album_id, stars).await;
+        if let Err(error) = result {
+            on_ui(&weak_window, move |window| {
+                let state = window.global::<AlbumDetailState>();
+                if state.get_album_id() == album_id {
+                    state.set_rating(previous);
+                }
+                show_status(window, &tr!("Could not update rating: {}", error));
+            });
+        }
+    });
+}

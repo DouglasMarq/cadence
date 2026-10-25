@@ -1,0 +1,84 @@
+use cadence_core::model::ItemKind;
+use slint::ComponentHandle;
+
+use super::binding::{Binding, with_grid, with_table};
+use crate::controller::Command;
+use crate::list_stream::{ListRow, SongSource};
+use crate::ui::{AppWindow, CardRow, Context, TrackItem, on_ui, show_status};
+
+impl Binding<CardRow> {
+    pub fn toggle_favorite(self, window: &AppWindow, context: &Context, id: &str) {
+        let flipped = with_grid(window, self, |grid| {
+            let is_favorite = grid.is_favorite(id)?;
+            grid.set_favorite(id, !is_favorite);
+            Some((grid.kind()?, is_favorite))
+        })
+        .flatten();
+        let Some((kind, favorite)) = flipped else {
+            return;
+        };
+        let Some(server) = context.session.get() else {
+            return;
+        };
+        let weak = window.as_weak();
+        let id = id.to_owned();
+        context.runtime.spawn(async move {
+            if let Err(error) = server
+                .set_favorite(kind, std::slice::from_ref(&id), !favorite)
+                .await
+            {
+                on_ui(&weak, move |window| {
+                    with_grid(window, self, |grid| grid.set_favorite(&id, favorite));
+                    show_status(window, &tr!("Could not update favorite: {}", error));
+                });
+            }
+        });
+    }
+}
+
+impl Binding<TrackItem> {
+    pub fn toggle_favorite(self, window: &AppWindow, context: &Context, index: usize) {
+        let flipped = with_table(window, self, |table| {
+            let (song_id, favorite) = table.favorite_at(index)?;
+            table.set_favorite(index, &song_id, !favorite);
+            Some((song_id, favorite))
+        })
+        .flatten();
+        let Some((song_id, favorite)) = flipped else {
+            return;
+        };
+        let Some(server) = context.session.get() else {
+            return;
+        };
+        let weak = window.as_weak();
+        context.runtime.spawn(async move {
+            if let Err(error) = server
+                .set_favorite(ItemKind::Song, std::slice::from_ref(&song_id), !favorite)
+                .await
+            {
+                on_ui(&weak, move |window| {
+                    with_table(window, self, |table| {
+                        table.set_favorite(index, &song_id, favorite);
+                    });
+                    show_status(window, &tr!("Could not update favorite: {}", error));
+                });
+            }
+        });
+    }
+
+    pub fn play(self, window: &AppWindow, context: &Context, index: i32) {
+        let Ok(index) = usize::try_from(index) else {
+            return;
+        };
+        let target = with_table(window, self, |table| {
+            (table.query(), table.song_id_at(index))
+        });
+        if let Some((query, song_id)) = target {
+            context.send(Command::PlayFromList {
+                source: SongSource::Library(query),
+                song_id,
+                row_index: ListRow(index),
+            });
+        }
+    }
+}

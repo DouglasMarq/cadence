@@ -1,0 +1,1863 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: tr\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+msgid "\"{}\""
+msgstr "\"{}\""
+
+msgid "\"{}\" ({}) wants to control this player. Allow it? You will not be asked again for this device."
+msgstr "\"{}\" ({}) bu çaları kontrol etmek istiyor. İzin verilsin mi? Bu cihaz için bir daha sorulmayacak."
+
+msgid "\"{}\" plays next"
+msgstr "Sıradaki: \"{}\""
+
+msgid "\"{}\" will play next"
+msgstr "\"{}\" sıradaki olarak çalınacak"
+
+msgid "1 star"
+msgstr "1 yıldız"
+
+msgid "2 stars"
+msgstr "2 yıldız"
+
+msgid "3 stars"
+msgstr "3 yıldız"
+
+msgid "4 stars"
+msgstr "4 yıldız"
+
+msgid "5 stars"
+msgstr "5 yıldız"
+
+msgid "About {}"
+msgstr "{} hakkında"
+
+msgid "Accent color"
+msgstr "Vurgu rengi"
+
+msgid "Accent color not changed: {}."
+msgstr "Vurgu rengi değiştirilmedi: {}."
+
+msgid "Accent color {}"
+msgstr "Vurgu rengi {}"
+
+msgid "Accent color {} (selected)"
+msgstr "Vurgu rengi {} (seçili)"
+
+msgid "Accent color {} (theme accent in use)"
+msgstr "Vurgu rengi {} (tema vurgusu kullanılıyor)"
+
+msgid "Add a station by its stream URL"
+msgstr "Akış URL'siyle istasyon ekle"
+
+msgid "Add all songs to the queue"
+msgstr "Tüm şarkıları sıraya ekle"
+
+msgid "Add server"
+msgstr "Sunucu ekle"
+
+msgid "Add station"
+msgstr "İstasyon ekle"
+
+msgid "Add the selected songs to a playlist"
+msgstr "Seçili şarkıları bir çalma listesine ekle"
+
+msgid "Add this link to the end of the queue"
+msgstr "Bu bağlantıyı sıranın sonuna ekle"
+
+msgid "Add this station to the server for every client"
+msgstr "Bu istasyonu tüm istemciler için sunucuya ekle"
+
+msgid "Add to favorites"
+msgstr "Favorilere ekle"
+
+msgid "Add to playlist"
+msgstr "Çalma listesine ekle"
+
+msgid "Add to queue"
+msgstr "Sıraya ekle"
+
+msgid "Add to the server's stations"
+msgstr "Sunucunun istasyonlarına ekle"
+
+msgid "Add to {}"
+msgstr "Şuna ekle: {}"
+
+msgid "Add {n} song to playlist"
+msgid_plural "Add {n} songs to playlist"
+msgstr[0] "{n} şarkıyı çalma listesine ekle"
+msgstr[1] "{n} şarkıyı çalma listesine ekle"
+
+msgid "Add {} to the queue"
+msgstr "Sıraya ekle: {}"
+
+msgid "Added \"{}\" to the queue"
+msgstr "\"{}\" sıraya eklendi"
+
+msgid "Added only {n} song to \"{}\": {}"
+msgid_plural "Added only {n} songs to \"{}\": {}"
+msgstr[0] "\"{}\" listesine yalnızca {n} şarkı eklendi: {}"
+msgstr[1] "\"{}\" listesine yalnızca {n} şarkı eklendi: {}"
+
+msgid "Added {n} song from \"{}\" to the queue"
+msgid_plural "Added {n} songs from \"{}\" to the queue"
+msgstr[0] "\"{}\" içinden {n} şarkı sıraya eklendi"
+msgstr[1] "\"{}\" içinden {n} şarkı sıraya eklendi"
+
+msgid "Added {n} song to \"{}\""
+msgid_plural "Added {n} songs to \"{}\""
+msgstr[0] "\"{}\" listesine {n} şarkı eklendi"
+msgstr[1] "\"{}\" listesine {n} şarkı eklendi"
+
+msgid "Added {n} song to the queue"
+msgid_plural "Added {n} songs to the queue"
+msgstr[0] "Sıraya {n} şarkı eklendi"
+msgstr[1] "Sıraya {n} şarkı eklendi"
+
+msgid "Adding to \"{}\": {} of {n} song"
+msgid_plural "Adding to \"{}\": {} of {n} songs"
+msgstr[0] "\"{}\" listesine ekleniyor: {} / {n} şarkı"
+msgstr[1] "\"{}\" listesine ekleniyor: {} / {n} şarkı"
+
+msgid "ALBUM"
+msgstr "ALBÜM"
+
+msgid "Album"
+msgstr "Albüm"
+
+msgid "album"
+msgstr "albüm"
+
+msgid "Album artist"
+msgstr "Albüm sanatçısı"
+
+msgid "Album count"
+msgstr "Albüm sayısı"
+
+msgid "Album not found"
+msgstr "Albüm bulunamadı"
+
+msgid "Albums"
+msgstr "Albümler"
+
+msgid "All genres"
+msgstr "Tüm türler"
+
+msgid "Allow"
+msgstr "İzin ver"
+
+msgid "Allow remote control?"
+msgstr "Uzaktan kontrole izin verilsin mi?"
+
+msgid "Allow without asking"
+msgstr "Sormadan izin ver"
+
+msgid "Already at the end"
+msgstr "Zaten sonda"
+
+msgid "Already at the start"
+msgstr "Zaten başta"
+
+msgid "Already in \"{}\""
+msgstr "Zaten \"{}\" içinde"
+
+msgid "Already on the server"
+msgstr "Zaten sunucuda"
+
+msgid "Amber"
+msgstr "Kehribar"
+
+msgid "Any device on this network can control this player without your approval. Banned devices are still refused."
+msgstr "Bu ağdaki her cihaz, onayın olmadan bu oynatıcıyı kontrol edebilir. Yasaklı cihazlar yine reddedilir."
+
+msgid "Appearance"
+msgstr "Görünüm"
+
+msgid "Approved devices"
+msgstr "Onaylı cihazlar"
+
+msgid "Approved devices were forgotten"
+msgstr "Onaylı cihazlar unutuldu"
+
+msgid "ARTIST"
+msgstr "SANATÇI"
+
+msgid "Artist"
+msgstr "Sanatçı"
+
+msgid "Artists"
+msgstr "Sanatçılar"
+
+msgid "Ask again before any device can control this player"
+msgstr "Herhangi bir cihaz bu çaları kontrol etmeden önce tekrar sor"
+
+msgid "Ask the server to transcode down to this bitrate. Applies from the next song."
+msgstr "Sunucudan bu bit hızına dönüştürmesini iste. Sonraki şarkıdan itibaren geçerlidir."
+
+msgid "Audio device"
+msgstr "Ses aygıtı"
+
+msgid "Automatic ({})"
+msgstr "Otomatik ({})"
+
+msgid "Back"
+msgstr "Geri"
+
+msgid "Ban"
+msgstr "Yasakla"
+
+msgid "Banned devices"
+msgstr "Yasaklı cihazlar"
+
+msgid "by {}"
+msgstr "Sahibi: {}"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Cancel timer"
+msgstr "Zamanlayıcıyı iptal et"
+
+msgid "Cannot share: {}"
+msgstr "Paylaşılamıyor: {}"
+
+msgid "Chart country"
+msgstr "Liste ülkesi"
+
+msgid "Charts"
+msgstr "Listeler"
+
+msgid "Choose a browser under Settings, YouTube to sign in for a personalized home"
+msgstr "Kişiselleştirilmiş ana sayfa için oturum açmak üzere Ayarlar'daki YouTube bölümünden bir tarayıcı seçin"
+
+msgid "Clear"
+msgstr "Temizle"
+
+msgid "Clear filters"
+msgstr "Filtreleri temizle"
+
+msgid "Clear rating"
+msgstr "Puanı temizle"
+
+msgid "Clear search"
+msgstr "Aramayı temizle"
+
+msgid "Clear the favorites and genre filters"
+msgstr "Favori ve tür filtrelerini temizle"
+
+msgid "Click to close"
+msgstr "Kapatmak için tıkla"
+
+msgid "Click to dismiss"
+msgstr "Gizlemek için tıkla"
+
+msgid "Close"
+msgstr "Kapat"
+
+msgid "Close now playing"
+msgstr "Şimdi çalınanı kapat"
+
+msgid "Close to the tray"
+msgstr "Kapatınca sistem tepsisine küçült"
+
+msgid "Close without adding the songs"
+msgstr "Şarkıları eklemeden kapat"
+
+msgid "Close without changes"
+msgstr "Değişiklik yapmadan kapat"
+
+msgid "Close without saving"
+msgstr "Kaydetmeden kapat"
+
+msgid "Closing the window keeps the music playing; quit from the tray icon."
+msgstr "Pencereyi kapatmak müziği durdurmaz; tepsi simgesinden çıkın."
+
+msgid "Colors used across the whole app."
+msgstr "Uygulamanın genelinde kullanılan renkler."
+
+msgid "Connect to this server"
+msgstr "Bu sunucuya bağlan"
+
+msgid "Connect to your music server"
+msgstr "Müzik sunucunuza bağlanın"
+
+msgid "Connect to {}"
+msgstr "Bağlan: {}"
+
+msgid "Connected devices: {}"
+msgstr "Bağlı cihazlar: {}"
+
+msgid "Connecting..."
+msgstr "Bağlanıyor..."
+
+msgid "Control the music playing on this computer"
+msgstr "Bu bilgisayarda çalan müziği kontrol et"
+
+msgid "Control the music playing on {}"
+msgstr "{} cihazında çalan müziği kontrol et"
+
+msgid "Controlled by {}"
+msgstr "{} tarafından kontrol ediliyor"
+
+msgid "Controlling this player"
+msgstr "Bu oynatıcıyı kontrol ediyor"
+
+msgid "Could not add to \"{}\": {}"
+msgstr "\"{}\" listesine eklenemedi: {}"
+
+msgid "Could not add {} to the server"
+msgstr "{} sunucuya eklenemedi"
+
+msgid "Could not connect to {}: {}"
+msgstr "{} cihazına bağlanılamadı: {}"
+
+msgid "Could not create a share link: {}"
+msgstr "Paylaşım bağlantısı oluşturulamadı: {}"
+
+msgid "Could not create the playlist: {}"
+msgstr "Çalma listesi oluşturulamadı: {}"
+
+msgid "Could not delete the playlist: {}"
+msgstr "Çalma listesi silinemedi: {}"
+
+msgid "Could not delete the saved login: {}"
+msgstr "Kayıtlı oturum bilgisi silinemedi: {}"
+
+msgid "Could not delete the station"
+msgstr "İstasyon silinemedi"
+
+msgid "Could not load albums: {}"
+msgstr "Albümler yüklenemedi: {}"
+
+msgid "Could not load artists: {}"
+msgstr "Sanatçılar yüklenemedi: {}"
+
+msgid "Could not load Discover: {}"
+msgstr "Keşfet yüklenemedi: {}"
+
+msgid "Could not load genres: {}"
+msgstr "Türler yüklenemedi: {}"
+
+msgid "Could not load it from YouTube Music: {}"
+msgstr "YouTube Music'ten yüklenemedi: {}"
+
+msgid "Could not load lyrics"
+msgstr "Şarkı sözleri yüklenemedi"
+
+msgid "Could not load moods and genres: {}"
+msgstr "Ruh halleri ve türler yüklenemedi: {}"
+
+msgid "Could not load more results: {}"
+msgstr "Daha fazla sonuç yüklenemedi: {}"
+
+msgid "Could not load new releases: {}"
+msgstr "Yeni çıkanlar yüklenemedi: {}"
+
+msgid "Could not load playlists: {}"
+msgstr "Çalma listeleri yüklenemedi: {}"
+
+msgid "Could not load the album: {}"
+msgstr "Albüm yüklenemedi: {}"
+
+msgid "Could not load the artist: {}"
+msgstr "Sanatçı yüklenemedi: {}"
+
+msgid "Could not load the charts: {}"
+msgstr "Listeler yüklenemedi: {}"
+
+msgid "Could not load the folder: {}"
+msgstr "Klasör yüklenemedi: {}"
+
+msgid "Could not load the list: {}"
+msgstr "Liste yüklenemedi: {}"
+
+msgid "Could not load the playlist: {}"
+msgstr "Çalma listesi yüklenemedi: {}"
+
+msgid "Could not load the radio stations: {}"
+msgstr "Radyo istasyonları yüklenemedi: {}"
+
+msgid "Could not load the selection: {}"
+msgstr "Seçim yüklenemedi: {}"
+
+msgid "Could not load this page: {}"
+msgstr "Bu sayfa yüklenemedi: {}"
+
+msgid "Could not load tracks: {}"
+msgstr "Parçalar yüklenemedi: {}"
+
+msgid "Could not load your home: {}"
+msgstr "Ana sayfanız yüklenemedi: {}"
+
+msgid "Could not move the music from {}: {}"
+msgstr "Müzik {} cihazından taşınamadı: {}"
+
+msgid "Could not move the music: {}"
+msgstr "Müzik taşınamadı: {}"
+
+msgid "Could not open the folder: {}"
+msgstr "Klasör açılamadı: {}"
+
+msgid "Could not open YouTube Music: {}"
+msgstr "YouTube Music açılamadı: {}"
+
+msgid "Could not pause or resume playback: {}"
+msgstr "Çalma duraklatılamadı veya sürdürülemedi: {}"
+
+msgid "Could not play \"{}\" from YouTube: {}"
+msgstr "\"{}\" YouTube'dan çalınamadı: {}"
+
+msgid "Could not play album: {}"
+msgstr "Albüm çalınamadı: {}"
+
+msgid "Could not play from YouTube: {}"
+msgstr "YouTube'dan çalınamadı: {}"
+
+msgid "Could not play the album: {}"
+msgstr "Bu albüm çalınamadı: {}"
+
+msgid "Could not remove songs: {}"
+msgstr "Şarkılar kaldırılamadı: {}"
+
+msgid "Could not rescan the library: {}"
+msgstr "Kitaplık yeniden taranamadı: {}"
+
+msgid "Could not save the login for {}: {}"
+msgstr "{} için oturum bilgisi kaydedilemedi: {}"
+
+msgid "Could not save the settings: {}"
+msgstr "Ayarlar kaydedilemedi: {}"
+
+msgid "Could not seek: {}"
+msgstr "İleri veya geri sarılamadı: {}"
+
+msgid "Could not set the rating: {}"
+msgstr "Puan verilemedi: {}"
+
+msgid "Could not sign in to YouTube Music ({}). Showing general picks instead."
+msgstr "YouTube Music'te oturum açılamadı ({}). Bunun yerine genel öneriler gösteriliyor."
+
+msgid "Could not stop playback: {}"
+msgstr "Çalma durdurulamadı: {}"
+
+msgid "Could not switch server: {}"
+msgstr "Sunucu değiştirilemedi: {}"
+
+msgid "Could not update favorite: {}"
+msgstr "Favori güncellenemedi: {}"
+
+msgid "Could not update favorites: {}"
+msgstr "Favoriler güncellenemedi: {}"
+
+msgid "Could not update rating: {}"
+msgstr "Puan güncellenemedi: {}"
+
+msgid "Could not update the favorite: {}"
+msgstr "Favori durumu güncellenemedi: {}"
+
+msgid "Country"
+msgstr "Ülke"
+
+msgid "Create"
+msgstr "Oluştur"
+
+msgid "Create a playlist with these songs"
+msgstr "Bu şarkılarla bir çalma listesi oluştur"
+
+msgid "Create an empty playlist"
+msgstr "Boş bir çalma listesi oluştur"
+
+msgid "Create the playlist"
+msgstr "Çalma listesini oluştur"
+
+msgid "Created \"{}\" with only {n} song: {}"
+msgid_plural "Created \"{}\" with only {n} songs: {}"
+msgstr[0] "\"{}\" yalnızca {n} şarkıyla oluşturuldu: {}"
+msgstr[1] "\"{}\" yalnızca {n} şarkıyla oluşturuldu: {}"
+
+msgid "Created \"{}\" with {n} song"
+msgid_plural "Created \"{}\" with {n} songs"
+msgstr[0] "\"{}\" {n} şarkıyla oluşturuldu"
+msgstr[1] "\"{}\" {n} şarkıyla oluşturuldu"
+
+msgid "Created playlist \"{}\""
+msgstr "\"{}\" çalma listesi oluşturuldu"
+
+msgid "Creating a share link..."
+msgstr "Paylaşım bağlantısı oluşturuluyor..."
+
+msgid "Creating..."
+msgstr "Oluşturuluyor..."
+
+msgid "Crossfade"
+msgstr "Çapraz geçiş"
+
+msgid "Crossfade could not be changed: {}"
+msgstr "Çapraz geçiş değiştirilemedi: {}"
+
+msgid "Crossfade: {}"
+msgstr "Çapraz geçiş: {}"
+
+msgid "Current"
+msgstr "Geçerli"
+
+msgid "Custom accent color: {} (theme accent in use)"
+msgstr "Özel vurgu rengi: {} (tema vurgusu kullanılıyor)"
+
+msgid "Custom accent color: {}, press Enter to apply"
+msgstr "Özel vurgu rengi: {}, uygulamak için Enter'a basın"
+
+msgid "Daily Mix {}"
+msgstr "Günlük Mix {}"
+
+msgid "Dark theme"
+msgstr "Koyu tema"
+
+msgid "DARK THEMES"
+msgstr "KOYU TEMALAR"
+
+msgid "Default country for the Discover charts. Automatic follows your system region."
+msgstr "Keşfet listeleri için varsayılan ülke. Otomatik, sistem bölgenizi izler."
+
+msgid "Default Dark"
+msgstr "Varsayılan koyu"
+
+msgid "Default Light"
+msgstr "Varsayılan açık"
+
+msgid "Delete"
+msgstr "Sil"
+
+msgid "Delete \"{}\""
+msgstr "Sil: \"{}\""
+
+msgid "Delete \"{}\" from the server? This cannot be undone."
+msgstr "\"{}\" sunucudan silinsin mi? Bu işlem geri alınamaz."
+
+msgid "Delete \"{}\"? This cannot be undone."
+msgstr "\"{}\" silinsin mi? Bu işlem geri alınamaz."
+
+msgid "Delete playlist"
+msgstr "Çalma listesini sil"
+
+msgid "Delete station"
+msgstr "İstasyonu sil"
+
+msgid "Delete {} from the server"
+msgstr "Sunucudan sil: {}"
+
+msgid "Deleted playlist \"{}\""
+msgstr "\"{}\" çalma listesi silindi"
+
+msgid "Deleting..."
+msgstr "Siliniyor..."
+
+msgid "Demo mode: these picks are made up and play from your demo library"
+msgstr "Demo modu: bu öneriler uydurmadır ve demo kitaplığınızdan çalınır"
+
+msgid "Devices you allowed can control this player without asking again."
+msgstr "İzin verdiğin cihazlar bu çaları tekrar sormadan kontrol edebilir."
+
+msgid "Devices: controlled by {}"
+msgstr "Cihazlar: {} tarafından kontrol ediliyor"
+
+msgid "Devices: controlling {}"
+msgstr "Cihazlar: {} kontrol ediliyor"
+
+msgid "Devices: this computer"
+msgstr "Cihazlar: bu bilgisayar"
+
+msgid "Directory"
+msgstr "Dizin"
+
+msgid "Disc {}"
+msgstr "Disk {}"
+
+msgid "Disconnect"
+msgstr "Bağlantıyı kes"
+
+msgid "Disconnect \"{}\" and never let it control this player again"
+msgstr "\"{}\" bağlantısını kes ve bu oynatıcıyı bir daha kontrol etmesine izin verme"
+
+msgid "Disconnect \"{}\"; it has to be allowed again to control this player"
+msgstr "\"{}\" bağlantısını kes; bu oynatıcıyı kontrol etmek için yeniden izin verilmesi gerekir"
+
+msgid "Discord Rich Presence"
+msgstr "Discord Rich Presence"
+
+msgid "Discover"
+msgstr "Keşfet"
+
+msgid "Discover is open"
+msgstr "Keşfet açık"
+
+msgid "Discover new music on YouTube Music"
+msgstr "YouTube Music'te yeni müzikler keşfedin"
+
+msgid "Discover Weekly"
+msgstr "Haftanın Keşifleri"
+
+msgid "Do not let \"{}\" control this player"
+msgstr "\"{}\" bu çaları kontrol edemesin"
+
+msgid "Double-click to play"
+msgstr "Çalmak için çift tıkla"
+
+msgid "Double-click to play, drag to reorder"
+msgstr "Çalmak için çift tıkla, yeniden sıralamak için sürükle"
+
+msgid "Duration"
+msgstr "Süre"
+
+msgid "Edit station"
+msgstr "İstasyonu düzenle"
+
+msgid "Edit {}"
+msgstr "Düzenle: {}"
+
+msgid "End of current track"
+msgstr "Geçerli parçanın sonu"
+
+msgid "End of track"
+msgstr "Parçanın sonu"
+
+msgid "Enter a name for the station"
+msgstr "İstasyon için bir ad girin"
+
+msgid "Enter a name, country or tag to search"
+msgstr "Aramak için bir ad, ülke veya etiket girin"
+
+msgid "Enter a stream URL that starts with http:// or https://"
+msgstr "http:// veya https:// ile başlayan bir akış URL'si girin"
+
+msgid "Enter the server URL"
+msgstr "Sunucu URL'sini girin"
+
+msgid "Fade the end of each song into the next one. Off keeps gapless playback."
+msgstr "Her şarkının sonunu bir sonrakiyle geçişli karıştır. Kapalıyken boşluksuz çalma korunur."
+
+msgid "Favorite"
+msgstr "Favori"
+
+msgid "Favorited"
+msgstr "Favori"
+
+msgid "Favorites"
+msgstr "Favoriler"
+
+msgid "Favorites only: off"
+msgstr "Yalnızca favoriler: kapalı"
+
+msgid "Favorites only: on"
+msgstr "Yalnızca favoriler: açık"
+
+msgid "Filter"
+msgstr "Filtre"
+
+msgid "Filter playlists"
+msgstr "Çalma listelerini filtrele"
+
+msgid "Find stations by name, country or tag"
+msgstr "İstasyonları ada, ülkeye veya etikete göre bul"
+
+msgid "Find stations in the radio-browser.info directory"
+msgstr "radio-browser.info dizininde istasyon bul"
+
+msgid "Folder"
+msgstr "Klasör"
+
+msgid "Folders"
+msgstr "Klasörler"
+
+msgid "Follow current song"
+msgstr "Çalan şarkıyı takip et"
+
+msgid "Follow system color scheme"
+msgstr "Sistem renk düzenini izle"
+
+msgid "For you"
+msgstr "Sizin için"
+
+msgid "Forget all"
+msgstr "Tümünü unut"
+
+msgid "Forget this server?"
+msgstr "Bu sunucu unutulsun mu?"
+
+msgid "Forget {}"
+msgstr "Unut: {}"
+
+msgid "Format the server should transcode to. Applies from the next song."
+msgstr "Sunucunun dönüştüreceği biçim. Sonraki şarkıdan itibaren geçerlidir."
+
+msgid "Gapless playback"
+msgstr "Boşluksuz çalma"
+
+msgid "Genre filter: {}"
+msgstr "Tür filtresi: {}"
+
+msgid "Genres"
+msgstr "Türler"
+
+msgid "Go back to {}"
+msgstr "Geri dön: {}"
+
+msgid "Go to album"
+msgstr "Albüme git"
+
+msgid "Go to artist"
+msgstr "Sanatçıya git"
+
+msgid "Go to {}"
+msgstr "{} sayfasına git"
+
+msgid "Green"
+msgstr "Yeşil"
+
+msgid "Hide lyrics"
+msgstr "Şarkı sözlerini gizle"
+
+msgid "Hide queue"
+msgstr "Sırayı gizle"
+
+msgid "High Contrast Dark"
+msgstr "Yüksek kontrast koyu"
+
+msgid "High Contrast Light"
+msgstr "Yüksek kontrast açık"
+
+msgid "Highlight with the color that comes with the theme."
+msgstr "Temayla birlikte gelen renkle vurgula."
+
+msgid "Home"
+msgstr "Ana sayfa"
+
+msgid "Homepage (optional)"
+msgstr "Web sitesi (isteğe bağlı)"
+
+msgid "Indigo"
+msgstr "Çivit"
+
+msgid "Install yt-dlp to play YouTube tracks"
+msgstr "YouTube parçalarını çalmak için yt-dlp'yi yükleyin"
+
+msgid "Integrations"
+msgstr "Entegrasyonlar"
+
+msgid "Interface"
+msgstr "Arayüz"
+
+msgid "Internet radio"
+msgstr "İnternet radyosu"
+
+msgid "it could not be reached; check that its firewall allows TCP port {}"
+msgstr "ulaşılamadı; güvenlik duvarının {} numaralı TCP bağlantı noktasına izin verdiğini kontrol edin"
+
+msgid "it did not answer in time"
+msgstr "zamanında yanıt vermedi"
+
+msgid "it is busy with another request"
+msgstr "başka bir istekle meşgul"
+
+msgid "it is connected to a different server"
+msgstr "başka bir sunucuya bağlı"
+
+msgid "it is not connected to a server"
+msgstr "hiçbir sunucuya bağlı değil"
+
+msgid "it runs a different version of Cadence"
+msgstr "farklı bir Cadence sürümü çalıştırıyor"
+
+msgid "it stopped"
+msgstr "durdu"
+
+msgid "item"
+msgstr "öğe"
+
+msgid "Jump to this line"
+msgstr "Bu satıra atla"
+
+msgid "Keep a Cadence icon with playback controls in the menu bar or system tray."
+msgstr "Menü çubuğunda veya sistem tepsisinde oynatma denetimli bir Cadence simgesi göster."
+
+msgid "Keep this station in the favorites on this device"
+msgstr "Bu istasyonu bu cihazda favorilerde tut"
+
+msgid "Keep {}"
+msgstr "Koru: {}"
+
+msgid "Language"
+msgstr "Dil"
+
+msgid "Let \"{}\" ask to control this player again"
+msgstr "\"{}\" yeniden bu oynatıcıyı kontrol etmeyi isteyebilsin"
+
+msgid "Let \"{}\" control this player"
+msgstr "\"{}\" bu çaları kontrol edebilsin"
+
+msgid "Let other Cadence players on this network control this one. Each device asks for your approval the first time."
+msgstr "Bu ağdaki diğer Cadence çalarların bunu kontrol etmesine izin ver. Her cihaz ilk seferde onayını ister."
+
+msgid "LIBRARY"
+msgstr "KİTAPLIK"
+
+msgid "Library scan finished"
+msgstr "Kitaplık taraması tamamlandı"
+
+msgid "Library scan finished: {n} item"
+msgid_plural "Library scan finished: {n} items"
+msgstr[0] "Kitaplık taraması tamamlandı: {n} öğe"
+msgstr[1] "Kitaplık taraması tamamlandı: {n} öğe"
+
+msgid "Light theme"
+msgstr "Açık tema"
+
+msgid "LIGHT THEMES"
+msgstr "AÇIK TEMALAR"
+
+msgid "Listening to {}"
+msgstr "Dinleniyor: {}"
+
+msgid "LIVE"
+msgstr "CANLI"
+
+msgid "Load more"
+msgstr "Daha fazla yükle"
+
+msgid "Load more results"
+msgstr "Daha fazla sonuç yükle"
+
+msgid "Load this section again"
+msgstr "Bu bölümü yeniden yükle"
+
+msgid "Loading playlists..."
+msgstr "Çalma listeleri yükleniyor..."
+
+msgid "Loading similar songs..."
+msgstr "Benzer şarkılar yükleniyor..."
+
+msgid "Loading stations..."
+msgstr "İstasyonlar yükleniyor..."
+
+msgid "Loading the next page of stations"
+msgstr "İstasyonların sonraki sayfası yükleniyor"
+
+msgid "Loading..."
+msgstr "Yükleniyor..."
+
+msgid "Log out"
+msgstr "Oturumu kapat"
+
+msgid "Looking up the YouTube link..."
+msgstr "YouTube bağlantısı aranıyor..."
+
+msgid "Lost the connection to {}"
+msgstr "{} ile bağlantı kesildi"
+
+msgid "Lyrics"
+msgstr "Şarkı sözleri"
+
+msgid "Lyrics from {}"
+msgstr "Şarkı sözü kaynağı: {}"
+
+msgid "Lyrics sources"
+msgstr "Şarkı sözü kaynakları"
+
+msgid "Magenta"
+msgstr "Macenta"
+
+msgid "Maximum bitrate"
+msgstr "Maksimum bit hızı"
+
+msgid "Media keys and desktop media controls. Takes effect after a restart."
+msgstr "Medya tuşları ve masaüstü medya denetimleri. Yeniden başlatmadan sonra etkinleşir."
+
+msgid "MIX"
+msgstr "MİX"
+
+msgid "Moods and genres"
+msgstr "Ruh halleri ve türler"
+
+msgid "Most played"
+msgstr "En çok çalınanlar"
+
+msgid "Move down"
+msgstr "Aşağı taşı"
+
+msgid "Move here"
+msgstr "Buraya taşı"
+
+msgid "Move there"
+msgstr "Oraya taşı"
+
+msgid "Move up"
+msgstr "Yukarı taşı"
+
+msgid "Move what is playing here to {}"
+msgstr "Burada çalanı {} cihazına taşı"
+
+msgid "Move what is playing on {} to this computer"
+msgstr "{} cihazında çalanı bu bilgisayara taşı"
+
+msgid "Moved the music from {} to this computer"
+msgstr "Müzik {} cihazından bu bilgisayara taşındı"
+
+msgid "MPRIS"
+msgstr "MPRIS"
+
+msgid "Mute"
+msgstr "Sesi kapat"
+
+msgid "Name"
+msgstr "Ad"
+
+msgid "New playlist"
+msgstr "Yeni çalma listesi"
+
+msgid "New releases"
+msgstr "Yeni çıkanlar"
+
+msgid "New to you, refreshed every Monday"
+msgstr "Senin için yeni, her pazartesi yenilenir"
+
+msgid "Next"
+msgstr "Sonraki"
+
+msgid "Next is unavailable while a radio station plays"
+msgstr "Radyo istasyonu çalarken sonraki parçaya geçilemez"
+
+msgid "No albums"
+msgstr "Albüm yok"
+
+msgid "No albums found"
+msgstr "Albüm bulunamadı"
+
+msgid "No artists found"
+msgstr "Sanatçı bulunamadı"
+
+msgid "no browser is selected"
+msgstr "hiçbir tarayıcı seçilmedi"
+
+msgid "No favorite albums"
+msgstr "Favori albüm yok"
+
+msgid "No favorite artists"
+msgstr "Favori sanatçı yok"
+
+msgid "No favorite tracks"
+msgstr "Favori parça yok"
+
+msgid "No genres found"
+msgstr "Tür bulunamadı"
+
+msgid "No lyrics found"
+msgstr "Şarkı sözü bulunamadı"
+
+msgid "No other Cadence found on this network"
+msgstr "Bu ağda başka Cadence bulunamadı"
+
+msgid "No playlists found"
+msgstr "Çalma listesi bulunamadı"
+
+msgid "No playlists yet"
+msgstr "Henüz çalma listesi yok"
+
+msgid "No rating"
+msgstr "Puan yok"
+
+msgid "No results for \"{}\""
+msgstr "\"{}\" için sonuç yok"
+
+msgid "No saved login for {}; remove it and add it again"
+msgstr "{} için kayıtlı oturum bilgisi yok; kaldırıp yeniden ekleyin"
+
+msgid "No saved servers."
+msgstr "Kayıtlı sunucu yok."
+
+msgid "No similar songs found"
+msgstr "Benzer şarkı bulunamadı"
+
+msgid "No songs here"
+msgstr "Burada şarkı yok"
+
+msgid "No stations found"
+msgstr "İstasyon bulunamadı"
+
+msgid "No stations yet. Add one or find one in the directory."
+msgstr "Henüz istasyon yok. Bir tane ekleyin veya dizinde bulun."
+
+msgid "No tracks found"
+msgstr "Parça bulunamadı"
+
+msgid "None"
+msgstr "Yok"
+
+msgid "Normalize loudness using the track or album gain tags."
+msgstr "Ses yüksekliğini parça veya albüm kazanç etiketleriyle normalleştir."
+
+msgid "Not connected to a server"
+msgstr "Bir sunucuya bağlı değil"
+
+msgid "Not connected to another player"
+msgstr "Başka bir çalara bağlı değil"
+
+msgid "Nothing is playing"
+msgstr "Hiçbir şey çalmıyor"
+
+msgid "nothing is playing"
+msgstr "hiçbir şey çalmıyor"
+
+msgid "Nothing to add yet"
+msgstr "Henüz eklenecek bir şey yok"
+
+msgid "Nothing to go back to"
+msgstr "Geri dönülecek bir yer yok"
+
+msgid "Nothing to play here"
+msgstr "Burada çalınacak bir şey yok"
+
+msgid "Nothing to play yet"
+msgstr "Henüz çalınacak bir şey yok"
+
+msgid "Nothing to show here right now"
+msgstr "Şu anda burada gösterilecek bir şey yok"
+
+msgid "Now playing on {}"
+msgstr "Şimdi {} cihazında çalıyor"
+
+msgid "Off"
+msgstr "Kapalı"
+
+msgid "OK"
+msgstr "Tamam"
+
+msgid "On the server"
+msgstr "Sunucuda"
+
+msgid "Only a server admin can rescan the library"
+msgstr "Kitaplığı yalnızca bir sunucu yöneticisi yeniden tarayabilir"
+
+msgid "Only loaded tracks can be shared: select fewer tracks or scroll through them first"
+msgstr "Yalnızca yüklenmiş parçalar paylaşılabilir: daha az parça seçin veya önce aralarında kaydırın"
+
+msgid "Open"
+msgstr "Aç"
+
+msgid "Open in YouTube Music"
+msgstr "YouTube Music'te aç"
+
+msgid "Open now playing"
+msgstr "Şimdi çalınanı aç"
+
+msgid "Open radio"
+msgstr "Radyoyu aç"
+
+msgid "Open the album \"{}\""
+msgstr "\"{}\" albümünü aç"
+
+msgid "Open the mix \"{}\""
+msgstr "\"{}\" mix'ini aç"
+
+msgid "Open the playlist \"{}\""
+msgstr "\"{}\" çalma listesini aç"
+
+msgid "Open the queue panel"
+msgstr "Sıra panelini aç"
+
+msgid "Open {}"
+msgstr "Aç: {}"
+
+msgid "Original"
+msgstr "Orijinal"
+
+msgid "Output used by the player."
+msgstr "Oynatıcının kullandığı çıkış."
+
+msgid "Owner"
+msgstr "Sahip"
+
+msgid "Password"
+msgstr "Parola"
+
+msgid "Paste a link first"
+msgstr "Önce bir bağlantı yapıştırın"
+
+msgid "Paste a YouTube or YouTube Music link first"
+msgstr "Önce bir YouTube veya YouTube Music bağlantısı yapıştırın"
+
+msgid "Paste a YouTube or YouTube Music link to try yt-dlp."
+msgstr "yt-dlp'yi denemek için bir YouTube veya YouTube Music bağlantısı yapıştırın."
+
+msgid "Pause"
+msgstr "Duraklat"
+
+msgid "Pause the radio station"
+msgstr "Radyo istasyonunu duraklat"
+
+msgid "Personalized with your YouTube Music account from {}"
+msgstr "{} tarayıcısındaki YouTube Music hesabınızla kişiselleştirildi"
+
+msgid "Pick a color, or type one as #rrggbb and press Enter."
+msgstr "Bir renk seçin veya #rrggbb biçiminde yazıp Enter'a basın."
+
+msgid "Pick a mood or genre to see its playlists"
+msgstr "Çalma listelerini görmek için bir ruh hali veya tür seçin"
+
+msgid "Play"
+msgstr "Oynat"
+
+msgid "Play \"{}\" and the rest of this shelf"
+msgstr "\"{}\" ve bu raftaki diğerlerini çal"
+
+msgid "Play a YouTube link"
+msgstr "YouTube bağlantısı çal"
+
+msgid "Play album"
+msgstr "Albümü çal"
+
+msgid "Play all"
+msgstr "Tümünü çal"
+
+msgid "Play all {n} song"
+msgid_plural "Play all {n} songs"
+msgstr[0] "{n} şarkıyı çal"
+msgstr[1] "{n} şarkının tümünü çal"
+
+msgid "Play count"
+msgstr "Çalma sayısı"
+
+msgid "Play every song in {} and its subfolders"
+msgstr "{} ve alt klasörlerindeki tüm şarkıları çal"
+
+msgid "Play from here"
+msgstr "Buradan çal"
+
+msgid "Play from this song"
+msgstr "Bu şarkıdan itibaren çal"
+
+msgid "Play from {}"
+msgstr "Şuradan çal: {}"
+
+msgid "Play next"
+msgstr "Sıradaki olarak çal"
+
+msgid "Play on"
+msgstr "Şurada çal"
+
+msgid "Play the album"
+msgstr "Albümü çal"
+
+msgid "Play the mix"
+msgstr "Mix'i çal"
+
+msgid "Play the playlist"
+msgstr "Çalma listesini çal"
+
+msgid "Play the radio station"
+msgstr "Radyo istasyonunu çal"
+
+msgid "Play this link after the current song"
+msgstr "Bu bağlantıyı geçerli şarkıdan sonra çal"
+
+msgid "Play this link now"
+msgstr "Bu bağlantıyı şimdi çal"
+
+msgid "Play {}"
+msgstr "Çal: {}"
+
+msgid "Play {} next"
+msgstr "Sıradaki olarak çal: {}"
+
+msgid "Play {} with its subfolders"
+msgstr "Alt klasörleriyle çal: {}"
+
+msgid "Play/Pause"
+msgstr "Oynat/Duraklat"
+
+msgid "Playback"
+msgstr "Oynatma"
+
+msgid "Playback failed: {}"
+msgstr "Çalma başarısız: {}"
+
+msgid "Playing {} failed: {}"
+msgstr "Çalma başarısız ({}): {}"
+
+msgid "PLAYLIST"
+msgstr "ÇALMA LİSTESİ"
+
+msgid "Playlist"
+msgstr "Çalma listesi"
+
+msgid "playlist"
+msgstr "çalma listesi"
+
+msgid "Playlist name"
+msgstr "Çalma listesi adı"
+
+msgid "Playlists"
+msgstr "Çalma listeleri"
+
+msgid "Plays"
+msgstr "Çalınma"
+
+msgid "Plays YouTube tracks. Leave empty to use yt-dlp from your PATH."
+msgstr "YouTube parçalarını çalar. PATH'teki yt-dlp'yi kullanmak için boş bırakın."
+
+msgid "Preload the next song so it starts without a pause."
+msgstr "Sonraki şarkıyı önceden yükle, böylece duraksamadan başlar."
+
+msgid "Previous"
+msgstr "Önceki"
+
+msgid "Previous is unavailable while a radio station plays"
+msgstr "Radyo istasyonu çalarken önceki parçaya geçilemez"
+
+msgid "Queue"
+msgstr "Sıra"
+
+msgid "Quit"
+msgstr "Çık"
+
+msgid "Radio"
+msgstr "Radyo"
+
+msgid "Random"
+msgstr "Rastgele"
+
+msgid "Rate {n} star"
+msgid_plural "Rate {n} stars"
+msgstr[0] "{n} yıldız ver"
+msgstr[1] "{n} yıldız ver"
+
+msgid "Rating"
+msgstr "Puan"
+
+msgid "Recently added"
+msgstr "Son eklenenler"
+
+msgid "Recently played"
+msgstr "Son çalınanlar"
+
+msgid "Red"
+msgstr "Kırmızı"
+
+msgid "Refresh"
+msgstr "Yenile"
+
+msgid "Refresh this section"
+msgstr "Bu bölümü yenile"
+
+msgid "Release year"
+msgstr "Çıkış yılı"
+
+msgid "Remote control"
+msgstr "Uzaktan kontrol"
+
+msgid "Remote control is unavailable: other players cannot find this one"
+msgstr "Uzaktan kontrol kullanılamıyor: diğer çalarlar bunu bulamıyor"
+
+msgid "Remote control is unavailable: the network port could not be opened"
+msgstr "Uzaktan kontrol kullanılamıyor: ağ bağlantı noktası açılamadı"
+
+msgid "Remove"
+msgstr "Kaldır"
+
+msgid "Remove from favorites"
+msgstr "Favorilerden kaldır"
+
+msgid "Remove from playlist"
+msgstr "Çalma listesinden kaldır"
+
+msgid "Remove from queue"
+msgstr "Kuyruktan kaldır"
+
+msgid "Remove the selected songs from this playlist"
+msgstr "Seçili şarkıları bu çalma listesinden kaldır"
+
+msgid "Removed {n} song from \"{}\""
+msgid_plural "Removed {n} songs from \"{}\""
+msgstr[0] "\"{}\" listesinden {n} şarkı kaldırıldı"
+msgstr[1] "\"{}\" listesinden {n} şarkı kaldırıldı"
+
+msgid "Removing..."
+msgstr "Kaldırılıyor..."
+
+msgid "Repeat: all"
+msgstr "Tekrarla: tümü"
+
+msgid "Repeat: off"
+msgstr "Tekrarla: kapalı"
+
+msgid "Repeat: one"
+msgstr "Tekrarla: bir"
+
+msgid "ReplayGain"
+msgstr "ReplayGain"
+
+msgid "ReplayGain could not be changed: {}"
+msgstr "ReplayGain değiştirilemedi: {}"
+
+msgid "Report what you play to the server."
+msgstr "Çaldıklarınızı sunucuya bildir."
+
+msgid "Rescan the library for new content"
+msgstr "Yeni içerik için kitaplığı yeniden tara"
+
+msgid "Resize column"
+msgstr "Sütunu yeniden boyutlandır"
+
+msgid "Save"
+msgstr "Kaydet"
+
+msgid "Save on this device"
+msgstr "Bu cihaza kaydet"
+
+msgid "Save the changes on the server"
+msgstr "Değişiklikleri sunucuya kaydet"
+
+msgid "Save the changes on this device"
+msgstr "Değişiklikleri bu cihaza kaydet"
+
+msgid "Save to favorites on this device"
+msgstr "Bu cihazda favorilere kaydet"
+
+msgid "Save to server"
+msgstr "Sunucuya kaydet"
+
+msgid "Saved on this device"
+msgstr "Bu cihaza kaydedildi"
+
+msgid "Saved on this device, click to remove"
+msgstr "Bu cihaza kaydedildi, kaldırmak için tıklayın"
+
+msgid "Saving the station to the server..."
+msgstr "İstasyon sunucuya kaydediliyor..."
+
+msgid "Saving to the server..."
+msgstr "Sunucuya kaydediliyor..."
+
+msgid "Saving..."
+msgstr "Kaydediliyor..."
+
+msgid "Scanning the library for new content..."
+msgstr "Kitaplık yeni içerik için taranıyor..."
+
+msgid "Scanning the library: {}"
+msgstr "Kitaplık taranıyor: {}"
+
+msgid "Scrobble"
+msgstr "Scrobble"
+
+msgid "Scroll left"
+msgstr "Sola kaydır"
+
+msgid "Scroll lists and the queue to the song that is playing."
+msgstr "Listeleri ve sırayı çalan şarkıya kaydır."
+
+msgid "Scroll right"
+msgstr "Sağa kaydır"
+
+msgid "Search"
+msgstr "Ara"
+
+msgid "Search failed: {}"
+msgstr "Arama başarısız: {}"
+
+msgid "SEARCH RESULTS"
+msgstr "ARAMA SONUÇLARI"
+
+msgid "Search songs on YouTube Music"
+msgstr "YouTube Music'te şarkı ara"
+
+msgid "Search songs, albums, artists"
+msgstr "Şarkı, albüm, sanatçı ara"
+
+msgid "Search the radio-browser.info directory"
+msgstr "radio-browser.info dizininde ara"
+
+msgid "Search your library for songs, albums and artists"
+msgstr "Kitaplığınızda şarkı, albüm ve sanatçı arayın"
+
+msgid "Searched from top to bottom until one has lyrics."
+msgstr "Biri şarkı sözü bulana kadar yukarıdan aşağıya aranır."
+
+msgid "Searching for lyrics..."
+msgstr "Şarkı sözleri aranıyor..."
+
+msgid "Searching the radio directory failed: {}"
+msgstr "Radyo dizininde arama başarısız: {}"
+
+msgid "Searching the radio-browser.info directory"
+msgstr "radio-browser.info dizininde aranıyor"
+
+msgid "Searching..."
+msgstr "Aranıyor..."
+
+msgid "Seeking is unavailable for live radio"
+msgstr "Canlı radyoda ileri veya geri sarma kullanılamaz"
+
+msgid "Server"
+msgstr "Sunucu"
+
+msgid "Server type"
+msgstr "Sunucu türü"
+
+msgid "Server type: {}"
+msgstr "Sunucu türü: {}"
+
+msgid "Servers"
+msgstr "Sunucular"
+
+msgid "Set rating"
+msgstr "Puan ver"
+
+msgid "Settings"
+msgstr "Ayarlar"
+
+msgid "Share"
+msgstr "Paylaş"
+
+msgid "Share ({})"
+msgstr "Paylaş ({})"
+
+msgid "Share link copied to the clipboard: {}"
+msgstr "Paylaşım bağlantısı panoya kopyalandı: {}"
+
+msgid "Share this {}: copy a public link"
+msgstr "Paylaş ({}): herkese açık bağlantıyı kopyala"
+
+msgid "Sharing is unavailable: {}"
+msgstr "Paylaşım kullanılamıyor: {}"
+
+msgid "Show all top songs"
+msgstr "Tüm popüler şarkıları göster"
+
+msgid "Show fewer top songs"
+msgstr "Daha az popüler şarkı göster"
+
+msgid "Show in the tray"
+msgstr "Sistem tepsisinde göster"
+
+msgid "SHOW LESS"
+msgstr "DAHA AZ GÖSTER"
+
+msgid "Show less of the biography"
+msgstr "Biyografiyi daralt"
+
+msgid "Show lyrics"
+msgstr "Şarkı sözlerini göster"
+
+msgid "SHOW MORE"
+msgstr "DAHA FAZLA GÖSTER"
+
+msgid "Show more"
+msgstr "Daha fazla göster"
+
+msgid "Show playlists for {}"
+msgstr "Çalma listelerini göster: {}"
+
+msgid "Show queue"
+msgstr "Sırayı göster"
+
+msgid "Show the current song on your Discord profile."
+msgstr "Çalan şarkıyı Discord profilinizde göster."
+
+msgid "Show the next page of stations"
+msgstr "İstasyonların sonraki sayfasını göster"
+
+msgid "Show the queue next to the library; remembered on the next start."
+msgstr "Sırayı kitaplığın yanında göster; bir sonraki açılışta hatırlanır."
+
+msgid "Show the server and saved stations"
+msgstr "Sunucu ve kayıtlı istasyonları göster"
+
+msgid "Show the whole biography"
+msgstr "Biyografinin tamamını göster"
+
+msgid "Show {}"
+msgstr "Göster: {}"
+
+msgid "Showing playlists for {}"
+msgstr "Gösterilen çalma listeleri: {}"
+
+msgid "Showing the charts for {}"
+msgstr "Gösterilen listeler: {}"
+
+msgid "Showing the radio-browser.info directory"
+msgstr "radio-browser.info dizini gösteriliyor"
+
+msgid "Showing the server and saved stations"
+msgstr "Sunucu ve kayıtlı istasyonlar gösteriliyor"
+
+msgid "Shuffle"
+msgstr "Karıştır"
+
+msgid "Shuffle every song in {} and its subfolders"
+msgstr "{} ve alt klasörlerindeki tüm şarkıları karışık çal"
+
+msgid "Shuffle play"
+msgstr "Karışık çal"
+
+msgid "Shuffle: off"
+msgstr "Karışık: kapalı"
+
+msgid "Shuffle: on"
+msgstr "Karışık: açık"
+
+msgid "Sign in"
+msgstr "Oturum aç"
+
+msgid "Sign in to another server"
+msgstr "Başka bir sunucuda oturum aç"
+
+msgid "Sign in with browser"
+msgstr "Tarayıcıyla oturum aç"
+
+msgid "Sign out and forget this server's saved login?"
+msgstr "Oturum kapatılıp bu sunucunun kayıtlı oturum bilgisi unutulsun mu?"
+
+msgid "Sign out and forget this server?"
+msgstr "Oturum kapatılıp bu sunucu unutulsun mu?"
+
+msgid "Sign out of {}"
+msgstr "Oturumu kapat: {}"
+
+msgid "Similar"
+msgstr "Benzer"
+
+msgid "Similar songs come from your server, so YouTube tracks have none"
+msgstr "Benzer şarkılar sunucunuzdan gelir, bu nedenle YouTube parçalarında yoktur"
+
+msgid "Sleep timer: off"
+msgstr "Uyku zamanlayıcısı: kapalı"
+
+msgid "Sleep timer: {}"
+msgstr "Uyku zamanlayıcısı: {}"
+
+msgid "Song count"
+msgstr "Şarkı sayısı"
+
+msgid "Songs"
+msgstr "Şarkılar"
+
+msgid "Sort by {}"
+msgstr "Sırala: {}"
+
+msgid "Sort by {}: ascending"
+msgstr "Sırala: {}, artan"
+
+msgid "Sort by {}: descending"
+msgstr "Sırala: {}, azalan"
+
+msgid "Sort: ascending"
+msgstr "Sıralama: artan"
+
+msgid "Sort: descending"
+msgstr "Sıralama: azalan"
+
+msgid "Starting volume, shared with the player bar."
+msgstr "Başlangıç ses düzeyi, oynatıcı çubuğuyla paylaşılır."
+
+msgid "Station data from radio-browser.info"
+msgstr "İstasyon verileri: radio-browser.info"
+
+msgid "Station name"
+msgstr "İstasyon adı"
+
+msgid "Stations"
+msgstr "İstasyonlar"
+
+msgid "Stay signed in"
+msgstr "Oturum açık kalsın"
+
+msgid "Stop"
+msgstr "Durdur"
+
+msgid "Stop {}"
+msgstr "Durdur: {}"
+
+msgid "Stream URL"
+msgstr "Akış URL'si"
+
+msgid "Switch"
+msgstr "Geçiş yap"
+
+msgid "Switch between a dark and a light theme with the desktop. {}"
+msgstr "Masaüstüyle birlikte koyu ve açık tema arasında geçiş yap. {}"
+
+msgid "Switch to grid view"
+msgstr "Izgara görünümüne geç"
+
+msgid "Switch to list view"
+msgstr "Liste görünümüne geç"
+
+msgid "System default"
+msgstr "Sistem varsayılanı"
+
+msgid "System default follows the language of the desktop."
+msgstr "Sistem varsayılanı, masaüstünün dilini izler."
+
+msgid "Tag, for example jazz"
+msgstr "Etiket, örneğin jazz"
+
+msgid "That device is no longer on the network"
+msgstr "O cihaz artık ağda değil"
+
+msgid "The audio device could not be changed: {}"
+msgstr "Ses aygıtı değiştirilemedi: {}"
+
+msgid "the connection was not allowed"
+msgstr "bağlantıya izin verilmedi"
+
+msgid "The desktop currently prefers dark."
+msgstr "Masaüstü şu anda koyu temayı tercih ediyor."
+
+msgid "The desktop currently prefers light."
+msgstr "Masaüstü şu anda açık temayı tercih ediyor."
+
+msgid "The desktop has no preference, so the dark theme is used."
+msgstr "Masaüstünün bir tercihi yok, bu nedenle koyu tema kullanılıyor."
+
+msgid "The library scan is still running on the server"
+msgstr "Kitaplık taraması sunucuda hâlâ sürüyor"
+
+msgid "the network connection failed"
+msgstr "ağ bağlantısı başarısız oldu"
+
+msgid "The queue is empty"
+msgstr "Sıra boş"
+
+msgid "The queue is incomplete: loading the rest of the list failed ({})"
+msgstr "Sıra eksik: listenin geri kalanı yüklenemedi ({})"
+
+msgid "The radio directory could not be reached"
+msgstr "Radyo dizinine ulaşılamadı"
+
+msgid "The radio station stopped streaming"
+msgstr "Radyo istasyonunun yayını durdu"
+
+msgid "The server refused the station: {}"
+msgstr "Sunucu istasyonu reddetti: {}"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "There is nothing to play in this list"
+msgstr "Bu listede çalınacak bir şey yok"
+
+msgid "This computer"
+msgstr "Bu bilgisayar"
+
+msgid "This Discover page does not exist"
+msgstr "Bu Keşfet sayfası mevcut değil"
+
+msgid "This folder is empty"
+msgstr "Bu klasör boş"
+
+msgid "This mix is no longer available"
+msgstr "Bu mix artık kullanılamıyor"
+
+msgid "This playlist is empty"
+msgstr "Bu çalma listesi boş"
+
+msgid "This server has no internet radio. Stations you add are saved on this device."
+msgstr "Bu sunucuda internet radyosu yok. Eklediğiniz istasyonlar bu cihaza kaydedilir."
+
+msgid "this server has no public share links"
+msgstr "bu sunucuda herkese açık paylaşım bağlantıları yok"
+
+msgid "Time"
+msgstr "Süre"
+
+msgid "Title"
+msgstr "Başlık"
+
+msgid "Top songs"
+msgstr "Popüler şarkılar"
+
+msgid "Track"
+msgstr "Parça"
+
+msgid "Tracks"
+msgstr "Parçalar"
+
+msgid "Transcode format"
+msgstr "Dönüştürme biçimi"
+
+msgid "Try again"
+msgstr "Tekrar dene"
+
+msgid "Turn off the theme accent color to pick your own."
+msgstr "Kendi renginizi seçmek için tema vurgu rengini kapatın."
+
+msgid "Unmute"
+msgstr "Sesi aç"
+
+msgid "Up next"
+msgstr "Sıradaki"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Use the theme accent color"
+msgstr "Tema vurgu rengini kullan"
+
+msgid "Use {}"
+msgstr "{} temasını kullan"
+
+msgid "Used while the desktop prefers dark."
+msgstr "Masaüstü koyu temayı tercih ettiğinde kullanılır."
+
+msgid "Used while the desktop prefers light."
+msgstr "Masaüstü açık temayı tercih ettiğinde kullanılır."
+
+msgid "Username"
+msgstr "Kullanıcı adı"
+
+msgid "Uses your YouTube session in this browser for a personalized Discover home and Premium audio. yt-dlp copies its cookies to a private temporary file that Cadence deletes right after reading."
+msgstr "Kişiselleştirilmiş bir Keşfet ana sayfası ve Premium ses için bu tarayıcıdaki YouTube oturumunuzu kullanır. yt-dlp, çerezlerini Cadence'in okuduktan hemen sonra sildiği özel bir geçici dosyaya kopyalar."
+
+msgid "Volume"
+msgstr "Ses düzeyi"
+
+msgid "Volume {}%"
+msgstr "Ses düzeyi %{}"
+
+msgid "With {}"
+msgstr "{} ile"
+
+msgid "XDG_RUNTIME_DIR is not set, so there is no private place for the cookies"
+msgstr "XDG_RUNTIME_DIR ayarlanmamış, bu nedenle çerezler için özel bir yer yok"
+
+msgid "Year"
+msgstr "Yıl"
+
+msgid "You are here: {}"
+msgstr "Buradasınız: {}"
+
+msgid "Your mixes"
+msgstr "Mix'lerin"
+
+msgid "Your user is not allowed to share on this server"
+msgstr "Kullanıcınızın bu sunucuda paylaşım izni yok"
+
+msgid "YouTube"
+msgstr "YouTube"
+
+msgid "YouTube albums are not in your library"
+msgstr "YouTube albümleri kitaplığınızda değil"
+
+msgid "YouTube artists are not in your library"
+msgstr "YouTube sanatçıları kitaplığınızda değil"
+
+msgid "yt-dlp program"
+msgstr "yt-dlp programı"
+
+msgid "{n} album"
+msgid_plural "{n} albums"
+msgstr[0] "{n} albüm"
+msgstr[1] "{n} albüm"
+
+msgid "{n} folder"
+msgid_plural "{n} folders"
+msgstr[0] "{n} klasör"
+msgstr[1] "{n} klasör"
+
+msgid "{n} item so far"
+msgid_plural "{n} items so far"
+msgstr[0] "Şu ana kadar {n} öğe"
+msgstr[1] "Şu ana kadar {n} öğe"
+
+msgid "{n} minute"
+msgid_plural "{n} minutes"
+msgstr[0] "{n} dakika"
+msgstr[1] "{n} dakika"
+
+msgid "{n} selected"
+msgid_plural "{n} selected"
+msgstr[0] "{n} seçili"
+msgstr[1] "{n} seçili"
+
+msgid "{n} song"
+msgid_plural "{n} songs"
+msgstr[0] "{n} şarkı"
+msgstr[1] "{n} şarkı"
+
+msgid "{n} song from \"{}\" will play next"
+msgid_plural "{n} songs from \"{}\" will play next"
+msgstr[0] "\"{}\" içinden {n} şarkı sıradaki olarak çalınacak"
+msgstr[1] "\"{}\" içinden {n} şarkı sıradaki olarak çalınacak"
+
+msgid "{n} song on YouTube Music"
+msgid_plural "{n} songs on YouTube Music"
+msgstr[0] "YouTube Music'te {n} şarkı"
+msgstr[1] "YouTube Music'te {n} şarkı"
+
+msgid "{n} song will play next"
+msgid_plural "{n} songs will play next"
+msgstr[0] "{n} şarkı sıradaki olarak çalınacak"
+msgstr[1] "{n} şarkı sıradaki olarak çalınacak"
+
+msgid "{} (current theme)"
+msgstr "{} (geçerli tema)"
+
+msgid "{} (demo)"
+msgstr "{} (demo)"
+
+msgid "{} (unavailable)"
+msgstr "{} (kullanılamıyor)"
+
+msgid "{} ({})"
+msgstr "{} ({})"
+
+msgid "{} at {}"
+msgstr "{1} üzerinde {0}"
+
+msgid "{} cannot be played: its stream address is not an internet stream"
+msgstr "{} çalınamıyor: akış adresi bir internet akışı değil"
+
+msgid "{} could not do that: {}"
+msgstr "{} bunu yapamadı: {}"
+
+msgid "{} could not take the music: {}"
+msgstr "{} müziği devralamadı: {}"
+
+msgid "{} did not answer in time"
+msgstr "{} zamanında yanıt vermedi"
+
+msgid "{} is shown"
+msgstr "Gösteriliyor: {}"
+
+msgid "{} kbps"
+msgstr "{} kbps"
+
+msgid "{} s"
+msgstr "{} sn"
+
+msgid "{} {} kbps"
+msgstr "{} {} kbps"
+
+msgid "{} · {}"
+msgstr "{} · {}"
+
+msgid "{} • {}"
+msgstr "{} • {}"
+
+msgid "{}: off"
+msgstr "{}: kapalı"
+
+msgid "{}: on"
+msgstr "{}: açık"
+
+msgid "{}: {}"
+msgstr "{}: {}"
+
+msgid "{}: {} (dark)"
+msgstr "{}: {} (koyu)"
+
+msgid "{}: {} (light)"
+msgstr "{}: {} (açık)"

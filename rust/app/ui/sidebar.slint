@@ -1,0 +1,264 @@
+import { Motion, Theme, Icons, Typography } from "theme.slint";
+import { AppState, Route } from "globals.slint";
+import { Icon, IconButton, TooltipAnchor } from "widgets.slint";
+import { DiscoverIcons } from "discover.slint";
+import { RadioIcons } from "radio_widgets.slint";
+
+component NavEntry inherits Rectangle {
+    in property <string> icon;
+    in property <string> label;
+    in property <bool> is-active;
+    in property <bool> is-enabled: true;
+    in property <string> tooltip;
+    callback clicked();
+    accessible-role: button;
+    accessible-label: root.label;
+    accessible-enabled: root.is-enabled;
+    accessible-checkable: true;
+    accessible-checked: root.is-active;
+    accessible-action-default => {
+        if (root.is-enabled) {
+            root.clicked();
+        }
+    }
+    height: 36px;
+    border-radius: Theme.radius;
+    background: root.is-active ? Theme.primary.with-alpha(0.12) : (touch.has-hover && root.is-enabled ? Theme.hover : transparent);
+    opacity: root.is-enabled ? 1 : 0.4;
+
+    animate background {
+        duration: Motion.quick;
+    }
+
+    Rectangle {
+        x: 0;
+        y: (parent.height - self.height) / 2;
+        width: 3px;
+        height: root.is-active ? 18px : 0px;
+        border-radius: 1.5px;
+        background: Theme.primary;
+
+        animate height {
+            duration: Motion.quick * 2;
+            easing: ease-out;
+        }
+    }
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 12px;
+
+        Icon {
+            y: (parent.height - self.height) / 2;
+            path: root.icon;
+            color: root.is-active ? Theme.primary : Theme.muted;
+        }
+
+        Text {
+            text: root.label;
+            color: root.is-active ? Theme.foreground : Theme.muted;
+            font-weight: root.is-active ? 600 : 400;
+            vertical-alignment: center;
+        }
+    }
+
+    TooltipAnchor {
+        text: root.tooltip;
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        enabled: root.is-enabled;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+export component Sidebar inherits Rectangle {
+    width: 200px;
+    border-radius: Theme.radius-panel;
+    background: Theme.panel;
+    drop-shadow-blur: 16px;
+    drop-shadow-offset-y: 4px;
+    drop-shadow-color: Theme.shadow;
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 2px;
+
+        HorizontalLayout {
+            padding: 8px;
+            padding-bottom: 16px;
+            spacing: 10px;
+            alignment: start;
+
+            Icon {
+                path: Icons.cadence;
+                color: Theme.primary;
+                width: 24px;
+                height: 24px;
+            }
+
+            Text {
+                text: "Cadence";
+                font-size: 18px;
+                font-weight: 700;
+                color: Theme.foreground;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: @tr("LIBRARY");
+            color: Theme.muted;
+            font-size: Typography.caption;
+            font-weight: 700;
+            letter-spacing: Typography.caption-spacing;
+            height: 28px;
+            vertical-alignment: center;
+        }
+
+        NavEntry {
+            icon: Icons.home;
+            label: @tr("Home");
+            is-active: AppState.route == Route.home;
+            clicked => {
+                AppState.navigate(Route.home, "");
+            }
+        }
+
+        NavEntry {
+            icon: DiscoverIcons.explore;
+            label: @tr("Discover");
+            tooltip: AppState.route == Route.discover ? @tr("Discover is open") : @tr("Discover new music on YouTube Music");
+            is-active: AppState.route == Route.discover;
+            clicked => {
+                AppState.navigate(Route.discover, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.note;
+            label: @tr("Tracks");
+            is-active: AppState.route == Route.tracks;
+            clicked => {
+                AppState.navigate(Route.tracks, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.album;
+            label: @tr("Albums");
+            is-active: AppState.route == Route.albums || AppState.route == Route.album-detail;
+            clicked => {
+                AppState.navigate(Route.albums, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.artist;
+            label: @tr("Artists");
+            is-active: AppState.route == Route.artists || AppState.route == Route.artist-detail;
+            clicked => {
+                AppState.navigate(Route.artists, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.genre;
+            label: @tr("Genres");
+            is-active: AppState.route == Route.genres;
+            clicked => {
+                AppState.navigate(Route.genres, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.playlist;
+            label: @tr("Playlists");
+            is-active: AppState.route == Route.playlists || AppState.route == Route.playlist-detail;
+            clicked => {
+                AppState.navigate(Route.playlists, "");
+            }
+        }
+
+        NavEntry {
+            icon: RadioIcons.radio;
+            label: @tr("Radio");
+            is-active: AppState.route == Route.radio;
+            clicked => {
+                AppState.navigate(Route.radio, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.folder;
+            label: @tr("Folders");
+            is-active: AppState.route == Route.folders;
+            clicked => {
+                AppState.navigate(Route.folders, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.heart;
+            label: @tr("Favorites");
+            is-active: AppState.route == Route.favorites;
+            clicked => {
+                AppState.navigate(Route.favorites, "");
+            }
+        }
+
+        NavEntry {
+            icon: Icons.search;
+            label: @tr("Search");
+            is-active: AppState.route == Route.search;
+            clicked => {
+                AppState.navigate(Route.search, "");
+            }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+        }
+
+        NavEntry {
+            icon: Icons.settings;
+            label: @tr("Settings");
+            is-active: AppState.route == Route.settings;
+            clicked => {
+                AppState.navigate(Route.settings, "");
+            }
+        }
+
+        HorizontalLayout {
+            spacing: 4px;
+
+            Text {
+                horizontal-stretch: 1;
+                text: AppState.server-name;
+                color: Theme.muted;
+                font-size: 11px;
+                overflow: elide;
+                vertical-alignment: center;
+            }
+
+            if AppState.server-name != "": IconButton {
+                width: 24px;
+                height: 24px;
+                icon: Icons.refresh;
+                icon-size: 16px;
+                is-active: AppState.is-library-scanning;
+                transform-rotation: AppState.is-library-scanning ? mod(animation-tick(), 1s) / 1s * 360deg : 0deg;
+                tooltip: AppState.is-library-scanning ? (AppState.library-scan-progress == "" ? @tr("Scanning the library for new content...") : @tr("Scanning the library: {}", AppState.library-scan-progress)) : @tr("Rescan the library for new content");
+                clicked => {
+                    if (!AppState.is-library-scanning) {
+                        AppState.rescan-library();
+                    }
+                }
+            }
+        }
+    }
+}

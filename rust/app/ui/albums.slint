@@ -1,0 +1,156 @@
+import { Theme, Icons } from "theme.slint";
+import { AppState, Route } from "globals.slint";
+import { IconButton, SearchField, TooltipComboBox } from "widgets.slint";
+import { AlbumGrid, AlbumGridRow } from "album_grid.slint";
+
+export global AlbumsState {
+    in property <[AlbumGridRow]> rows;
+    in property <int> total;
+    in property <bool> is-loading;
+    in property <[string]> sort-options;
+    in-out property <int> sort;
+    in-out property <bool> is-sort-descending;
+    in-out property <bool> is-favorites-only;
+    in-out property <string> search;
+    callback load(string);
+    callback columns-changed(int);
+    callback search-edited();
+    callback query-changed();
+    callback play(string);
+    callback play-next(string);
+    callback add-to-queue(string);
+    callback add-to-playlist(string);
+}
+
+component AlbumsControls inherits HorizontalLayout {
+    in property <bool> is-compact;
+    property <length> search-max-width: root.is-compact ? 4000px : 240px;
+    spacing: 12px;
+
+    TooltipComboBox {
+        tooltip: @tr("Sort by {}", self.current-value);
+        min-width: 90px;
+        preferred-width: 170px;
+        max-width: 170px;
+        horizontal-stretch: 1;
+        model: AlbumsState.sort-options;
+        current-index <=> AlbumsState.sort;
+        selected => {
+            AlbumsState.query-changed();
+        }
+    }
+
+    IconButton {
+        y: (parent.height - self.height) / 2;
+        icon: AlbumsState.is-sort-descending ? Icons.arrow-down : Icons.arrow-up;
+        icon-size: 24px;
+        tooltip: AlbumsState.is-sort-descending ? @tr("Sort: descending") : @tr("Sort: ascending");
+        clicked => {
+            AlbumsState.is-sort-descending = !AlbumsState.is-sort-descending;
+            AlbumsState.query-changed();
+        }
+    }
+
+    IconButton {
+        y: (parent.height - self.height) / 2;
+        icon: Icons.heart;
+        is-active: AlbumsState.is-favorites-only;
+        tooltip: AlbumsState.is-favorites-only ? @tr("Favorites only: on") : @tr("Favorites only: off");
+        clicked => {
+            AlbumsState.is-favorites-only = !AlbumsState.is-favorites-only;
+            AlbumsState.query-changed();
+        }
+    }
+
+    SearchField {
+        min-width: 80px;
+        preferred-width: 240px;
+        max-width: root.search-max-width;
+        horizontal-stretch: 1;
+        placeholder-text: @tr("Search");
+        text <=> AlbumsState.search;
+        edited => {
+            AlbumsState.search-edited();
+        }
+    }
+}
+
+export component AlbumsView inherits Rectangle {
+    property <bool> has-compact-header: root.width < 580px;
+    min-width: 320px;
+    background: Theme.panel;
+
+    init => {
+        AlbumsState.load(AppState.detail-id);
+    }
+
+    VerticalLayout {
+        VerticalLayout {
+            padding: 20px;
+            padding-bottom: 12px;
+            spacing: 8px;
+
+            HorizontalLayout {
+                spacing: 12px;
+
+                Text {
+                    text: @tr("Albums");
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: Theme.foreground;
+                    vertical-alignment: center;
+                }
+
+                Text {
+                    text: AlbumsState.is-loading ? "" : AlbumsState.total;
+                    color: Theme.muted;
+                    vertical-alignment: center;
+                }
+
+                Rectangle {
+                    horizontal-stretch: 1;
+                }
+
+                if !root.has-compact-header: AlbumsControls { }
+            }
+
+            if root.has-compact-header: AlbumsControls {
+                is-compact: true;
+            }
+        }
+
+        Rectangle {
+            AlbumGrid {
+                rows: AlbumsState.rows;
+                columns-changed(columns) => {
+                    AlbumsState.columns-changed(columns);
+                }
+                open(id) => {
+                    AppState.navigate(Route.album-detail, id);
+                }
+                play(id) => {
+                    AlbumsState.play(id);
+                }
+                play-next(id) => {
+                    AlbumsState.play-next(id);
+                }
+                add-to-queue(id) => {
+                    AlbumsState.add-to-queue(id);
+                }
+                add-to-playlist(id) => {
+                    AlbumsState.add-to-playlist(id);
+                }
+                open-artist(id) => {
+                    AppState.navigate(Route.artist-detail, id);
+                }
+            }
+
+            if !AlbumsState.is-loading && AlbumsState.total == 0: Text {
+                text: @tr("No albums found");
+                color: Theme.muted;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+}

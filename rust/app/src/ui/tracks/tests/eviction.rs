@@ -1,0 +1,232 @@
+use cadence_core::model::{Page, Paging, Song, SongListQuery};
+use slint::Model;
+
+use super::super::model::{CACHED_PAGES, PAGE_SIZE, TracksModel, paging_for_page};
+use super::super::selection::SelectedSongs;
+use super::{RequestLog, drain, listed_songs, logging_model, page_of, selected_after, songs_in};
+use crate::demo::FakeServer;
+
+const PAGES: usize = 40;
+const TOTAL: usize = PAGES * PAGE_SIZE;
+
+fn requested_pages(log: &RequestLog) -> Vec<usize> {
+    drain(log)
+        .into_iter()
+        .filter_map(|(_, page)| page)
+        .collect()
+}
+
+fn scroll_to(model: &TracksModel, log: &RequestLog, row: usize) {
+    model.row_data(row);
+    for page in requested_pages(log) {
+        model.apply_page(1, page, page_of(page, PAGE_SIZE));
+    }
+}
+
+fn counted_model() -> (TracksModel, RequestLog) {
+    let (model, log) = logging_model();
+    model.reset(SongListQuery::default());
+    model.apply_count(1, TOTAL);
+    drain(&log);
+    (model, log)
+}
+
+fn loaded_page_count(model: &TracksModel) -> usize {
+    (0..PAGES)
+        .filter(|page| model.song_id_at(page * PAGE_SIZE).is_some())
+        .count()
+}
+
+#[test]
+fn a_full_scroll_keeps_only_the_bounded_window_of_pages() {
+    let (model, log) = counted_model();
+    for row in (0..TOTAL).step_by(PAGE_SIZE / 4) {
+        scroll_to(&model, &log, row);
+        assert!(loaded_page_count(&model) <= CACHED_PAGES);
+    }
+    assert_eq!(loaded_page_count(&model), CACHED_PAGES);
+    assert_eq!(model.song_id_at(TOTAL - 1).as_deref(), Some("s3999"));
+    assert_eq!(model.song_id_at(0), None);
+    assert_eq!(
+        model.song_id_at((PAGES - CACHED_PAGES) * PAGE_SIZE - 1),
+        None
+    );
+    assert!(
+        model
+            .song_id_at((PAGES - CACHED_PAGES) * PAGE_SIZE)
+            .is_some()
+    );
+}
+
+#[test]
+fn scrolling_back_refetches_evicted_pages_with_placeholders_meanwhile() {
+    let (model, log) = counted_model();
+    for row in (0..TOTAL).step_by(PAGE_SIZE) {
+        scroll_to(&model, &log, row);
+    }
+    model.set_current(Some("s5"));
+    assert!(model.row_data(5).is_some_and(|row| !row.is_loaded));
+    assert_eq!(requested_pages(&log), [0]);
+    assert!(model.row_data(6).is_some_and(|row| !row.is_loaded));
+    assert!(requested_pages(&log).is_empty());
+
+    model.apply_page(1, 0, page_of(0, PAGE_SIZE));
+    assert!(
+        model
+            .row_data(5)
+            .is_some_and(|row| row.is_loaded && row.is_playing)
+    );
+    model.row_data(150);
+    assert_eq!(requested_pages(&log), [1, 2]);
+}
+
+#[test]
+fn stale_generations_never_fill_the_new_cache() {
+    let (model, log) = counted_model();
+    model.row_data(TOTAL - 1);
+    assert_eq!(requested_pages(&log), [PAGES - 1]);
+    model.reset(SongListQuery::default());
+    model.apply_count(2, TOTAL);
+    drain(&log);
+
+    model.apply_page(1, PAGES - 1, page_of(PAGES - 1, PAGE_SIZE));
+    model.page_failed(1, 0);
+    assert_eq!(model.song_id_at(TOTAL - 1), None);
+    model.row_data(TOTAL - 1);
+    assert_eq!(drain(&log), [(2, Some(PAGES - 1))]);
+}
+
+#[test]
+fn edits_and_highlights_skip_evicted_rows() {
+    let (model, log) = counted_model();
+    for row in (0..TOTAL).step_by(PAGE_SIZE) {
+        scroll_to(&model, &log, row);
+    }
+    model.update_songs(&["s5".into(), "s3990".into()], |song| {
+        song.is_favorite = true
+    });
+    model.set_current(Some("s7"));
+    assert!(model.row_data(3990).is_some_and(|row| row.is_favorite));
+    scroll_to(&model, &log, 0);
+    assert!(
+        model
+            .row_data(7)
+            .is_some_and(|row| row.is_playing && !row.is_favorite)
+    );
+}
+
+async fn load_requested_pages(model: &TracksModel, log: &RequestLog, server: &FakeServer) {
+    let query = model.query();
+    for page in requested_pages(log) {
+        let songs = songs_in(server, &query, paging_for_page(page)).await;
+        model.apply_page(1, page, songs);
+    }
+}
+
+#[tokio::test]
+async fn selections_spanning_evicted_pages_resolve_through_the_server() {
+    let server = FakeServer::new(TOTAL);
+    let (model, log) = counted_model();
+    model.row_data(0);
+    load_requested_pages(&model, &log, &server).await;
+    model.select(5, false, false);
+    for row in (0..TOTAL).step_by(PAGE_SIZE) {
+        model.row_data(row);
+        load_requested_pages(&model, &log, &server).await;
+    }
+    assert_eq!(
+        selected_after(&model, |model| model.select(TOTAL - 5, false, true)),
+        TOTAL - 9
+    );
+    assert!(
+        model
+            .row_data(5)
+            .is_some_and(|row| row.is_selected && !row.is_loaded)
+    );
+
+    let Some(first) = model.first_selected() else {
+        panic!("expected a first selected row");
+    };
+    assert!(first.song.is_none());
+    let SelectedSongs::Listed(listed) = model.selected_songs() else {
+        panic!("expected a listed selection");
+    };
+
+    let selected_rows = Paging {
+        start_index: 5,
+        limit: TOTAL - 9,
+    };
+    let expected = songs_in(&server, &model.query(), selected_rows).await;
+    assert_eq!(listed_songs(&server, listed).await, expected);
+    let first_song = listed_songs(&server, first.listed).await;
+    assert_eq!(first_song.first(), expected.first());
+    assert_eq!(first_song.len(), 1);
+}
+
+fn listed_page(page: usize, total: usize) -> Page<Song> {
+    Page {
+        items: page_of(page, PAGE_SIZE),
+        start_index: page * PAGE_SIZE,
+        total_count: Some(total),
+    }
+}
+
+#[test]
+fn a_changed_server_total_drops_the_cached_pages_and_requests_them_again() {
+    let (model, log) = counted_model();
+    for row in (0..5 * PAGE_SIZE).step_by(PAGE_SIZE) {
+        scroll_to(&model, &log, row);
+    }
+    model.row_data(10 * PAGE_SIZE);
+    assert_eq!(requested_pages(&log), [10, 11]);
+    assert_eq!(model.reported_total_change(1, Some(TOTAL)), None);
+    model.apply_listed_page(1, 10, listed_page(10, TOTAL));
+    assert_eq!(
+        model.reported_total_change(1, Some(TOTAL + 1)),
+        Some(TOTAL + 1)
+    );
+    model.apply_listed_page(1, 11, listed_page(11, TOTAL + 1));
+    assert_eq!(model.row_count(), TOTAL + 1);
+    assert_eq!(model.song_id_at(0), None);
+    assert_eq!(model.song_id_at(10 * PAGE_SIZE), None);
+    assert_eq!(model.song_id_at(11 * PAGE_SIZE).as_deref(), Some("s1100"));
+
+    assert!(!model.is_current(1));
+    model.apply_listed_page(1, 12, listed_page(12, TOTAL));
+    model.row_data(0);
+    assert_eq!(drain(&log), [(2, Some(0))]);
+}
+
+#[test]
+fn a_changed_server_total_drops_the_selection() {
+    let (model, log) = counted_model();
+    scroll_to(&model, &log, 0);
+    assert_eq!(
+        selected_after(&model, |model| model.select(3, false, false)),
+        1
+    );
+    model.row_data(10 * PAGE_SIZE);
+    assert_eq!(
+        model.reported_total_change(1, Some(TOTAL - 1)),
+        Some(TOTAL - 1)
+    );
+    model.apply_listed_page(1, 10, listed_page(10, TOTAL - 1));
+    assert!(model.first_selected().is_none());
+    assert_eq!(
+        selected_after(&model, |model| model.select_all()),
+        TOTAL - 1
+    );
+}
+
+#[test]
+fn a_failing_page_is_not_requested_again_while_it_backs_off() {
+    let (model, log) = counted_model();
+    model.row_data(5 * PAGE_SIZE);
+    assert_eq!(requested_pages(&log), [5, 6]);
+    model.page_failed(1, 5);
+    for _ in 0..3 {
+        model.row_data(20 * PAGE_SIZE);
+        model.row_data(5 * PAGE_SIZE);
+    }
+    assert!(!requested_pages(&log).contains(&5));
+}

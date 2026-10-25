@@ -1,0 +1,267 @@
+#![cfg(test)]
+#![cfg(all(unix, not(target_os = "macos")))]
+
+use std::collections::HashMap;
+use std::io::{BufRead, BufReader};
+use std::process::{Child, Command, Stdio};
+use std::sync::mpsc;
+use std::time::Duration;
+
+use cadence_platform::{
+    MediaControlEvent, MediaControls, MediaIdentity, NowPlaying, PlaybackStatus,
+};
+use futures_util::StreamExt;
+use zbus::fdo::PropertiesProxy;
+use zbus::names::InterfaceName;
+use zbus::zvariant::{OwnedValue, Value};
+
+const OBJECT_PATH: &str = "/org/mpris/MediaPlayer2";
+const ROOT_INTERFACE: &str = "org.mpris.MediaPlayer2";
+const PLAYER_INTERFACE: &str = "org.mpris.MediaPlayer2.Player";
+const TEST_DESKTOP_ENTRY: &str = "org.example.cadence.test";
+const RECEIVE_TIMEOUT: Duration = Duration::from_secs(5);
+
+struct PrivateBus(Child);
+
+impl Drop for PrivateBus {
+    fn drop(&mut self) {
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+
+struct TestBus {
+    private_bus: Option<PrivateBus>,
+    app_name: String,
+}
+
+fn spawn_private_bus() -> Option<(PrivateBus, String)> {
+    let mut child = Command::new("dbus-daemon")
+        .args(["--session", "--nofork", "--print-address=1"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .ok()?;
+    let stdout = child.stdout.take();
+    let bus = PrivateBus(child);
+    let mut address = String::new();
+    BufReader::new(stdout?).read_line(&mut address).ok()?;
+    let address = address.trim().to_owned();
+    (!address.is_empty()).then_some((bus, address))
+}
+
+fn test_bus() -> TestBus {
+    match spawn_private_bus() {
+        Some((bus, address)) => {
+            unsafe { std::env::set_var("DBUS_SESSION_BUS_ADDRESS", &address) };
+            TestBus {
+                private_bus: Some(bus),
+                app_name: "Cadence".to_owned(),
+            }
+        }
+        None if std::env::var_os("DBUS_SESSION_BUS_ADDRESS").is_some() => TestBus {
+            private_bus: None,
+            app_name: format!("CadenceTest{}", std::process::id()),
+        },
+        None => panic!("no D-Bus session bus: install dbus-daemon or start a session bus"),
+    }
+}
+
+async fn get(properties: &PropertiesProxy<'_>, interface: &'static str, name: &str) -> OwnedValue {
+    properties
+        .get(InterfaceName::from_static_str_unchecked(interface), name)
+        .await
+        .unwrap()
+}
+
+async fn playback_status(properties: &PropertiesProxy<'_>) -> String {
+    String::try_from(get(properties, PLAYER_INTERFACE, "PlaybackStatus").await).unwrap()
+}
+
+async fn wait_for_status(properties: &PropertiesProxy<'_>, expected: &str) {
+    let mut changes = properties.receive_properties_changed().await.unwrap();
+    let reached = async {
+        while playback_status(properties).await != expected {
+            changes.next().await;
+        }
+    };
+    tokio::time::timeout(RECEIVE_TIMEOUT, reached)
+        .await
+        .unwrap_or_else(|_| panic!("PlaybackStatus never became {expected}"));
+}
+
+fn publish_test_track(controls: &mut MediaControls) {
+    controls
+        .set_metadata(&NowPlaying {
+            track_id: "abc-123".to_owned(),
+            title: "Test Song".to_owned(),
+            artists: vec!["Test Artist".to_owned()],
+            album: Some("Test Album".to_owned()),
+            duration_ms: Some(180_000),
+            cover_url: Some("https://example.com/cover.jpg".to_owned()),
+            cover_file: None,
+        })
+        .unwrap();
+    controls
+        .set_status(PlaybackStatus::Paused {
+            position_ms: 12_000,
+        })
+        .unwrap();
+    controls.set_volume(0.8).unwrap();
+}
+
+async fn properties_proxy<'proxy>(
+    connection: &zbus::Connection,
+    bus_name: &'proxy str,
+) -> PropertiesProxy<'proxy> {
+    PropertiesProxy::builder(connection)
+        .destination(bus_name)
+        .unwrap()
+        .path(OBJECT_PATH)
+        .unwrap()
+        .build()
+        .await
+        .unwrap()
+}
+
+async fn assert_published_metadata(properties: &PropertiesProxy<'_>) {
+    let metadata: HashMap<String, OwnedValue> =
+        HashMap::try_from(get(properties, PLAYER_INTERFACE, "Metadata").await).unwrap();
+    let text = |key: &str| match metadata.get(key).map(|value| &**value) {
+        Some(Value::Str(text)) => text.to_string(),
+        other => panic!("{key}: {other:?}"),
+    };
+    assert_eq!(text("xesam:title"), "Test Song");
+    assert_eq!(text("xesam:album"), "Test Album");
+    assert_eq!(text("mpris:artUrl"), "https://example.com/cover.jpg");
+    assert!(matches!(
+        metadata.get("mpris:trackid").map(|value| &**value),
+        Some(Value::ObjectPath(path)) if path.as_str() == "/org/cadence/track/abc_123"
+    ));
+    assert!(matches!(
+        metadata.get("mpris:length").map(|value| &**value),
+        Some(Value::I64(180_000_000))
+    ));
+}
+
+async fn assert_published_state(properties: &PropertiesProxy<'_>, app_name: &str) {
+    let identity = String::try_from(get(properties, ROOT_INTERFACE, "Identity").await).unwrap();
+    assert_eq!(identity, app_name);
+    let desktop_entry =
+        String::try_from(get(properties, ROOT_INTERFACE, "DesktopEntry").await).unwrap();
+    assert_eq!(desktop_entry, TEST_DESKTOP_ENTRY);
+
+    wait_for_status(properties, "Paused").await;
+    assert_published_metadata(properties).await;
+
+    let position = i64::try_from(get(properties, PLAYER_INTERFACE, "Position").await).unwrap();
+    assert_eq!(position, 12_000_000);
+    let volume = f64::try_from(get(properties, PLAYER_INTERFACE, "Volume").await).unwrap();
+    assert_eq!(volume, 0.8);
+}
+
+async fn call_player_method(connection: &zbus::Connection, bus_name: &str, method: &'static str) {
+    connection
+        .call_method(
+            Some(bus_name),
+            OBJECT_PATH,
+            Some(PLAYER_INTERFACE),
+            method,
+            &(),
+        )
+        .await
+        .unwrap();
+}
+
+async fn seek_by(connection: &zbus::Connection, bus_name: &str, offset_microseconds: i64) {
+    connection
+        .call_method(
+            Some(bus_name),
+            OBJECT_PATH,
+            Some(PLAYER_INTERFACE),
+            "Seek",
+            &offset_microseconds,
+        )
+        .await
+        .unwrap();
+}
+
+struct PlayerBus<'bus> {
+    connection: &'bus zbus::Connection,
+    bus_name: &'bus str,
+}
+
+async fn assert_dispatches_events(
+    player: &PlayerBus<'_>,
+    properties: &PropertiesProxy<'_>,
+    events: &mpsc::Receiver<MediaControlEvent>,
+) {
+    let PlayerBus {
+        connection,
+        bus_name,
+    } = *player;
+    let next_event = || events.recv_timeout(RECEIVE_TIMEOUT).unwrap();
+
+    call_player_method(connection, bus_name, "PlayPause").await;
+    assert_eq!(next_event(), MediaControlEvent::Toggle);
+    wait_for_status(properties, "Playing").await;
+
+    call_player_method(connection, bus_name, "Next").await;
+    assert_eq!(next_event(), MediaControlEvent::Next);
+
+    seek_by(connection, bus_name, -5_000_000).await;
+    assert_eq!(
+        next_event(),
+        MediaControlEvent::SeekBy { offset_ms: -5_000 }
+    );
+
+    properties
+        .set(
+            InterfaceName::from_static_str_unchecked(PLAYER_INTERFACE),
+            "Volume",
+            Value::F64(0.456),
+        )
+        .await
+        .unwrap();
+    assert_eq!(next_event(), MediaControlEvent::SetVolume(0.46));
+}
+
+#[test]
+fn mpris_registers_and_dispatches_events() {
+    let TestBus {
+        private_bus,
+        app_name,
+    } = test_bus();
+    let bus_name = format!("org.mpris.MediaPlayer2.{}", app_name.to_lowercase());
+
+    let (event_sender, events) = mpsc::channel();
+    let controls = MediaControls::new(
+        MediaIdentity {
+            name: &app_name,
+            desktop_entry: TEST_DESKTOP_ENTRY,
+        },
+        Box::new(move |event| {
+            let _ = event_sender.send(event);
+        }),
+    );
+    let mut controls = controls.unwrap();
+    publish_test_track(&mut controls);
+
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    runtime.block_on(async {
+        let connection = zbus::Connection::session().await.unwrap();
+        let properties = properties_proxy(&connection, &bus_name).await;
+        assert_published_state(&properties, &app_name).await;
+        let player = PlayerBus {
+            connection: &connection,
+            bus_name: &bus_name,
+        };
+        assert_dispatches_events(&player, &properties, &events).await;
+    });
+
+    drop(controls);
+    drop(private_bus);
+}

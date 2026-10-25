@@ -1,0 +1,193 @@
+import { Theme, Icons } from "theme.slint";
+import { TrackColumn, TracksState } from "globals.slint";
+import { HeaderCell } from "track_cells.slint";
+
+export component TracksHeader inherits Rectangle {
+    in property <length> content-x;
+    in property <length> list-width;
+    in property <bool> is-sortable: true;
+    height: 33px;
+    min-width: 0px;
+    clip: true;
+
+    function show-column-menu(window-x: length, window-y: length) {
+        header-menu.show({ x: window-x - root.absolute-position.x, y: window-y - root.absolute-position.y });
+    }
+
+    header-menu := ContextMenuArea {
+        Menu {
+            MenuItem {
+                title: @tr("Artist");
+                checkable: true;
+                checked <=> TracksState.is-artist-shown;
+            }
+
+            MenuItem {
+                title: @tr("Album");
+                checkable: true;
+                checked <=> TracksState.is-album-shown;
+            }
+
+            MenuItem {
+                title: @tr("Year");
+                checkable: true;
+                checked <=> TracksState.is-year-shown;
+            }
+
+            MenuItem {
+                title: @tr("Plays");
+                checkable: true;
+                checked <=> TracksState.is-plays-shown;
+            }
+
+            MenuItem {
+                title: @tr("Time");
+                checkable: true;
+                checked <=> TracksState.is-duration-shown;
+            }
+
+            MenuItem {
+                title: @tr("Favorite");
+                checkable: true;
+                checked <=> TracksState.is-favorite-shown;
+            }
+
+            MenuItem {
+                title: @tr("Rating");
+                checkable: true;
+                checked <=> TracksState.is-rating-shown;
+            }
+        }
+
+        HorizontalLayout {
+            x: root.content-x;
+
+            HeaderCell {
+                text: "#";
+                column: TrackColumn.index;
+                is-sortable: false;
+                align: right;
+                column-width: TracksState.shown-width(TrackColumn.index, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.index, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            HeaderCell {
+                text: @tr("Title");
+                column: TrackColumn.title;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.title, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.title, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            if TracksState.is-artist-shown: HeaderCell {
+                text: @tr("Artist");
+                column: TrackColumn.artist;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.artist, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.artist, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            if TracksState.is-album-shown: HeaderCell {
+                text: @tr("Album");
+                column: TrackColumn.album;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.album, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.album, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            if TracksState.is-year-shown: HeaderCell {
+                text: @tr("Year");
+                column: TrackColumn.year;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.year, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.year, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            if TracksState.is-plays-shown: HeaderCell {
+                text: @tr("Plays");
+                column: TrackColumn.plays;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.plays, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.plays, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            if TracksState.is-duration-shown: HeaderCell {
+                text: @tr("Time");
+                column: TrackColumn.duration;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.duration, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.duration, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            if TracksState.is-favorite-shown: HeaderCell {
+                text: @tr("Favorite");
+                icon: Icons.heart;
+                column: TrackColumn.favorite;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.favorite, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.favorite, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            if TracksState.is-rating-shown: HeaderCell {
+                text: @tr("Rating");
+                column: TrackColumn.rating;
+                is-sortable: root.is-sortable;
+                column-width: TracksState.shown-width(TrackColumn.rating, root.list-width);
+                resized(width) => {
+                    TracksState.resize(TrackColumn.rating, width, root.list-width);
+                }
+                context-menu(window-x, window-y) => {
+                    root.show-column-menu(window-x, window-y);
+                }
+            }
+
+            Rectangle { }
+        }
+    }
+
+    Rectangle {
+        y: parent.height - 1px;
+        height: 1px;
+        background: Theme.border;
+    }
+}

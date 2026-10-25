@@ -1,0 +1,511 @@
+import { ListView } from "std-widgets.slint";
+import { Motion, Theme, Icons } from "theme.slint";
+import { AppState, PlayerState, QueueRow, QueueState, Route, TrackRow } from "globals.slint";
+import { Icon, IconButton, LinkText, PillTab, Placeholder, TooltipAnchor } from "widgets.slint";
+import { CoverArt } from "cover_art.slint";
+
+export struct ArtistLink {
+    id: string,
+    name: string,
+}
+
+export struct LyricRow {
+    text: string,
+    time-ms: int,
+}
+
+export enum NowPlayingTab { lyrics, up-next, similar }
+
+export enum LyricsStatus { idle, loading, found, missing, failed }
+
+export global NowPlayingState {
+    in-out property <NowPlayingTab> tab: NowPlayingTab.lyrics;
+    in property <string> song-id;
+    in property <bool> is-loaded;
+    in property <[ArtistLink]> artists;
+    in property <string> album-id;
+    in property <image> cover;
+    in property <bool> has-cover;
+    in property <[LyricRow]> lyrics;
+    in property <bool> has-synced-lyrics;
+    in property <LyricsStatus> lyrics-status;
+    in property <string> lyrics-source;
+    in property <int> active-line: -1;
+    in property <[QueueRow]> up-next;
+    in property <int> up-next-offset: -1;
+    in property <[TrackRow]> similar;
+    in property <bool> is-similar-loading;
+    in property <bool> is-external;
+    callback load(string);
+    callback position-changed();
+    callback refresh-up-next();
+    callback play-similar(string);
+}
+
+component Link inherits LinkText {
+    min-width: 0px;
+    height: self.preferred-height;
+    horizontal-stretch: 1;
+    overflow: elide;
+}
+
+component LyricsPanel inherits Rectangle {
+    property <length> active-y;
+    property <length> active-height;
+    changed active-y => {
+        self.follow-active-line();
+    }
+    changed active-height => {
+        self.follow-active-line();
+    }
+
+    function follow-active-line() {
+        lyrics-scroller.content-y = min(0px, max(lyrics-scroller.height - lyrics-scroller.content-height, lyrics-scroller.height / 2 - self.active-y - self.active-height / 2));
+    }
+
+    if NowPlayingState.lyrics-status == LyricsStatus.loading: Placeholder {
+        text: @tr("Searching for lyrics...");
+    }
+    if NowPlayingState.lyrics-status == LyricsStatus.missing: Placeholder {
+        text: @tr("No lyrics found");
+    }
+    if NowPlayingState.lyrics-status == LyricsStatus.failed: Placeholder {
+        text: @tr("Could not load lyrics");
+    }
+
+    lyrics-scroller := Flickable {
+        visible: NowPlayingState.lyrics-status == LyricsStatus.found;
+        height: parent.height - footer.height;
+        y: 0;
+        content-width: self.width;
+        changed height => {
+            root.follow-active-line();
+        }
+
+        VerticalLayout {
+            width: parent.width;
+            padding-top: NowPlayingState.has-synced-lyrics ? lyrics-scroller.height / 3 : 8px;
+            padding-bottom: NowPlayingState.has-synced-lyrics ? lyrics-scroller.height / 2 : 8px;
+            padding-left: 8px;
+            padding-right: 8px;
+            spacing: NowPlayingState.has-synced-lyrics ? 18px : 4px;
+
+            for line[line-index] in NowPlayingState.lyrics: line-view := Rectangle {
+                property <bool> is-active: NowPlayingState.has-synced-lyrics && line-index == NowPlayingState.active-line;
+                property <bool> is-seekable: NowPlayingState.has-synced-lyrics && line.time-ms >= 0;
+                function report-active-position() {
+                    if (self.is-active) {
+                        root.active-y = self.y;
+                        root.active-height = self.height;
+                    }
+                }
+                init => {
+                    self.report-active-position();
+                }
+                changed is-active => {
+                    self.report-active-position();
+                }
+                changed y => {
+                    self.report-active-position();
+                }
+                changed height => {
+                    self.report-active-position();
+                }
+                height: text.preferred-height;
+
+                text := Text {
+                    width: parent.width;
+                    text: line.text == "" && NowPlayingState.has-synced-lyrics ? "..." : line.text;
+                    wrap: word-wrap;
+                    horizontal-alignment: NowPlayingState.has-synced-lyrics ? center : left;
+                    font-size: NowPlayingState.has-synced-lyrics ? 24px : 16px;
+                    font-weight: NowPlayingState.has-synced-lyrics ? 700 : 400;
+                    color: !NowPlayingState.has-synced-lyrics ? Theme.foreground : (line-view.is-active ? Theme.foreground : (touch.has-hover ? Theme.foreground.mix(Theme.background, 0.8826) : Theme.foreground.mix(Theme.background, 0.385)));
+                    transform-scale: NowPlayingState.has-synced-lyrics && line-view.is-active ? 1.04 : 1;
+                    animate color { duration: 200ms; }
+                    animate transform-scale {
+                        duration: Motion.quick * 3;
+                        easing: ease-out;
+                    }
+                }
+
+                touch := TouchArea {
+                    enabled: line-view.is-seekable;
+                    mouse-cursor: line-view.is-seekable ? pointer : default;
+                    clicked => {
+                        PlayerState.seek(line.time-ms);
+                    }
+                }
+
+                TooltipAnchor {
+                    text: line-view.is-seekable ? @tr("Jump to this line") : "";
+                    is-hovered: touch.has-hover;
+                }
+            }
+        }
+    }
+
+    footer := Text {
+        y: parent.height - self.height;
+        height: NowPlayingState.lyrics-status == LyricsStatus.found ? 28px : 0px;
+        visible: NowPlayingState.lyrics-status == LyricsStatus.found;
+        text: @tr("Lyrics from {}", NowPlayingState.lyrics-source);
+        color: Theme.muted;
+        font-size: 11px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+component UpNextPanel inherits Rectangle {
+    if NowPlayingState.up-next.length == 0: Placeholder {
+        text: @tr("The queue is empty");
+    }
+
+    ListView {
+        for row[row-index] in NowPlayingState.up-next: Rectangle {
+            height: 52px;
+            border-radius: Theme.radius;
+            background: row.is-current ? Theme.selected : (touch.has-hover ? Theme.hover : transparent);
+
+            touch := TouchArea {
+                double-clicked => {
+                    QueueState.play(row.uid);
+                }
+            }
+
+            TooltipAnchor {
+                text: @tr("Double-click to play");
+                is-hovered: touch.has-hover;
+            }
+
+            HorizontalLayout {
+                padding-left: 12px;
+                padding-right: 12px;
+                spacing: 12px;
+
+                Rectangle {
+                    width: 24px;
+
+                    if row.is-current: Icon {
+                        path: Icons.note;
+                        color: Theme.primary;
+                        width: 16px;
+                        height: 16px;
+                    }
+                    if !row.is-current: Text {
+                        text: row-index;
+                        color: Theme.muted;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    horizontal-stretch: 1;
+
+                    Text {
+                        text: row.title;
+                        color: row.is-current ? Theme.primary : Theme.foreground;
+                        overflow: elide;
+                    }
+
+                    Text {
+                        text: row.artists;
+                        color: Theme.muted;
+                        font-size: 12px;
+                        overflow: elide;
+                    }
+                }
+
+                Text {
+                    text: row.duration;
+                    color: Theme.muted;
+                    font-size: 12px;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+component SimilarPanel inherits Rectangle {
+    if NowPlayingState.is-similar-loading: Placeholder {
+        text: @tr("Loading similar songs...");
+    }
+    if !NowPlayingState.is-similar-loading && NowPlayingState.similar.length == 0: Placeholder {
+        text: NowPlayingState.is-external ? @tr("Similar songs come from your server, so YouTube tracks have none") : @tr("No similar songs found");
+    }
+
+    ListView {
+        for track in NowPlayingState.similar: Rectangle {
+            height: 52px;
+            border-radius: Theme.radius;
+            background: touch.has-hover ? Theme.hover : transparent;
+
+            touch := TouchArea {
+                double-clicked => {
+                    NowPlayingState.play-similar(track.id);
+                }
+            }
+
+            TooltipAnchor {
+                text: @tr("Double-click to play");
+                is-hovered: touch.has-hover;
+            }
+
+            HorizontalLayout {
+                padding-left: 12px;
+                padding-right: 12px;
+                spacing: 12px;
+
+                Rectangle {
+                    width: 24px;
+
+                    if !touch.has-hover: Text {
+                        text: track.index;
+                        color: Theme.muted;
+                        font-size: 12px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    if touch.has-hover: IconButton {
+                        icon: Icons.play;
+                        icon-size: 18px;
+                        width: 24px;
+                        height: 24px;
+                        tooltip: @tr("Play");
+                        clicked => {
+                            NowPlayingState.play-similar(track.id);
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    horizontal-stretch: 1;
+
+                    Text {
+                        text: track.title;
+                        color: Theme.foreground;
+                        overflow: elide;
+                    }
+
+                    Text {
+                        text: track.artists + (track.album == "" ? "" : "  -  " + track.album);
+                        color: Theme.muted;
+                        font-size: 12px;
+                        overflow: elide;
+                    }
+                }
+
+                Text {
+                    text: track.duration;
+                    color: Theme.muted;
+                    font-size: 12px;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+export component NowPlayingView inherits Rectangle {
+    property <string> current-song: PlayerState.song-id;
+    property <int> position: PlayerState.position-ms;
+    property <string> queue-probe: QueueState.revision + ":" + QueueState.current-position;
+    background: Theme.panel;
+    clip: true;
+
+    init => {
+        NowPlayingState.load(PlayerState.song-id);
+    }
+    changed current-song => {
+        NowPlayingState.load(self.current-song);
+    }
+    changed position => {
+        NowPlayingState.position-changed();
+    }
+    changed queue-probe => {
+        NowPlayingState.refresh-up-next();
+    }
+
+    property <color> glow: PlayerState.has-tint ? Theme.ambient(PlayerState.tint) : Theme.surface-raised;
+    property <color> second-glow: PlayerState.has-tint ? Theme.ambient-glow(PlayerState.tint) : Theme.surface;
+    property <length> glow-size: max(root.width, root.height) * 1.1;
+
+    animate glow, second-glow {
+        duration: Motion.ambient;
+        easing: ease-in-out;
+    }
+
+    Rectangle {
+        background: @linear-gradient(160deg, root.glow.mix(Theme.panel, 0.55) 0%, Theme.panel 70%);
+    }
+
+    Rectangle {
+        x: -root.glow-size * 0.35;
+        y: -root.glow-size * 0.45;
+        width: root.glow-size;
+        height: root.glow-size;
+        background: @radial-gradient(circle, root.glow.with-alpha(0.7) 0%, root.glow.with-alpha(0.25) 40%, transparent 70%);
+    }
+
+    Rectangle {
+        x: root.width - root.glow-size * 0.6;
+        y: root.height - root.glow-size * 0.5;
+        width: root.glow-size;
+        height: root.glow-size;
+        background: @radial-gradient(circle, root.second-glow.with-alpha(0.45) 0%, root.second-glow.with-alpha(0.12) 45%, transparent 70%);
+    }
+
+    if !PlayerState.has-song: Placeholder {
+        text: @tr("Nothing is playing");
+        font-size: 16px;
+    }
+
+    IconButton {
+        x: parent.width - self.width - 16px;
+        y: 16px;
+        icon: Icons.close;
+        tooltip: @tr("Close");
+        clicked => {
+            if (AppState.can-go-back) {
+                AppState.back();
+            } else {
+                AppState.navigate(Route.tracks, "");
+            }
+        }
+    }
+
+    if PlayerState.has-song: HorizontalLayout {
+        padding: 40px;
+        padding-top: 56px;
+        spacing: 48px;
+
+        cover-column := Rectangle {
+            width: 42%;
+            property <length> cover-side: max(0px, min(self.width, self.height - song-details.preferred-height - 24px));
+
+            CoverArt {
+                x: (parent.width - self.width) / 2;
+                y: 0;
+                width: cover-column.cover-side;
+                height: cover-column.cover-side;
+                border-radius: Theme.radius-panel;
+                background: Theme.surface-raised;
+                drop-shadow-blur: 48px;
+                drop-shadow-offset-y: 16px;
+                drop-shadow-color: Theme.shadow;
+                source: NowPlayingState.cover;
+                has-source: NowPlayingState.has-cover;
+                icon: Icons.note;
+                icon-color: Theme.muted;
+                icon-size: self.width / 3;
+            }
+
+            song-details := VerticalLayout {
+                x: (parent.width - cover-column.cover-side) / 2;
+                y: cover-column.cover-side + 24px;
+                width: cover-column.cover-side;
+                height: self.preferred-height;
+                spacing: 6px;
+
+                Text {
+                    text: PlayerState.title;
+                    color: Theme.foreground;
+                    font-size: 26px;
+                    font-weight: 700;
+                    overflow: elide;
+                    horizontal-alignment: center;
+                }
+
+                HorizontalLayout {
+                    alignment: center;
+
+                    if NowPlayingState.artists.length == 0: Text {
+                        text: PlayerState.artists;
+                        color: Theme.muted;
+                        font-size: 16px;
+                        overflow: elide;
+                    }
+                    for artist[artist-index] in NowPlayingState.artists: HorizontalLayout {
+                        if artist-index > 0: Text {
+                            text: ", ";
+                            color: Theme.muted;
+                            font-size: 16px;
+                        }
+                        Link {
+                            text: artist.name;
+                            font-size: 16px;
+                            is-enabled: artist.id != "";
+                            tooltip: NowPlayingState.is-external ? @tr("YouTube artists are not in your library") : (artist.id != "" ? @tr("Go to {}", artist.name) : "");
+                            clicked => {
+                                AppState.navigate(Route.artist-detail, artist.id);
+                            }
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    alignment: center;
+
+                    Link {
+                        text: PlayerState.album;
+                        font-size: 14px;
+                        is-enabled: NowPlayingState.album-id != "";
+                        tooltip: NowPlayingState.is-external ? @tr("YouTube albums are not in your library") : (NowPlayingState.album-id != "" ? @tr("Go to album") : "");
+                        clicked => {
+                            AppState.navigate(Route.album-detail, NowPlayingState.album-id);
+                        }
+                    }
+                }
+            }
+        }
+
+        VerticalLayout {
+            horizontal-stretch: 1;
+            spacing: 16px;
+
+            HorizontalLayout {
+                alignment: start;
+                spacing: 24px;
+
+                PillTab {
+                    text: @tr("Lyrics");
+                    is-active: NowPlayingState.tab == NowPlayingTab.lyrics;
+                    clicked => {
+                        NowPlayingState.tab = NowPlayingTab.lyrics;
+                    }
+                }
+
+                PillTab {
+                    text: @tr("Up next");
+                    is-active: NowPlayingState.tab == NowPlayingTab.up-next;
+                    clicked => {
+                        NowPlayingState.tab = NowPlayingTab.up-next;
+                        NowPlayingState.refresh-up-next();
+                    }
+                }
+
+                PillTab {
+                    text: @tr("Similar");
+                    is-active: NowPlayingState.tab == NowPlayingTab.similar;
+                    clicked => {
+                        NowPlayingState.tab = NowPlayingTab.similar;
+                    }
+                }
+            }
+
+            Rectangle {
+                vertical-stretch: 1;
+
+                if NowPlayingState.tab == NowPlayingTab.lyrics: LyricsPanel { }
+                if NowPlayingState.tab == NowPlayingTab.up-next: UpNextPanel { }
+                if NowPlayingState.tab == NowPlayingTab.similar: SimilarPanel { }
+            }
+        }
+    }
+}

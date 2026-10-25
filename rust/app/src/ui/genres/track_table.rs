@@ -1,0 +1,201 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
+
+use cadence_core::model::{Page, Song, SongListQuery};
+use slint::{Model, ModelNotify, ModelTracker};
+
+use crate::ui::TrackItem;
+use crate::ui::tracks::{PAGE_SIZE, Request, TracksModel};
+
+pub struct TrackTable {
+    inner: TracksModel,
+    notify: ModelNotify,
+    is_favorite: bool,
+    overrides: RefCell<HashMap<String, bool>>,
+}
+
+impl TrackTable {
+    pub fn new(is_favorite: bool, fetch: impl Fn(Request) + 'static) -> Self {
+        Self {
+            inner: TracksModel::new(fetch),
+            notify: ModelNotify::default(),
+            is_favorite,
+            overrides: RefCell::default(),
+        }
+    }
+
+    pub fn query(&self) -> SongListQuery {
+        self.inner.query()
+    }
+
+    pub fn reset(&self, query: SongListQuery) {
+        self.overrides.borrow_mut().clear();
+        self.inner.reset(query);
+        self.notify.reset();
+    }
+
+    pub fn is_current(&self, generation: u64) -> bool {
+        self.inner.is_current(generation)
+    }
+
+    pub fn apply_count(&self, generation: u64, total: usize) {
+        if !self.is_current(generation) {
+            return;
+        }
+        self.inner.apply_count(generation, total);
+        self.notify.reset();
+    }
+
+    #[cfg(test)]
+    pub fn apply_page(&self, generation: u64, page: usize, songs: Vec<Song>) {
+        let listed = Page {
+            items: songs,
+            start_index: page * PAGE_SIZE,
+            total_count: None,
+        };
+        self.apply_listed_page(generation, page, listed);
+    }
+
+    pub fn apply_listed_page(&self, generation: u64, page: usize, listed: Page<Song>) {
+        if !self.is_current(generation) {
+            return;
+        }
+        let start = page * PAGE_SIZE;
+        let end = (start + listed.items.len()).min(self.inner.row_count());
+        let changed_total = self
+            .inner
+            .reported_total_change(generation, listed.total_count);
+        self.inner.apply_listed_page(generation, page, listed);
+        if changed_total.is_some() {
+            self.notify.reset();
+            return;
+        }
+        for row in start..end {
+            self.notify.row_changed(row);
+        }
+    }
+
+    pub fn page_failed(&self, generation: u64, page: usize) {
+        self.inner.page_failed(generation, page);
+    }
+
+    pub fn song_id_at(&self, index: usize) -> Option<String> {
+        self.inner.song_id_at(index)
+    }
+
+    fn is_favorite_song(&self, song_id: &str) -> bool {
+        self.overrides
+            .borrow()
+            .get(song_id)
+            .copied()
+            .unwrap_or(self.is_favorite)
+    }
+
+    pub fn favorite_at(&self, index: usize) -> Option<(String, bool)> {
+        let song_id = self.song_id_at(index)?;
+        let is_favorite = self.is_favorite_song(&song_id);
+        Some((song_id, is_favorite))
+    }
+
+    pub fn set_favorite(&self, index: usize, song_id: &str, is_favorite: bool) {
+        self.overrides
+            .borrow_mut()
+            .insert(song_id.to_owned(), is_favorite);
+        if self.song_id_at(index).as_deref() == Some(song_id) {
+            self.notify.row_changed(index);
+        }
+    }
+}
+
+impl Model for TrackTable {
+    type Data = TrackItem;
+
+    fn row_count(&self) -> usize {
+        self.inner.row_count()
+    }
+
+    fn row_data(&self, row: usize) -> Option<TrackItem> {
+        let track = self.inner.row_data(row)?;
+        let is_favorite = self.is_favorite_song(track.id.as_str());
+        Some(TrackItem { track, is_favorite })
+    }
+
+    fn model_tracker(&self) -> &dyn ModelTracker {
+        &self.notify
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::rc::Rc;
+
+    use super::*;
+    use crate::demo::test_song;
+    use crate::ui::tracks::CACHED_PAGES;
+
+    #[test]
+    fn track_table_favorites_flip_and_reset() {
+        let table = TrackTable::new(true, |_| {});
+        table.reset(SongListQuery::default());
+        table.apply_count(1, 2);
+        let songs = [test_song("a", 1000), test_song("b", 1000)];
+        table.apply_page(1, 0, songs.to_vec());
+        assert_eq!(table.favorite_at(1), Some(("b".to_owned(), true)));
+        table.set_favorite(1, "b", false);
+        assert!(table.row_data(1).is_some_and(|item| !item.is_favorite));
+        assert!(table.row_data(0).is_some_and(|item| item.is_favorite));
+        table.reset(SongListQuery::default());
+        table.apply_count(2, 2);
+        table.apply_page(2, 0, songs.to_vec());
+        assert_eq!(table.favorite_at(1), Some(("b".to_owned(), true)));
+    }
+
+    type PageLog = Rc<RefCell<Vec<usize>>>;
+
+    fn logging_table(log: &PageLog) -> TrackTable {
+        let sink = Rc::clone(log);
+        TrackTable::new(true, move |request| {
+            if let Request::Page { page, .. } = request {
+                sink.borrow_mut().push(page);
+            }
+        })
+    }
+
+    fn songs_of_page(page: usize) -> Vec<Song> {
+        (page * PAGE_SIZE..(page + 1) * PAGE_SIZE)
+            .map(|index| test_song(&format!("s{index}"), 1000))
+            .collect()
+    }
+
+    fn show_row(table: &TrackTable, log: &PageLog, row: usize) {
+        table.row_data(row);
+        let pages: Vec<usize> = log.borrow_mut().drain(..).collect();
+        for page in pages {
+            table.apply_page(1, page, songs_of_page(page));
+        }
+    }
+
+    #[test]
+    fn favorite_overrides_survive_eviction_and_refetch() {
+        let log = PageLog::default();
+        let table = logging_table(&log);
+        let pages = CACHED_PAGES + 6;
+        table.reset(SongListQuery::default());
+        table.apply_count(1, pages * PAGE_SIZE);
+        show_row(&table, &log, 5);
+        table.set_favorite(5, "s5", false);
+        for row in (0..pages * PAGE_SIZE).step_by(PAGE_SIZE) {
+            show_row(&table, &log, row);
+        }
+        assert_eq!(table.favorite_at(5), None);
+        assert!(table.row_data(5).is_some_and(|item| !item.track.is_loaded));
+        assert_eq!(log.borrow_mut().drain(..).collect::<Vec<_>>(), [0]);
+        table.apply_page(1, 0, songs_of_page(0));
+        assert_eq!(table.favorite_at(5), Some(("s5".to_owned(), false)));
+        assert!(table.row_data(6).is_some_and(|item| item.is_favorite));
+    }
+}

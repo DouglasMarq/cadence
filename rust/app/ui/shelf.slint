@@ -1,0 +1,116 @@
+import { Theme, Icons } from "theme.slint";
+import { IconButton } from "widgets.slint";
+
+export component SkeletonCard inherits Rectangle {
+    width: 160px;
+    height: 214px;
+
+    Rectangle {
+        y: 0;
+        height: root.width;
+        border-radius: Theme.radius;
+        background: Theme.surface;
+    }
+
+    Rectangle {
+        y: root.width + 12px;
+        x: 0;
+        width: 70%;
+        height: 10px;
+        border-radius: 5px;
+        background: Theme.surface-raised;
+    }
+
+    Rectangle {
+        y: root.width + 32px;
+        x: 0;
+        width: 45%;
+        height: 8px;
+        border-radius: 4px;
+        background: Theme.surface;
+    }
+}
+
+export component Shelf inherits VerticalLayout {
+    in property <string> title;
+    in property <int> card-count;
+    in property <bool> is-loading;
+    in property <bool> is-refreshable;
+    in property <string> empty-text;
+    out property <length> stride: 176px;
+    out property <length> scroll-x: strip.content-x;
+    out property <length> visible-width: strip.width;
+    property <length> card-width: 160px;
+    property <length> max-scroll: max(0px, strip.content-width - strip.width);
+    callback refresh();
+    spacing: 10px;
+
+    HorizontalLayout {
+        spacing: 4px;
+        height: 32px;
+
+        Text {
+            text: root.title;
+            font-size: 18px;
+            font-weight: 700;
+            color: Theme.foreground;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+            overflow: elide;
+        }
+
+        if root.is-refreshable: IconButton {
+            icon: Icons.reload;
+            is-enabled: !root.is-loading;
+            tooltip: @tr("Refresh");
+            clicked => {
+                root.refresh();
+            }
+        }
+
+        IconButton {
+            icon: Icons.chevron-left;
+            is-enabled: strip.content-x < 0;
+            tooltip: self.is-enabled ? @tr("Scroll left") : @tr("Already at the start");
+            clicked => {
+                strip.content-x = min(0px, strip.content-x + strip.width * 0.8);
+            }
+        }
+
+        IconButton {
+            icon: Icons.chevron-right;
+            is-enabled: -strip.content-x < root.max-scroll;
+            tooltip: self.is-enabled ? @tr("Scroll right") : @tr("Already at the end");
+            clicked => {
+                strip.content-x = max(-root.max-scroll, strip.content-x - strip.width * 0.8);
+            }
+        }
+    }
+
+    Rectangle {
+        height: 214px;
+        min-width: 0px;
+        clip: true;
+
+        strip := Flickable {
+            content-width: root.card-count * root.stride - (root.stride - root.card-width);
+            content-height: self.height;
+
+            @children
+        }
+
+        if root.is-loading && root.card-count == 0: HorizontalLayout {
+            alignment: start;
+            spacing: root.stride - root.card-width;
+
+            for _ in 8: SkeletonCard { }
+        }
+
+        if !root.is-loading && root.card-count == 0 && root.empty-text != "": Text {
+            x: 0;
+            text: root.empty-text;
+            color: Theme.muted;
+            vertical-alignment: center;
+        }
+    }
+}

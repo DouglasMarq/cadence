@@ -1,0 +1,240 @@
+import { Theme, Icons } from "theme.slint";
+import { AppState, Route } from "globals.slint";
+import { Icon, TooltipAnchor } from "widgets.slint";
+import { CoverArt, PlayButton } from "cover_art.slint";
+import { Shelf, SkeletonCard } from "shelf.slint";
+import { DiscoverCard, DiscoverCardKind, DiscoverShelf, DiscoverState } from "discover_state.slint";
+
+export component DiscoverCardView inherits Rectangle {
+    in property <DiscoverCard> card;
+    in property <int> shelf-index;
+    in property <int> card-index;
+    in property <bool> is-on-screen;
+    property <bool> is-song: root.card.kind == DiscoverCardKind.song;
+    property <bool> wants-cover: root.is-on-screen && !root.card.has-cover && root.card.can-load-cover;
+    property <bool> is-album: root.card.kind == DiscoverCardKind.album;
+    property <bool> is-mix: root.card.kind == DiscoverCardKind.mix;
+    width: 160px;
+    height: 214px;
+    accessible-role: button;
+    accessible-label: root.card.title;
+    accessible-action-default => {
+        root.activate();
+    }
+
+    init => {
+        if (root.is-on-screen) {
+            DiscoverState.card-visibility-changed(root.shelf-index, root.card-index, true);
+        }
+        if (root.wants-cover) {
+            DiscoverState.cover-needed(root.shelf-index, root.card-index);
+        }
+    }
+    changed is-on-screen => {
+        DiscoverState.card-visibility-changed(root.shelf-index, root.card-index, self.is-on-screen);
+    }
+    changed wants-cover => {
+        if (self.wants-cover) {
+            DiscoverState.cover-needed(root.shelf-index, root.card-index);
+        }
+    }
+
+    function activate() {
+        if (root.is-song) {
+            DiscoverState.play-from-card(root.shelf-index, root.card-index);
+        } else {
+            AppState.navigate(Route.discover, root.card.id);
+        }
+    }
+
+    menu := ContextMenuArea {
+        Menu {
+            if !root.is-song: MenuItem {
+                title: @tr("Open");
+                activated => {
+                    AppState.navigate(Route.discover, root.card.id);
+                }
+            }
+
+            MenuItem {
+                title: @tr("Play");
+                activated => {
+                    DiscoverState.play-card(root.shelf-index, root.card-index);
+                }
+            }
+
+            MenuItem {
+                title: @tr("Play next");
+                activated => {
+                    DiscoverState.play-card-next(root.shelf-index, root.card-index);
+                }
+            }
+
+            MenuItem {
+                title: @tr("Add to queue");
+                activated => {
+                    DiscoverState.queue-card(root.shelf-index, root.card-index);
+                }
+            }
+
+            if !root.is-mix: MenuSeparator { }
+
+            if !root.is-mix: MenuItem {
+                title: @tr("Open in YouTube Music");
+                activated => {
+                    DiscoverState.open-card-in-browser(root.shelf-index, root.card-index);
+                }
+            }
+        }
+
+        card-touch := TouchArea {
+            mouse-cursor: pointer;
+            clicked => {
+                root.activate();
+            }
+            pointer-event(event) => {
+                if (event.kind == PointerEventKind.down && event.button == PointerEventButton.right) {
+                    menu.show({ x: self.mouse-x, y: self.mouse-y });
+                }
+            }
+        }
+    }
+
+    TooltipAnchor {
+        text: root.is-song ? @tr("Play \"{}\" and the rest of this shelf", root.card.title) : root.is-album ? @tr("Open the album \"{}\"", root.card.title) : root.is-mix ? @tr("Open the mix \"{}\"", root.card.title) : @tr("Open the playlist \"{}\"", root.card.title);
+        is-hovered: card-touch.has-hover && !play-button.is-hovered;
+    }
+
+    CoverArt {
+        y: 0;
+        width: root.width;
+        height: root.width;
+        source: root.card.cover;
+        has-source: root.card.has-cover;
+        icon: root.is-song ? Icons.note : (root.card.kind == DiscoverCardKind.album ? Icons.album : Icons.playlist);
+        is-hovered: card-touch.has-hover || play-button.is-hovered;
+
+        play-button := PlayButton {
+            x: parent.width - self.width - 10px;
+            y: parent.height - self.height - 10px;
+            size: 40px;
+            is-shown: card-touch.has-hover || self.is-hovered;
+            tooltip: root.is-song ? @tr("Play from here") : root.is-album ? @tr("Play the album") : root.is-mix ? @tr("Play the mix") : @tr("Play the playlist");
+            clicked => {
+                if (root.is-song) {
+                    DiscoverState.play-from-card(root.shelf-index, root.card-index);
+                } else {
+                    DiscoverState.play-card(root.shelf-index, root.card-index);
+                }
+            }
+        }
+    }
+
+    Text {
+        y: root.width + 8px;
+        width: root.width;
+        text: root.card.title;
+        color: Theme.foreground;
+        font-weight: 600;
+        overflow: elide;
+    }
+
+    Text {
+        y: root.width + 28px;
+        width: root.width;
+        text: root.card.subtitle;
+        color: Theme.muted;
+        font-size: 12px;
+        overflow: elide;
+    }
+}
+
+export component SkeletonShelf inherits VerticalLayout {
+    spacing: 10px;
+
+    Rectangle {
+        height: 32px;
+
+        Rectangle {
+            x: 0;
+            width: 180px;
+            height: 14px;
+            border-radius: 7px;
+            background: Theme.surface-raised;
+        }
+    }
+
+    Rectangle {
+        height: 214px;
+        clip: true;
+
+        HorizontalLayout {
+            alignment: start;
+            spacing: 16px;
+
+            for _ in 8: SkeletonCard { }
+        }
+    }
+}
+
+export component DiscoverShelfView inherits VerticalLayout {
+    in property <DiscoverShelf> shelf;
+    in property <int> index;
+    in property <bool> is-on-screen;
+
+    shelf-view := Shelf {
+        title: root.shelf.title;
+        card-count: root.shelf.cards.length;
+
+        for card[card-index] in root.shelf.cards: DiscoverCardView {
+            x: card-index * shelf-view.stride;
+            card: card;
+            shelf-index: root.index;
+            card-index: card-index;
+            is-on-screen: root.is-on-screen && self.x + shelf-view.scroll-x + self.width > 0 && self.x + shelf-view.scroll-x < shelf-view.visible-width;
+        }
+    }
+}
+
+export component MoodGrid inherits Rectangle {
+    in property <[string]> moods;
+    in property <int> selected;
+    property <length> chip-width: 176px;
+    property <length> chip-height: 40px;
+    property <length> gap: 8px;
+    property <int> columns: max(1, floor((root.width + root.gap) / (root.chip-width + root.gap)));
+    height: ceil(root.moods.length / root.columns) * (root.chip-height + root.gap);
+
+    for mood[mood-index] in root.moods: Rectangle {
+        x: mod(mood-index, root.columns) * (root.chip-width + root.gap);
+        y: floor(mood-index / root.columns) * (root.chip-height + root.gap);
+        width: root.chip-width;
+        height: root.chip-height;
+        border-radius: Theme.radius;
+        background: mood-index == root.selected ? Theme.selected : (mood-touch.has-hover ? Theme.hover : Theme.surface);
+        border-width: 1px;
+        border-color: mood-index == root.selected ? Theme.primary : Theme.border;
+
+        Text {
+            x: 12px;
+            width: parent.width - 24px;
+            text: mood;
+            color: mood-index == root.selected ? Theme.foreground : Theme.muted;
+            font-weight: 600;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+
+        TooltipAnchor {
+            text: mood-index == root.selected ? @tr("Showing playlists for {}", mood) : @tr("Show playlists for {}", mood);
+            is-hovered: mood-touch.has-hover;
+        }
+
+        mood-touch := TouchArea {
+            mouse-cursor: pointer;
+            clicked => {
+                DiscoverState.select-mood(mood-index);
+            }
+        }
+    }
+}

@@ -1,0 +1,254 @@
+import { Behaviour, Theme } from "theme.slint";
+import "fonts/InterVariable.ttf";
+import { AppState, Page, PlayerState, Route } from "globals.slint";
+import { LoginView } from "login.slint";
+import { Sidebar } from "sidebar.slint";
+import { TracksView } from "tracks.slint";
+import { QueuePanel } from "queue_panel.slint";
+import { PlayerBar, PlayerGlow } from "player_bar.slint";
+import { PageFade, TooltipAnchor, TooltipOverlay } from "widgets.slint";
+import { HomeView } from "home.slint";
+import { AlbumsView } from "albums.slint";
+import { AlbumDetailView } from "album_detail.slint";
+import { ArtistsView } from "artists.slint";
+import { ArtistDetailView } from "artist_detail.slint";
+import { GenresView } from "genres.slint";
+import { PlaylistsView } from "playlists.slint";
+import { PlaylistDetailView } from "playlist_detail.slint";
+import { FavoritesView } from "favorites.slint";
+import { SearchView } from "search.slint";
+import { SettingsView } from "settings.slint";
+import { NowPlayingView } from "now_playing.slint";
+import { DiscoverView } from "discover.slint";
+import { PlaylistPicker, PlaylistPickerState } from "playlist_picker.slint";
+import { FoldersView } from "folders.slint";
+import { ShareClipboard } from "share.slint";
+import { RadioView } from "radio.slint";
+import { DeviceApprovalDialog, DevicesState } from "devices.slint";
+
+export { Actions, AppState, LoginState, Page, PlayerState, QueueRow, QueueState, Route, TrackRow, TracksState } from "globals.slint";
+export { HomeState } from "home.slint";
+export { AlbumsState } from "albums.slint";
+export { AlbumDetailState } from "album_detail.slint";
+export { ArtistsState } from "artists.slint";
+export { ArtistDetailState } from "artist_detail.slint";
+export { GenresState } from "genres.slint";
+export { PlaylistsState } from "playlists.slint";
+export { PlaylistDetailState } from "playlist_detail.slint";
+export { FavoritesState } from "favorites.slint";
+export { SearchState } from "search.slint";
+export { SettingsState } from "settings.slint";
+export { NowPlayingState } from "now_playing.slint";
+export { DiscoverState } from "discover.slint";
+export { PlaylistPickerState } from "playlist_picker.slint";
+export { Palettes, Theme, ThemePalette } from "theme.slint";
+export { AppearanceState, SystemScheme } from "appearance_settings.slint";
+export { FoldersState } from "folders.slint";
+export { ShareState } from "share.slint";
+export { RadioRow, RadioSource, RadioState, RadioTab } from "radio.slint";
+export { ConnectedDevice, DevicesState, RemoteDevice } from "devices.slint";
+export { Tooltip } from "widgets.slint";
+
+
+export component AppWindow inherits Window {
+    title: "Cadence";
+    preferred-width: 1280px;
+    preferred-height: 820px;
+    min-width: 900px;
+    min-height: 560px;
+    background: Theme.canvas;
+    default-font-size: 13px;
+    default-font-family: "Inter Variable";
+
+    init => {
+        key-scope.focus();
+    }
+
+    key-scope := FocusScope {
+        key-pressed(event) => {
+            if (AppState.page != Page.main || event.modifiers.alt || event.modifiers.meta) {
+                return reject;
+            }
+            if (event.text == "/" || (event.modifiers.control && (event.text == "f" || event.text == "F"))) {
+                AppState.navigate(Route.search, "");
+                return accept;
+            }
+            if (event.modifiers.control) {
+                if (event.text == Key.RightArrow) {
+                    PlayerState.next();
+                } else if (event.text == Key.LeftArrow) {
+                    PlayerState.previous();
+                } else if (event.text == Key.UpArrow) {
+                    PlayerState.set-volume(Math.min(Behaviour.max-volume, PlayerState.volume + Behaviour.volume-step));
+                } else if (event.text == Key.DownArrow) {
+                    PlayerState.set-volume(Math.max(0, PlayerState.volume - Behaviour.volume-step));
+                } else if (event.text == "s" || event.text == "S") {
+                    PlayerState.toggle-shuffle();
+                } else if (event.text == "r" || event.text == "R") {
+                    PlayerState.cycle-repeat();
+                } else {
+                    return reject;
+                }
+                return accept;
+            }
+            if (event.text == " ") {
+                PlayerState.toggle-pause();
+                return accept;
+            }
+            if (event.text == "m" || event.text == "M") {
+                PlayerState.toggle-mute();
+                return accept;
+            }
+            return reject;
+        }
+
+        if AppState.page == Page.login: LoginView {
+            width: parent.width;
+            height: parent.height;
+        }
+
+        if AppState.page == Page.main: Rectangle {
+            width: parent.width;
+            height: parent.height;
+
+            PlayerGlow {
+                y: parent.height - player-bar.height - self.height;
+                height: Theme.panel-gap * 3;
+                wash: player-bar.wash;
+            }
+
+            VerticalLayout {
+                HorizontalLayout {
+                    padding-left: Theme.panel-gap;
+                    padding-right: Theme.panel-gap;
+                    padding-top: AppState.has-inset-title-bar ? title-bar.height : Theme.panel-gap;
+                    padding-bottom: Theme.panel-gap;
+                    spacing: Theme.panel-gap;
+
+                    Sidebar { }
+
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        border-radius: Theme.radius-panel;
+                        background: Theme.panel;
+                        clip: true;
+                        drop-shadow-blur: 16px;
+                        drop-shadow-offset-y: 4px;
+                        drop-shadow-color: Theme.shadow;
+
+                        if AppState.route == Route.tracks: PageFade {
+                            TracksView {
+                                row-clicked => {
+                                    key-scope.focus();
+                                }
+                            }
+                        }
+                        if AppState.route == Route.home: PageFade {
+                            HomeView { }
+                        }
+                        if AppState.route == Route.albums: PageFade {
+                            AlbumsView { }
+                        }
+                        if AppState.route == Route.album-detail: PageFade {
+                            AlbumDetailView { }
+                        }
+                        if AppState.route == Route.artists: PageFade {
+                            ArtistsView { }
+                        }
+                        if AppState.route == Route.artist-detail: PageFade {
+                            ArtistDetailView { }
+                        }
+                        if AppState.route == Route.genres: PageFade {
+                            GenresView { }
+                        }
+                        if AppState.route == Route.playlists: PageFade {
+                            PlaylistsView { }
+                        }
+                        if AppState.route == Route.playlist-detail: PageFade {
+                            PlaylistDetailView { }
+                        }
+                        if AppState.route == Route.favorites: PageFade {
+                            FavoritesView { }
+                        }
+                        if AppState.route == Route.search: PageFade {
+                            SearchView { }
+                        }
+                        if AppState.route == Route.settings: PageFade {
+                            SettingsView { }
+                        }
+                        if AppState.route == Route.now-playing: PageFade {
+                            NowPlayingView { }
+                        }
+                        if AppState.route == Route.folders: PageFade {
+                            FoldersView { }
+                        }
+                        if AppState.route == Route.radio: PageFade {
+                            RadioView { }
+                        }
+                        if AppState.route == Route.discover: PageFade {
+                            DiscoverView { }
+                        }
+                    }
+
+                    if AppState.is-queue-open: QueuePanel { }
+                }
+
+                player-bar := PlayerBar { }
+            }
+        }
+
+        title-bar := Rectangle {
+            y: 0;
+            height: 30px;
+            visible: AppState.has-inset-title-bar && AppState.page == Page.main;
+        }
+
+        if PlaylistPickerState.is-open: PlaylistPicker { }
+
+        if DevicesState.is-approval-open: DeviceApprovalDialog { }
+
+        ShareClipboard { }
+
+        if AppState.status != "": Rectangle {
+            x: parent.width - self.width - 20px;
+            y: parent.height - self.height - 104px;
+            width: min(420px, parent.width - 40px);
+            height: status-text.preferred-height + 24px;
+            border-radius: Theme.radius;
+            background: Theme.surface-raised;
+            border-width: 1px;
+            border-color: Theme.border;
+
+            status-text := Text {
+                x: 12px;
+                width: parent.width - 24px;
+                text: AppState.status;
+                color: Theme.foreground;
+                wrap: word-wrap;
+            }
+
+            dismiss-touch := TouchArea {
+                clicked => {
+                    AppState.status = "";
+                }
+            }
+
+            TooltipAnchor {
+                text: @tr("Click to dismiss");
+                is-hovered: dismiss-touch.has-hover;
+            }
+
+            Timer {
+                interval: Behaviour.status-dismiss-delay;
+                triggered => {
+                    AppState.status = "";
+                }
+            }
+        }
+    }
+
+    TooltipOverlay {
+        width: parent.width;
+        height: parent.height;
+    }
+}

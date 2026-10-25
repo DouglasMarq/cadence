@@ -1,0 +1,124 @@
+use std::future::Future;
+
+use cadence_api::{ApiError, Result};
+use reqwest::header::HeaderMap;
+use reqwest::{Method, RequestBuilder};
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+use url::Url;
+
+use crate::NavidromeServer;
+use crate::http::errors::{
+    decode_error, http_status_error, invalid_address_error, missing_session_error,
+};
+use crate::http::session_token::SESSION_TOKEN_HEADER;
+
+const TOTAL_COUNT_HEADER: &str = "x-total-count";
+const NATIVE_API_SEGMENT: &str = "api";
+const CANNOT_BE_A_BASE: &str = "it cannot hold a path";
+
+pub(crate) struct NativeResponse {
+    body: Vec<u8>,
+    pub total: Option<usize>,
+}
+
+impl NativeResponse {
+    pub fn json<Decoded: DeserializeOwned>(&self) -> Result<Decoded> {
+        serde_json::from_slice(&self.body).map_err(decode_error)
+    }
+}
+
+impl NavidromeServer {
+    pub(crate) async fn native(
+        &self,
+        method: Method,
+        path: &[&str],
+        params: &[(&str, String)],
+    ) -> Result<NativeResponse> {
+        let request = self.native_request(method, path, params)?;
+        self.send_native(request).await
+    }
+
+    pub(crate) async fn native_with_body<Body: Serialize + ?Sized>(
+        &self,
+        method: Method,
+        path: &[&str],
+        body: &Body,
+    ) -> Result<NativeResponse> {
+        let request = self.native_request(method, path, &[])?.json(body);
+        self.send_native(request).await
+    }
+
+    pub(crate) async fn native_get<Decoded: DeserializeOwned>(
+        &self,
+        path: &[&str],
+        params: &[(&str, String)],
+    ) -> Result<(Decoded, Option<usize>)> {
+        let response = self.native(Method::GET, path, params).await?;
+        Ok((response.json()?, response.total))
+    }
+
+    pub(crate) async fn native_or_subsonic<Output>(
+        &self,
+        native: impl Future<Output = Result<Output>>,
+        subsonic: impl Future<Output = Result<Output>>,
+    ) -> Result<Output> {
+        if !self.has_session_token() {
+            return subsonic.await;
+        }
+        match native.await {
+            Err(ApiError::Auth(_)) => subsonic.await,
+            outcome => outcome,
+        }
+    }
+
+    fn native_request(
+        &self,
+        method: Method,
+        path: &[&str],
+        params: &[(&str, String)],
+    ) -> Result<RequestBuilder> {
+        let token = self
+            .current_session_token()
+            .ok_or_else(missing_session_error)?;
+        Ok(self
+            .http_client
+            .request(method, self.native_url(path)?)
+            .query(params)
+            .header(SESSION_TOKEN_HEADER, format!("Bearer {token}")))
+    }
+
+    fn native_url(&self, path: &[&str]) -> Result<Url> {
+        let mut url = Url::parse(&self.base_url).map_err(invalid_address_error)?;
+        url.path_segments_mut()
+            .map_err(|()| invalid_address_error(CANNOT_BE_A_BASE))?
+            .pop_if_empty()
+            .push(NATIVE_API_SEGMENT)
+            .extend(path);
+        Ok(url)
+    }
+
+    async fn send_native(&self, request: RequestBuilder) -> Result<NativeResponse> {
+        let response = request.send().await.map_err(ApiError::from_network)?;
+        self.capture_refreshed_token(response.headers());
+        let status = response.status();
+        let total = total_count(response.headers());
+        let body = response
+            .bytes()
+            .await
+            .map_err(ApiError::from_network)?
+            .to_vec();
+        self.forget_rejected_session_token(status);
+        if !status.is_success() {
+            return Err(http_status_error(status, &body));
+        }
+        Ok(NativeResponse { body, total })
+    }
+}
+
+fn total_count(headers: &HeaderMap) -> Option<usize> {
+    headers
+        .get(TOTAL_COUNT_HEADER)
+        .and_then(|header| header.to_str().ok())
+        .and_then(|header| header.trim().parse().ok())
+}

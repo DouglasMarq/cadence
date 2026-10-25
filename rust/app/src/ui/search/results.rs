@@ -1,0 +1,179 @@
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
+
+use slint::{ComponentHandle, Image, Model, ModelNotify, ModelTracker, VecModel};
+
+use super::cards::CardKind;
+use super::covers::CoverKey;
+use super::searches::Searches;
+use super::section::Placement;
+use crate::ui::cover_slots::CoverSlots;
+use crate::ui::{AppWindow, SearchCard, SearchKind, SearchState, TrackRow};
+
+#[derive(Default)]
+pub struct Results {
+    pub searches: RefCell<Searches>,
+    pub covers: RefCell<CoverSlots<CoverKey>>,
+    shown_songs: Cell<usize>,
+    songs_notify: ModelNotify,
+    pub albums: Rc<VecModel<SearchCard>>,
+    pub artists: Rc<VecModel<SearchCard>>,
+}
+
+impl Model for Results {
+    type Data = TrackRow;
+
+    fn row_count(&self) -> usize {
+        self.shown_songs.get()
+    }
+
+    fn row_data(&self, row: usize) -> Option<TrackRow> {
+        (row < self.shown_songs.get())
+            .then(|| self.searches.borrow().song_row(row))
+            .flatten()
+    }
+
+    fn model_tracker(&self) -> &dyn ModelTracker {
+        &self.songs_notify
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+impl Results {
+    fn cards(&self, kind: CardKind) -> &VecModel<SearchCard> {
+        match kind {
+            CardKind::Albums => &self.albums,
+            CardKind::Artists => &self.artists,
+        }
+    }
+
+    pub fn begin_search(
+        &self,
+        window: &AppWindow,
+        query: Option<String>,
+        is_forced: bool,
+    ) -> Option<u64> {
+        let is_cleared = query.is_none();
+        let generation = self.searches.borrow_mut().begin(query, is_forced)?;
+        if is_cleared {
+            self.show_sections();
+        }
+        self.show_flags(window);
+        Some(generation)
+    }
+
+    pub fn show_all(&self, window: &AppWindow) {
+        self.show_sections();
+        self.show_flags(window);
+    }
+
+    fn show_sections(&self) {
+        for kind in [SearchKind::Songs, SearchKind::Albums, SearchKind::Artists] {
+            self.show_section(kind, 0);
+        }
+    }
+
+    pub fn show_more(&self, window: &AppWindow, kind: SearchKind, placement: &Placement) {
+        self.show_section(kind, placement.first_new_index());
+        self.show_flags(window);
+    }
+
+    fn show_section(&self, kind: SearchKind, start: usize) {
+        match kind {
+            SearchKind::Songs => self.show_songs(start),
+            SearchKind::Albums => self.show_cards(CardKind::Albums, start),
+            SearchKind::Artists => self.show_cards(CardKind::Artists, start),
+        }
+    }
+
+    pub(super) fn show_songs(&self, start: usize) {
+        let total = self.searches.borrow().songs.items.len();
+        let shown = self.shown_songs.replace(total);
+        match start {
+            0 => self.songs_notify.reset(),
+            _ => self
+                .songs_notify
+                .row_added(shown, total.saturating_sub(shown)),
+        }
+    }
+
+    fn show_cards(&self, kind: CardKind, start: usize) {
+        let cards = self.searches.borrow().cards_from(kind, start);
+        match start {
+            0 => {
+                self.covers.borrow_mut().forget(|key| key.kind == kind);
+                self.cards(kind).set_vec(cards);
+            }
+            _ => self.cards(kind).extend(cards),
+        }
+    }
+
+    pub fn show_flags(&self, window: &AppWindow) {
+        let searches = self.searches.borrow();
+        let state = window.global::<SearchState>();
+        state.set_is_loading(searches.is_pending);
+        state.set_has_more_songs(searches.songs.has_more);
+        state.set_has_more_albums(searches.albums.has_more);
+        state.set_has_more_artists(searches.artists.has_more);
+        state.set_is_songs_busy(searches.songs.is_busy);
+        state.set_is_albums_busy(searches.albums.is_busy);
+        state.set_is_artists_busy(searches.artists.is_busy);
+    }
+
+    pub fn claim_cover(&self, kind: CardKind, index: usize) -> Option<(String, String)> {
+        let (id, cover_id) = self.searches.borrow().cover_source(kind, index)?;
+        let wanted = self
+            .covers
+            .borrow_mut()
+            .claim(CoverKey::new(kind, id.clone()));
+        wanted.then_some((id, cover_id))
+    }
+
+    pub fn set_cover(&self, key: CoverKey, index: usize, cover: Option<Image>) {
+        let cards = self.cards(key.kind);
+        let target = cards
+            .row_data(index)
+            .filter(|card| card.id == key.id.as_str());
+        let (Some(mut card), Some(cover)) = (target, cover) else {
+            self.covers.borrow_mut().finish(&key);
+            return;
+        };
+        card.cover = cover;
+        card.has_cover = true;
+        cards.set_row_data(index, card);
+        let evicted = {
+            let mut covers = self.covers.borrow_mut();
+            covers.finish(&key);
+            covers.show(key)
+        };
+        for evicted_key in evicted {
+            self.drop_cover(&evicted_key);
+        }
+    }
+
+    fn drop_cover(&self, key: &CoverKey) {
+        let cards = self.cards(key.kind);
+        let Some(index) = cards.iter().position(|card| card.id == key.id.as_str()) else {
+            return;
+        };
+        cards.set_row_data(
+            index,
+            SearchCard {
+                cover: Image::default(),
+                has_cover: false,
+                ..cards.row_data(index).unwrap_or_default()
+            },
+        );
+    }
+}
+
+pub fn with_results<Output>(
+    window: &AppWindow,
+    action: impl FnOnce(&Results) -> Output,
+) -> Option<Output> {
+    let songs = window.global::<SearchState>().get_songs();
+    songs.as_any().downcast_ref::<Results>().map(action)
+}

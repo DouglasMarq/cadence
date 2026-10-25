@@ -1,0 +1,158 @@
+import { Theme, Icons } from "theme.slint";
+import { TracksState } from "globals.slint";
+import { Icon, SearchField, TooltipAnchor, TooltipComboBox } from "widgets.slint";
+
+component FilterChip inherits Rectangle {
+    in property <string> text;
+    in property <string> icon;
+    in property <bool> is-active;
+    in property <string> tooltip;
+    callback clicked();
+    height: 30px;
+    horizontal-stretch: 0;
+    border-radius: 15px;
+    border-width: 1px;
+    border-color: root.is-active ? Theme.primary : Theme.border;
+    background: root.is-active ? Theme.selected : (touch.has-hover ? Theme.hover : transparent);
+
+    HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 12px;
+        spacing: 6px;
+
+        if root.icon != "": Icon {
+            y: (parent.height - self.height) / 2;
+            path: root.icon;
+            color: root.is-active ? Theme.danger : Theme.muted;
+            width: 14px;
+            height: 14px;
+        }
+
+        Text {
+            text: root.text;
+            color: root.is-active ? Theme.foreground : Theme.muted;
+            vertical-alignment: center;
+        }
+    }
+
+    TooltipAnchor {
+        text: root.tooltip;
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+component TracksFilters inherits HorizontalLayout {
+    in property <bool> is-filtered;
+    in property <bool> is-compact;
+    spacing: 12px;
+
+    FilterChip {
+        y: (parent.height - self.height) / 2;
+        text: @tr("Favorites");
+        icon: Icons.heart;
+        is-active: TracksState.is-favorite-filter-on;
+        tooltip: TracksState.is-favorite-filter-on ? @tr("Favorites only: on") : @tr("Favorites only: off");
+        clicked => {
+            TracksState.is-favorite-filter-on = !TracksState.is-favorite-filter-on;
+            TracksState.filters-changed(false);
+        }
+    }
+
+    TooltipComboBox {
+        y: (parent.height - self.height) / 2;
+        tooltip: @tr("Genre filter: {}", self.current-value);
+        min-width: 100px;
+        preferred-width: 180px;
+        max-width: 180px;
+        horizontal-stretch: 1;
+        model: TracksState.genres;
+        current-index <=> TracksState.genre-index;
+        selected => {
+            TracksState.filters-changed(false);
+        }
+    }
+
+    if root.is-filtered: FilterChip {
+        y: (parent.height - self.height) / 2;
+        text: root.is-compact ? @tr("Clear") : @tr("Clear filters");
+        tooltip: @tr("Clear the favorites and genre filters");
+        clicked => {
+            TracksState.is-favorite-filter-on = false;
+            TracksState.genre-index = 0;
+            TracksState.filters-changed(false);
+        }
+    }
+
+    Rectangle {
+        horizontal-stretch: 1;
+    }
+}
+
+export component TracksToolbar inherits VerticalLayout {
+    in property <length> available-width;
+    property <bool> is-filtered: TracksState.is-favorite-filter-on || TracksState.genre-index > 0;
+    property <bool> is-compact: root.available-width < (root.is-filtered ? 760px : 640px);
+    padding: 20px;
+    padding-bottom: 12px;
+    spacing: 8px;
+
+    HorizontalLayout {
+        spacing: 12px;
+        height: 44px;
+
+        Text {
+            text: @tr("Tracks");
+            font-size: 24px;
+            font-weight: 700;
+            color: Theme.foreground;
+            vertical-alignment: center;
+        }
+
+        Text {
+            text: TracksState.is-loading ? "" : TracksState.total;
+            color: Theme.muted;
+            vertical-alignment: center;
+        }
+
+        if !root.is-compact: Rectangle {
+            width: 8px;
+        }
+
+        if !root.is-compact: TracksFilters {
+            is-filtered: root.is-filtered;
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+        }
+
+        SearchField {
+            y: (parent.height - self.height) / 2;
+            min-width: 120px;
+            preferred-width: 280px;
+            max-width: 280px;
+            horizontal-stretch: 1;
+            placeholder-text: @tr("Search");
+            text <=> TracksState.search-text;
+            edited(text) => {
+                TracksState.search-edited(text);
+            }
+        }
+    }
+
+    if root.is-compact: HorizontalLayout {
+        height: 36px;
+
+        TracksFilters {
+            is-filtered: root.is-filtered;
+            is-compact: true;
+        }
+    }
+}

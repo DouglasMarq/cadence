@@ -1,0 +1,124 @@
+import { ListView } from "std-widgets.slint";
+import { Theme } from "theme.slint";
+import { TracksState } from "globals.slint";
+import { ShareState } from "share.slint";
+import { TrackRowView } from "track_row.slint";
+import { TracksHeader } from "tracks_header.slint";
+import { TracksToolbar } from "tracks_toolbar.slint";
+import { SongMenu } from "song_menu.slint";
+
+export { Cell, HeaderCell, Skeleton, TrackIndexCell } from "track_cells.slint";
+export { TrackRowView } from "track_row.slint";
+
+export component TracksView inherits Rectangle {
+    callback row-clicked();
+    min-width: 320px;
+    background: Theme.panel;
+
+    init => {
+        TracksState.load-genres();
+    }
+
+    keys := FocusScope {
+        key-pressed(event) => {
+            if ((event.modifiers.control || event.modifiers.meta) && (event.text == "a" || event.text == "A")) {
+                TracksState.select-all();
+                return accept;
+            }
+            if (event.text == Key.Escape && TracksState.selected-count > 0) {
+                TracksState.clear-selection();
+                return accept;
+            }
+            return reject;
+        }
+
+        VerticalLayout {
+            TracksToolbar {
+                available-width: root.width;
+            }
+
+            TracksHeader {
+                content-x: list.content-x;
+                list-width: list.visible-width;
+            }
+
+            list-area := Rectangle {
+                min-width: 0px;
+                vertical-stretch: 1;
+                clip: true;
+
+                row-menu := SongMenu {
+                    has-songs: TracksState.selected-count > 0;
+                    has-favorites: true;
+                    has-rating: true;
+                    has-go-to-album: true;
+                    can-go-to-album: TracksState.selected-count == 1;
+                    has-go-to-artist: true;
+                    can-go-to-artist: TracksState.selected-count == 1;
+                    play => {
+                        TracksState.play-selected();
+                    }
+                    play-next => {
+                        TracksState.queue-selected(true);
+                    }
+                    add-to-queue => {
+                        TracksState.queue-selected(false);
+                    }
+                    add-to-playlist => {
+                        TracksState.add-selected-to-playlist();
+                    }
+                    share => {
+                        ShareState.share-selected-tracks();
+                    }
+                    favorite(is-favorite) => {
+                        TracksState.favorite-selected(is-favorite);
+                    }
+                    rate(rating) => {
+                        TracksState.rate-selected(rating);
+                    }
+                    go-to-album => {
+                        TracksState.go-to-album();
+                    }
+                    go-to-artist => {
+                        TracksState.go-to-artist();
+                    }
+
+                    list := ListView {
+                        for row in TracksState.rows: TrackRowView {
+                            track: row;
+                            list-width: list.visible-width;
+                            clicked => {
+                                root.row-clicked();
+                                keys.focus();
+                            }
+                            play => {
+                                root.row-clicked();
+                                TracksState.play-row(row.index - 1);
+                            }
+                            select(toggle, extend) => {
+                                TracksState.select-row(row.index - 1, toggle, extend);
+                            }
+                            context-menu(pointer-x, pointer-y) => {
+                                TracksState.context-row(row.index - 1);
+                                row-menu.show({ x: pointer-x - list-area.absolute-position.x, y: pointer-y - list-area.absolute-position.y });
+                            }
+                            toggle-favorite => {
+                                TracksState.toggle-favorite(row.index - 1);
+                            }
+                            rate(value) => {
+                                TracksState.rate-row(row.index - 1, value);
+                            }
+                        }
+                    }
+                }
+
+                if !TracksState.is-loading && TracksState.total == 0: Text {
+                    text: @tr("No tracks found");
+                    color: Theme.muted;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}

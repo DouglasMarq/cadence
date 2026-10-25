@@ -1,0 +1,1884 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: sr\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11) ? 0 : (n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20)) ? 1 : 2;\n"
+
+
+msgid "\"{}\""
+msgstr "\"{}\""
+
+msgid "\"{}\" ({}) wants to control this player. Allow it? You will not be asked again for this device."
+msgstr "\"{}\" ({}) želi da upravlja ovim plejerom. Dozvoliti? Za ovaj uređaj više nećete biti pitani."
+
+msgid "\"{}\" plays next"
+msgstr "\"{}\" sledeća na redu"
+
+msgid "\"{}\" will play next"
+msgstr "\"{}\" će biti puštena sledeća"
+
+msgid "1 star"
+msgstr "1 zvezdica"
+
+msgid "2 stars"
+msgstr "2 zvezdice"
+
+msgid "3 stars"
+msgstr "3 zvezdice"
+
+msgid "4 stars"
+msgstr "4 zvezdice"
+
+msgid "5 stars"
+msgstr "5 zvezdica"
+
+msgid "About {}"
+msgstr "O umetniku {}"
+
+msgid "Accent color"
+msgstr "Боја акцента"
+
+msgid "Accent color not changed: {}."
+msgstr "Akcentna boja nije promenjena: {}."
+
+msgid "Accent color {}"
+msgstr "Akcentna boja {}"
+
+msgid "Accent color {} (selected)"
+msgstr "Akcentna boja {} (izabrana)"
+
+msgid "Accent color {} (theme accent in use)"
+msgstr "Akcentna boja {} (koristi se akcentna boja teme)"
+
+msgid "Add a station by its stream URL"
+msgstr "Dodaj stanicu preko URL-a strima"
+
+msgid "Add all songs to the queue"
+msgstr "Dodaj sve pesme u red"
+
+msgid "Add server"
+msgstr "Додај сервер"
+
+msgid "Add station"
+msgstr "Dodaj stanicu"
+
+msgid "Add the selected songs to a playlist"
+msgstr "Dodaj izabrane pesme u plejlistu"
+
+msgid "Add this link to the end of the queue"
+msgstr "Dodaj ovaj link na kraj reda"
+
+msgid "Add this station to the server for every client"
+msgstr "Dodaj ovu stanicu na server za sve klijente"
+
+msgid "Add to favorites"
+msgstr "Dodaj u favorite"
+
+msgid "Add to playlist"
+msgstr "Dodaj u plejlistu"
+
+msgid "Add to queue"
+msgstr "Dodaj u red"
+
+msgid "Add to the server's stations"
+msgstr "Dodaj u stanice na serveru"
+
+msgid "Add to {}"
+msgstr "Dodaj u {}"
+
+msgid "Add {n} song to playlist"
+msgid_plural "Add {n} songs to playlist"
+msgstr[0] "Dodaj {n} pesmu u plejlistu"
+msgstr[1] "Dodaj {n} pesme u plejlistu"
+msgstr[2] "Dodaj {n} pesama u plejlistu"
+
+msgid "Add {} to the queue"
+msgstr "Dodaj {} u red"
+
+msgid "Added \"{}\" to the queue"
+msgstr "\"{}\" je dodata u red"
+
+msgid "Added only {n} song to \"{}\": {}"
+msgid_plural "Added only {n} songs to \"{}\": {}"
+msgstr[0] "Dodata je samo {n} pesma u \"{}\": {}"
+msgstr[1] "Dodate su samo {n} pesme u \"{}\": {}"
+msgstr[2] "Dodato je samo {n} pesama u \"{}\": {}"
+
+msgid "Added {n} song from \"{}\" to the queue"
+msgid_plural "Added {n} songs from \"{}\" to the queue"
+msgstr[0] "Dodata je {n} pesma iz \"{}\" u red"
+msgstr[1] "Dodate su {n} pesme iz \"{}\" u red"
+msgstr[2] "Dodato je {n} pesama iz \"{}\" u red"
+
+msgid "Added {n} song to \"{}\""
+msgid_plural "Added {n} songs to \"{}\""
+msgstr[0] "Dodata je {n} pesma u \"{}\""
+msgstr[1] "Dodate su {n} pesme u \"{}\""
+msgstr[2] "Dodato je {n} pesama u \"{}\""
+
+msgid "Added {n} song to the queue"
+msgid_plural "Added {n} songs to the queue"
+msgstr[0] "Dodata je {n} pesma u red"
+msgstr[1] "Dodate su {n} pesme u red"
+msgstr[2] "Dodato je {n} pesama u red"
+
+msgid "Adding to \"{}\": {} of {n} song"
+msgid_plural "Adding to \"{}\": {} of {n} songs"
+msgstr[0] "Dodavanje u \"{}\": {} od {n} pesme"
+msgstr[1] "Dodavanje u \"{}\": {} od {n} pesme"
+msgstr[2] "Dodavanje u \"{}\": {} od {n} pesama"
+
+msgid "ALBUM"
+msgstr "АЛБУМ"
+
+msgid "Album"
+msgstr "Албум"
+
+msgid "album"
+msgstr "албум"
+
+msgid "Album artist"
+msgstr "Umetnik albuma"
+
+msgid "Album count"
+msgstr "Broj albuma"
+
+msgid "Album not found"
+msgstr "Album nije pronađen"
+
+msgid "Albums"
+msgstr "Albumi"
+
+msgid "All genres"
+msgstr "Svi žanrovi"
+
+msgid "Allow"
+msgstr "Dozvoli"
+
+msgid "Allow remote control?"
+msgstr "Dozvoliti daljinsko upravljanje?"
+
+msgid "Allow without asking"
+msgstr "Дозволи без питања"
+
+msgid "Already at the end"
+msgstr "Već je na kraju"
+
+msgid "Already at the start"
+msgstr "Već je na početku"
+
+msgid "Already in \"{}\""
+msgstr "Već postoji u \"{}\""
+
+msgid "Already on the server"
+msgstr "Već je na serveru"
+
+msgid "Amber"
+msgstr "Ćilibar"
+
+msgid "Any device on this network can control this player without your approval. Banned devices are still refused."
+msgstr "Сваки уређај на овој мрежи може да управља овим плејером без вашег одобрења. Блокирани уређаји се и даље одбијају."
+
+msgid "Appearance"
+msgstr "Izgled"
+
+msgid "Approved devices"
+msgstr "Odobreni uređaji"
+
+msgid "Approved devices were forgotten"
+msgstr "Odobreni uređaji su zaboravljeni"
+
+msgid "ARTIST"
+msgstr "ИЗВОЂАЧ"
+
+msgid "Artist"
+msgstr "Извођач"
+
+msgid "Artists"
+msgstr "Umetnici"
+
+msgid "Ask again before any device can control this player"
+msgstr "Pitaj ponovo pre nego što bilo koji uređaj može da upravlja ovim plejerom"
+
+msgid "Ask the server to transcode down to this bitrate. Applies from the next song."
+msgstr "Traži od servera da transkodira na ovaj bitrejt. Primenjuje se od sledeće pesme."
+
+msgid "Audio device"
+msgstr "Аудио уређај"
+
+msgid "Automatic ({})"
+msgstr "Automatski ({})"
+
+msgid "Back"
+msgstr "Nazad"
+
+msgid "Ban"
+msgstr "Блокирај"
+
+msgid "Banned devices"
+msgstr "Блокирани уређаји"
+
+msgid "by {}"
+msgstr "autor: {}"
+
+msgid "Cancel"
+msgstr "Откажи"
+
+msgid "Cancel timer"
+msgstr "Otkaži tajmer"
+
+msgid "Cannot share: {}"
+msgstr "Deljenje nije moguće: {}"
+
+msgid "Chart country"
+msgstr "Zemlja top lista"
+
+msgid "Charts"
+msgstr "Top liste"
+
+msgid "Choose a browser under Settings, YouTube to sign in for a personalized home"
+msgstr "Izaberite pregledač u Podešavanja, YouTube da biste se prijavili za personalizovanu početnu stranu"
+
+msgid "Clear"
+msgstr "Очисти"
+
+msgid "Clear filters"
+msgstr "Očisti filtere"
+
+msgid "Clear rating"
+msgstr "Ukloni ocenu"
+
+msgid "Clear search"
+msgstr "Обриши претрагу"
+
+msgid "Clear the favorites and genre filters"
+msgstr "Očisti filtere favorita i žanra"
+
+msgid "Click to close"
+msgstr "Kliknite da zatvorite"
+
+msgid "Click to dismiss"
+msgstr "Kliknite da odbacite"
+
+msgid "Close"
+msgstr "Zatvori"
+
+msgid "Close now playing"
+msgstr "Zatvori trenutno puštano"
+
+msgid "Close to the tray"
+msgstr "Затвори у системску палету"
+
+msgid "Close without adding the songs"
+msgstr "Zatvori bez dodavanja pesama"
+
+msgid "Close without changes"
+msgstr "Zatvori bez izmena"
+
+msgid "Close without saving"
+msgstr "Zatvori bez čuvanja"
+
+msgid "Closing the window keeps the music playing; quit from the tray icon."
+msgstr "Затварање прозора не зауставља музику; изађите преко иконе у системској палети."
+
+msgid "Colors used across the whole app."
+msgstr "Boje koje se koriste u celoj aplikaciji."
+
+msgid "Connect to this server"
+msgstr "Poveži se sa ovim serverom"
+
+msgid "Connect to your music server"
+msgstr "Povežite se sa svojim muzičkim serverom"
+
+msgid "Connect to {}"
+msgstr "Poveži se sa {}"
+
+msgid "Connected devices: {}"
+msgstr "Повезани уређаји: {}"
+
+msgid "Connecting..."
+msgstr "Povezivanje..."
+
+msgid "Control the music playing on this computer"
+msgstr "Upravljaj muzikom koja svira na ovom računaru"
+
+msgid "Control the music playing on {}"
+msgstr "Upravljaj muzikom koja svira na {}"
+
+msgid "Controlled by {}"
+msgstr "Управља {}"
+
+msgid "Controlling this player"
+msgstr "Управљају овим плејером"
+
+msgid "Could not add to \"{}\": {}"
+msgstr "Dodavanje u \"{}\" nije uspelo: {}"
+
+msgid "Could not add {} to the server"
+msgstr "Dodavanje stanice {} na server nije uspelo"
+
+msgid "Could not connect to {}: {}"
+msgstr "Povezivanje sa {} nije uspelo: {}"
+
+msgid "Could not create a share link: {}"
+msgstr "Pravljenje linka za deljenje nije uspelo: {}"
+
+msgid "Could not create the playlist: {}"
+msgstr "Pravljenje plejliste nije uspelo: {}"
+
+msgid "Could not delete the playlist: {}"
+msgstr "Brisanje plejliste nije uspelo: {}"
+
+msgid "Could not delete the saved login: {}"
+msgstr "Brisanje sačuvane prijave nije uspelo: {}"
+
+msgid "Could not delete the station"
+msgstr "Brisanje stanice nije uspelo"
+
+msgid "Could not load albums: {}"
+msgstr "Učitavanje albuma nije uspelo: {}"
+
+msgid "Could not load artists: {}"
+msgstr "Učitavanje umetnika nije uspelo: {}"
+
+msgid "Could not load Discover: {}"
+msgstr "Učitavanje odeljka Otkrij nije uspelo: {}"
+
+msgid "Could not load genres: {}"
+msgstr "Učitavanje žanrova nije uspelo: {}"
+
+msgid "Could not load it from YouTube Music: {}"
+msgstr "Učitavanje sa YouTube Music nije uspelo: {}"
+
+msgid "Could not load lyrics"
+msgstr "Učitavanje teksta pesme nije uspelo"
+
+msgid "Could not load moods and genres: {}"
+msgstr "Učitavanje raspoloženja i žanrova nije uspelo: {}"
+
+msgid "Could not load more results: {}"
+msgstr "Učitavanje još rezultata nije uspelo: {}"
+
+msgid "Could not load new releases: {}"
+msgstr "Učitavanje novih izdanja nije uspelo: {}"
+
+msgid "Could not load playlists: {}"
+msgstr "Učitavanje plejlista nije uspelo: {}"
+
+msgid "Could not load the album: {}"
+msgstr "Učitavanje albuma nije uspelo: {}"
+
+msgid "Could not load the artist: {}"
+msgstr "Učitavanje umetnika nije uspelo: {}"
+
+msgid "Could not load the charts: {}"
+msgstr "Učitavanje top lista nije uspelo: {}"
+
+msgid "Could not load the folder: {}"
+msgstr "Učitavanje foldera nije uspelo: {}"
+
+msgid "Could not load the list: {}"
+msgstr "Učitavanje liste nije uspelo: {}"
+
+msgid "Could not load the playlist: {}"
+msgstr "Učitavanje plejliste nije uspelo: {}"
+
+msgid "Could not load the radio stations: {}"
+msgstr "Učitavanje radio stanica nije uspelo: {}"
+
+msgid "Could not load the selection: {}"
+msgstr "Učitavanje izbora nije uspelo: {}"
+
+msgid "Could not load this page: {}"
+msgstr "Učitavanje ove stranice nije uspelo: {}"
+
+msgid "Could not load tracks: {}"
+msgstr "Učitavanje pesama nije uspelo: {}"
+
+msgid "Could not load your home: {}"
+msgstr "Učitavanje početne strane nije uspelo: {}"
+
+msgid "Could not move the music from {}: {}"
+msgstr "Muzika nije mogla da se premesti sa {}: {}"
+
+msgid "Could not move the music: {}"
+msgstr "Muzika nije mogla da se premesti: {}"
+
+msgid "Could not open the folder: {}"
+msgstr "Otvaranje foldera nije uspelo: {}"
+
+msgid "Could not open YouTube Music: {}"
+msgstr "Otvaranje YouTube Music nije uspelo: {}"
+
+msgid "Could not pause or resume playback: {}"
+msgstr "Pauziranje ili nastavljanje reprodukcije nije uspelo: {}"
+
+msgid "Could not play \"{}\" from YouTube: {}"
+msgstr "Puštanje \"{}\" sa YouTube nije uspelo: {}"
+
+msgid "Could not play album: {}"
+msgstr "Puštanje albuma nije uspelo: {}"
+
+msgid "Could not play from YouTube: {}"
+msgstr "Puštanje sa YouTube nije uspelo: {}"
+
+msgid "Could not play the album: {}"
+msgstr "Puštanje albuma nije uspelo: {}"
+
+msgid "Could not remove songs: {}"
+msgstr "Uklanjanje pesama nije uspelo: {}"
+
+msgid "Could not rescan the library: {}"
+msgstr "Ponovno skeniranje biblioteke nije uspelo: {}"
+
+msgid "Could not save the login for {}: {}"
+msgstr "Čuvanje prijave za {} nije uspelo: {}"
+
+msgid "Could not save the settings: {}"
+msgstr "Čuvanje podešavanja nije uspelo: {}"
+
+msgid "Could not seek: {}"
+msgstr "Premotavanje nije uspelo: {}"
+
+msgid "Could not set the rating: {}"
+msgstr "Postavljanje ocene nije uspelo: {}"
+
+msgid "Could not sign in to YouTube Music ({}). Showing general picks instead."
+msgstr "Prijava na YouTube Music nije uspela ({}). Umesto toga prikazuju se opšti predlozi."
+
+msgid "Could not stop playback: {}"
+msgstr "Zaustavljanje reprodukcije nije uspelo: {}"
+
+msgid "Could not switch server: {}"
+msgstr "Promena servera nije uspela: {}"
+
+msgid "Could not update favorite: {}"
+msgstr "Ažuriranje favorita nije uspelo: {}"
+
+msgid "Could not update favorites: {}"
+msgstr "Ažuriranje favorita nije uspelo: {}"
+
+msgid "Could not update rating: {}"
+msgstr "Ažuriranje ocene nije uspelo: {}"
+
+msgid "Could not update the favorite: {}"
+msgstr "Ažuriranje favorita nije uspelo: {}"
+
+msgid "Country"
+msgstr "Zemlja"
+
+msgid "Create"
+msgstr "Направи"
+
+msgid "Create a playlist with these songs"
+msgstr "Napravi plejlistu od ovih pesama"
+
+msgid "Create an empty playlist"
+msgstr "Napravi praznu plejlistu"
+
+msgid "Create the playlist"
+msgstr "Napravi plejlistu"
+
+msgid "Created \"{}\" with only {n} song: {}"
+msgid_plural "Created \"{}\" with only {n} songs: {}"
+msgstr[0] "Napravljena je \"{}\" sa samo {n} pesmom: {}"
+msgstr[1] "Napravljena je \"{}\" sa samo {n} pesme: {}"
+msgstr[2] "Napravljena je \"{}\" sa samo {n} pesama: {}"
+
+msgid "Created \"{}\" with {n} song"
+msgid_plural "Created \"{}\" with {n} songs"
+msgstr[0] "Napravljena je \"{}\" sa {n} pesmom"
+msgstr[1] "Napravljena je \"{}\" sa {n} pesme"
+msgstr[2] "Napravljena je \"{}\" sa {n} pesama"
+
+msgid "Created playlist \"{}\""
+msgstr "Napravljena je plejlista \"{}\""
+
+msgid "Creating a share link..."
+msgstr "Pravljenje linka za deljenje..."
+
+msgid "Creating..."
+msgstr "Pravljenje..."
+
+msgid "Crossfade"
+msgstr "Претапање"
+
+msgid "Crossfade could not be changed: {}"
+msgstr "Promena prelaska sa preklapanjem nije uspela: {}"
+
+msgid "Crossfade: {}"
+msgstr "Prelazak sa preklapanjem: {}"
+
+msgid "Current"
+msgstr "Trenutni"
+
+msgid "Custom accent color: {} (theme accent in use)"
+msgstr "Prilagođena akcentna boja: {} (koristi se akcentna boja teme)"
+
+msgid "Custom accent color: {}, press Enter to apply"
+msgstr "Prilagođena akcentna boja: {}, pritisnite Enter za primenu"
+
+msgid "Daily Mix {}"
+msgstr "Dnevni miks {}"
+
+msgid "Dark theme"
+msgstr "Tamna tema"
+
+msgid "DARK THEMES"
+msgstr "TAMNE TEME"
+
+msgid "Default country for the Discover charts. Automatic follows your system region."
+msgstr "Podrazumevana zemlja za top liste u odeljku Otkrij. Automatski prati region sistema."
+
+msgid "Default Dark"
+msgstr "Podrazumevana tamna"
+
+msgid "Default Light"
+msgstr "Podrazumevana svetla"
+
+msgid "Delete"
+msgstr "Обриши"
+
+msgid "Delete \"{}\""
+msgstr "Obriši \"{}\""
+
+msgid "Delete \"{}\" from the server? This cannot be undone."
+msgstr "Obrisati \"{}\" sa servera? Ovo se ne može poništiti."
+
+msgid "Delete \"{}\"? This cannot be undone."
+msgstr "Obrisati \"{}\"? Ovo se ne može poništiti."
+
+msgid "Delete playlist"
+msgstr "Obriši plejlistu"
+
+msgid "Delete station"
+msgstr "Obriši stanicu"
+
+msgid "Delete {} from the server"
+msgstr "Obriši {} sa servera"
+
+msgid "Deleted playlist \"{}\""
+msgstr "Plejlista \"{}\" je obrisana"
+
+msgid "Deleting..."
+msgstr "Brisanje..."
+
+msgid "Demo mode: these picks are made up and play from your demo library"
+msgstr "Demo režim: ovi predlozi su izmišljeni i puštaju se iz demo biblioteke"
+
+msgid "Devices you allowed can control this player without asking again."
+msgstr "Uređaji koje ste dozvolili mogu da upravljaju ovim plejerom bez ponovnog pitanja."
+
+msgid "Devices: controlled by {}"
+msgstr "Уређаји: управља {}"
+
+msgid "Devices: controlling {}"
+msgstr "Uređaji: upravljate {}"
+
+msgid "Devices: this computer"
+msgstr "Uređaji: ovaj računar"
+
+msgid "Directory"
+msgstr "Imenik"
+
+msgid "Disc {}"
+msgstr "Disk {}"
+
+msgid "Disconnect"
+msgstr "Прекини везу"
+
+msgid "Disconnect \"{}\" and never let it control this player again"
+msgstr "Прекини везу са \"{}\" и никад му више не дозволи да управља овим плејером"
+
+msgid "Disconnect \"{}\"; it has to be allowed again to control this player"
+msgstr "Прекини везу са \"{}\"; мора поново да буде дозвољен да би управљао овим плејером"
+
+msgid "Discord Rich Presence"
+msgstr "Discord Rich Presence"
+
+msgid "Discover"
+msgstr "Otkrij"
+
+msgid "Discover is open"
+msgstr "Otkrij je otvoren"
+
+msgid "Discover new music on YouTube Music"
+msgstr "Otkrijte novu muziku na YouTube Music"
+
+msgid "Discover Weekly"
+msgstr "Otkrića nedelje"
+
+msgid "Do not let \"{}\" control this player"
+msgstr "Ne dozvoli uređaju \"{}\" da upravlja ovim plejerom"
+
+msgid "Double-click to play"
+msgstr "Dvaput kliknite za puštanje"
+
+msgid "Double-click to play, drag to reorder"
+msgstr "Dvaput kliknite za puštanje, prevucite za promenu redosleda"
+
+msgid "Duration"
+msgstr "Трајање"
+
+msgid "Edit station"
+msgstr "Uredi stanicu"
+
+msgid "Edit {}"
+msgstr "Uredi {}"
+
+msgid "End of current track"
+msgstr "Kraj trenutne pesme"
+
+msgid "End of track"
+msgstr "Kraj pesme"
+
+msgid "Enter a name for the station"
+msgstr "Unesite naziv stanice"
+
+msgid "Enter a name, country or tag to search"
+msgstr "Unesite naziv, zemlju ili oznaku za pretragu"
+
+msgid "Enter a stream URL that starts with http:// or https://"
+msgstr "Unesite URL strima koji počinje sa http:// ili https://"
+
+msgid "Enter the server URL"
+msgstr "Unesite URL servera"
+
+msgid "Fade the end of each song into the next one. Off keeps gapless playback."
+msgstr "Pretapa kraj svake pesme u sledeću. Isključeno zadržava reprodukciju bez pauza."
+
+msgid "Favorite"
+msgstr "Омиљено"
+
+msgid "Favorited"
+msgstr "Dodato u favorite"
+
+msgid "Favorites"
+msgstr "Favoriti"
+
+msgid "Favorites only: off"
+msgstr "Samo favoriti: isključeno"
+
+msgid "Favorites only: on"
+msgstr "Samo favoriti: uključeno"
+
+msgid "Filter"
+msgstr "Филтер"
+
+msgid "Filter playlists"
+msgstr "Filtriraj plejliste"
+
+msgid "Find stations by name, country or tag"
+msgstr "Pronađite stanice po nazivu, zemlji ili oznaci"
+
+msgid "Find stations in the radio-browser.info directory"
+msgstr "Pronađite stanice u imeniku radio-browser.info"
+
+msgid "Folder"
+msgstr "Фасцикла"
+
+msgid "Folders"
+msgstr "Folderi"
+
+msgid "Follow current song"
+msgstr "Prati trenutnu pesmu"
+
+msgid "Follow system color scheme"
+msgstr "Prati šemu boja sistema"
+
+msgid "For you"
+msgstr "Za vas"
+
+msgid "Forget all"
+msgstr "Zaboravi sve"
+
+msgid "Forget this server?"
+msgstr "Zaboraviti ovaj server?"
+
+msgid "Forget {}"
+msgstr "Zaboravi {}"
+
+msgid "Format the server should transcode to. Applies from the next song."
+msgstr "Format u koji server treba da transkodira. Primenjuje se od sledeće pesme."
+
+msgid "Gapless playback"
+msgstr "Reprodukcija bez pauza"
+
+msgid "Genre filter: {}"
+msgstr "Filter žanra: {}"
+
+msgid "Genres"
+msgstr "Žanrovi"
+
+msgid "Go back to {}"
+msgstr "Vrati se na {}"
+
+msgid "Go to album"
+msgstr "Idi na album"
+
+msgid "Go to artist"
+msgstr "Idi na umetnika"
+
+msgid "Go to {}"
+msgstr "Idi na {}"
+
+msgid "Green"
+msgstr "Zelena"
+
+msgid "Hide lyrics"
+msgstr "Sakrij tekst pesme"
+
+msgid "Hide queue"
+msgstr "Sakrij red"
+
+msgid "High Contrast Dark"
+msgstr "Tamna visokog kontrasta"
+
+msgid "High Contrast Light"
+msgstr "Svetla visokog kontrasta"
+
+msgid "Highlight with the color that comes with the theme."
+msgstr "Isticanje bojom koja dolazi uz temu."
+
+msgid "Home"
+msgstr "Početna"
+
+msgid "Homepage (optional)"
+msgstr "Veb-sajt (opciono)"
+
+msgid "Indigo"
+msgstr "Индиго"
+
+msgid "Install yt-dlp to play YouTube tracks"
+msgstr "Instalirajte yt-dlp za puštanje pesama sa YouTube"
+
+msgid "Integrations"
+msgstr "Integracije"
+
+msgid "Interface"
+msgstr "Interfejs"
+
+msgid "Internet radio"
+msgstr "Internet radio"
+
+msgid "it could not be reached; check that its firewall allows TCP port {}"
+msgstr "није могуће приступити му; проверите да ли његов заштитни зид дозвољава TCP порт {}"
+
+msgid "it did not answer in time"
+msgstr "nije odgovorio na vreme"
+
+msgid "it is busy with another request"
+msgstr "zauzet je drugim zahtevom"
+
+msgid "it is connected to a different server"
+msgstr "povezan je sa drugim serverom"
+
+msgid "it is not connected to a server"
+msgstr "nije povezan ni sa jednim serverom"
+
+msgid "it runs a different version of Cadence"
+msgstr "koristi drugu verziju Cadencea"
+
+msgid "it stopped"
+msgstr "zaustavio se"
+
+msgid "item"
+msgstr "stavka"
+
+msgid "Jump to this line"
+msgstr "Skoči na ovaj red"
+
+msgid "Keep a Cadence icon with playback controls in the menu bar or system tray."
+msgstr "Прикажи иконицу Cadence са контролама репродукције у траци менија или системској палети."
+
+msgid "Keep this station in the favorites on this device"
+msgstr "Čuvaj ovu stanicu u favoritima na ovom uređaju"
+
+msgid "Keep {}"
+msgstr "Zadrži {}"
+
+msgid "Language"
+msgstr "Jezik"
+
+msgid "Let \"{}\" ask to control this player again"
+msgstr "Дозволи да \"{}\" поново затражи управљање овим плејером"
+
+msgid "Let \"{}\" control this player"
+msgstr "Dozvoli uređaju \"{}\" da upravlja ovim plejerom"
+
+msgid "Let other Cadence players on this network control this one. Each device asks for your approval the first time."
+msgstr "Dozvoli drugim Cadence plejerima na ovoj mreži da upravljaju ovim. Svaki uređaj prvi put traži vaše odobrenje."
+
+msgid "LIBRARY"
+msgstr "BIBLIOTEKA"
+
+msgid "Library scan finished"
+msgstr "Skeniranje biblioteke je završeno"
+
+msgid "Library scan finished: {n} item"
+msgid_plural "Library scan finished: {n} items"
+msgstr[0] "Skeniranje biblioteke je završeno: {n} stavka"
+msgstr[1] "Skeniranje biblioteke je završeno: {n} stavke"
+msgstr[2] "Skeniranje biblioteke je završeno: {n} stavki"
+
+msgid "Light theme"
+msgstr "Svetla tema"
+
+msgid "LIGHT THEMES"
+msgstr "SVETLE TEME"
+
+msgid "Listening to {}"
+msgstr "Slušate {}"
+
+msgid "LIVE"
+msgstr "UŽIVO"
+
+msgid "Load more"
+msgstr "Učitaj još"
+
+msgid "Load more results"
+msgstr "Učitaj još rezultata"
+
+msgid "Load this section again"
+msgstr "Ponovo učitaj ovaj odeljak"
+
+msgid "Loading playlists..."
+msgstr "Učitavanje plejlista..."
+
+msgid "Loading similar songs..."
+msgstr "Učitavanje sličnih pesama..."
+
+msgid "Loading stations..."
+msgstr "Učitavanje stanica..."
+
+msgid "Loading the next page of stations"
+msgstr "Učitavanje sledeće stranice stanica"
+
+msgid "Loading..."
+msgstr "Učitavanje..."
+
+msgid "Log out"
+msgstr "Odjavi se"
+
+msgid "Looking up the YouTube link..."
+msgstr "Traženje YouTube linka..."
+
+msgid "Lost the connection to {}"
+msgstr "Veza sa {} je izgubljena"
+
+msgid "Lyrics"
+msgstr "Текст песме"
+
+msgid "Lyrics from {}"
+msgstr "Tekst pesme iz izvora {}"
+
+msgid "Lyrics sources"
+msgstr "Izvori teksta pesme"
+
+msgid "Magenta"
+msgstr "Магента"
+
+msgid "Maximum bitrate"
+msgstr "Maksimalni bitrejt"
+
+msgid "Media keys and desktop media controls. Takes effect after a restart."
+msgstr "Medijski tasteri i kontrole medija na radnoj površini. Primenjuje se nakon ponovnog pokretanja."
+
+msgid "MIX"
+msgstr "MIKS"
+
+msgid "Moods and genres"
+msgstr "Raspoloženja i žanrovi"
+
+msgid "Most played"
+msgstr "Najviše puštano"
+
+msgid "Move down"
+msgstr "Pomeri nadole"
+
+msgid "Move here"
+msgstr "Premesti ovde"
+
+msgid "Move there"
+msgstr "Premesti tamo"
+
+msgid "Move up"
+msgstr "Pomeri nagore"
+
+msgid "Move what is playing here to {}"
+msgstr "Premesti ono što svira ovde na {}"
+
+msgid "Move what is playing on {} to this computer"
+msgstr "Premesti ono što svira na {} na ovaj računar"
+
+msgid "Moved the music from {} to this computer"
+msgstr "Muzika je premeštena sa {} na ovaj računar"
+
+msgid "MPRIS"
+msgstr "MPRIS"
+
+msgid "Mute"
+msgstr "Искључи звук"
+
+msgid "Name"
+msgstr "Naziv"
+
+msgid "New playlist"
+msgstr "Nova plejlista"
+
+msgid "New releases"
+msgstr "Nova izdanja"
+
+msgid "New to you, refreshed every Monday"
+msgstr "Novo za tebe, osvežava se svakog ponedeljka"
+
+msgid "Next"
+msgstr "Sledeća"
+
+msgid "Next is unavailable while a radio station plays"
+msgstr "Sledeća nije dostupna dok svira radio stanica"
+
+msgid "No albums"
+msgstr "Nema albuma"
+
+msgid "No albums found"
+msgstr "Nije pronađen nijedan album"
+
+msgid "No artists found"
+msgstr "Nije pronađen nijedan umetnik"
+
+msgid "no browser is selected"
+msgstr "nije izabran pregledač"
+
+msgid "No favorite albums"
+msgstr "Nema omiljenih albuma"
+
+msgid "No favorite artists"
+msgstr "Nema omiljenih umetnika"
+
+msgid "No favorite tracks"
+msgstr "Nema omiljenih pesama"
+
+msgid "No genres found"
+msgstr "Nije pronađen nijedan žanr"
+
+msgid "No lyrics found"
+msgstr "Tekst pesme nije pronađen"
+
+msgid "No other Cadence found on this network"
+msgstr "Na ovoj mreži nije pronađen drugi Cadence"
+
+msgid "No playlists found"
+msgstr "Nije pronađena nijedna plejlista"
+
+msgid "No playlists yet"
+msgstr "Još nema plejlista"
+
+msgid "No rating"
+msgstr "Bez ocene"
+
+msgid "No results for \"{}\""
+msgstr "Nema rezultata za \"{}\""
+
+msgid "No saved login for {}; remove it and add it again"
+msgstr "Nema sačuvane prijave za {}; uklonite ga i dodajte ponovo"
+
+msgid "No saved servers."
+msgstr "Nema sačuvanih servera."
+
+msgid "No similar songs found"
+msgstr "Nisu pronađene slične pesme"
+
+msgid "No songs here"
+msgstr "Ovde nema pesama"
+
+msgid "No stations found"
+msgstr "Nije pronađena nijedna stanica"
+
+msgid "No stations yet. Add one or find one in the directory."
+msgstr "Još nema stanica. Dodajte neku ili je pronađite u imeniku."
+
+msgid "No tracks found"
+msgstr "Nije pronađena nijedna pesma"
+
+msgid "None"
+msgstr "Ништа"
+
+msgid "Normalize loudness using the track or album gain tags."
+msgstr "Ujednačava jačinu zvuka pomoću oznaka pojačanja pesme ili albuma."
+
+msgid "Not connected to a server"
+msgstr "Niste povezani sa serverom"
+
+msgid "Not connected to another player"
+msgstr "Nije povezano sa drugim plejerom"
+
+msgid "Nothing is playing"
+msgstr "Ništa se ne pušta"
+
+msgid "nothing is playing"
+msgstr "ništa ne svira"
+
+msgid "Nothing to add yet"
+msgstr "Još nema ničeg za dodavanje"
+
+msgid "Nothing to go back to"
+msgstr "Nema gde da se vrati"
+
+msgid "Nothing to play here"
+msgstr "Ovde nema ničeg za puštanje"
+
+msgid "Nothing to play yet"
+msgstr "Još nema ničeg za puštanje"
+
+msgid "Nothing to show here right now"
+msgstr "Trenutno nema ničeg za prikaz"
+
+msgid "Now playing on {}"
+msgstr "Sada svira na {}"
+
+msgid "Off"
+msgstr "Isključeno"
+
+msgid "OK"
+msgstr "У реду"
+
+msgid "On the server"
+msgstr "Na serveru"
+
+msgid "Only a server admin can rescan the library"
+msgstr "Samo administrator servera može ponovo da skenira biblioteku"
+
+msgid "Only loaded tracks can be shared: select fewer tracks or scroll through them first"
+msgstr "Mogu se deliti samo učitane pesme: izaberite manje pesama ili se prvo pomerite kroz njih"
+
+msgid "Open"
+msgstr "Otvori"
+
+msgid "Open in YouTube Music"
+msgstr "Otvori u YouTube Music"
+
+msgid "Open now playing"
+msgstr "Otvori trenutno puštano"
+
+msgid "Open radio"
+msgstr "Otvori radio"
+
+msgid "Open the album \"{}\""
+msgstr "Otvori album \"{}\""
+
+msgid "Open the mix \"{}\""
+msgstr "Otvori miks \"{}\""
+
+msgid "Open the playlist \"{}\""
+msgstr "Otvori plejlistu \"{}\""
+
+msgid "Open the queue panel"
+msgstr "Otvori panel reda"
+
+msgid "Open {}"
+msgstr "Otvori {}"
+
+msgid "Original"
+msgstr "Original"
+
+msgid "Output used by the player."
+msgstr "Izlaz koji plejer koristi."
+
+msgid "Owner"
+msgstr "Власник"
+
+msgid "Password"
+msgstr "Лозинка"
+
+msgid "Paste a link first"
+msgstr "Prvo nalepite link"
+
+msgid "Paste a YouTube or YouTube Music link first"
+msgstr "Prvo nalepite YouTube ili YouTube Music link"
+
+msgid "Paste a YouTube or YouTube Music link to try yt-dlp."
+msgstr "Nalepite YouTube ili YouTube Music link da isprobate yt-dlp."
+
+msgid "Pause"
+msgstr "Пауза"
+
+msgid "Pause the radio station"
+msgstr "Pauziraj radio stanicu"
+
+msgid "Personalized with your YouTube Music account from {}"
+msgstr "Personalizovano vašim YouTube Music nalogom iz pregledača {}"
+
+msgid "Pick a color, or type one as #rrggbb and press Enter."
+msgstr "Izaberite boju ili je upišite kao #rrggbb i pritisnite Enter."
+
+msgid "Pick a mood or genre to see its playlists"
+msgstr "Izaberite raspoloženje ili žanr da vidite njegove plejliste"
+
+msgid "Play"
+msgstr "Пусти"
+
+msgid "Play \"{}\" and the rest of this shelf"
+msgstr "Pusti \"{}\" i ostatak ove police"
+
+msgid "Play a YouTube link"
+msgstr "Pusti YouTube link"
+
+msgid "Play album"
+msgstr "Pusti album"
+
+msgid "Play all"
+msgstr "Pusti sve"
+
+msgid "Play all {n} song"
+msgid_plural "Play all {n} songs"
+msgstr[0] "Pusti {n} pesmu"
+msgstr[1] "Pusti sve {n} pesme"
+msgstr[2] "Pusti svih {n} pesama"
+
+msgid "Play count"
+msgstr "Број пуштања"
+
+msgid "Play every song in {} and its subfolders"
+msgstr "Pusti sve pesme u {} i njegovim podfolderima"
+
+msgid "Play from here"
+msgstr "Pusti odavde"
+
+msgid "Play from this song"
+msgstr "Pusti od ove pesme"
+
+msgid "Play from {}"
+msgstr "Pusti od {}"
+
+msgid "Play next"
+msgstr "Pusti sledeće"
+
+msgid "Play on"
+msgstr "Pusti na"
+
+msgid "Play the album"
+msgstr "Pusti album"
+
+msgid "Play the mix"
+msgstr "Pusti miks"
+
+msgid "Play the playlist"
+msgstr "Pusti plejlistu"
+
+msgid "Play the radio station"
+msgstr "Pusti radio stanicu"
+
+msgid "Play this link after the current song"
+msgstr "Pusti ovaj link posle trenutne pesme"
+
+msgid "Play this link now"
+msgstr "Pusti ovaj link sada"
+
+msgid "Play {}"
+msgstr "Pusti {}"
+
+msgid "Play {} next"
+msgstr "Pusti {} sledeće"
+
+msgid "Play {} with its subfolders"
+msgstr "Pusti {} sa podfolderima"
+
+msgid "Play/Pause"
+msgstr "Пусти/Паузирај"
+
+msgid "Playback"
+msgstr "Репродукција"
+
+msgid "Playback failed: {}"
+msgstr "Reprodukcija nije uspela: {}"
+
+msgid "Playing {} failed: {}"
+msgstr "Puštanje {} nije uspelo: {}"
+
+msgid "PLAYLIST"
+msgstr "ПЛЕЈЛИСТА"
+
+msgid "Playlist"
+msgstr "Плејлиста"
+
+msgid "playlist"
+msgstr "плејлиста"
+
+msgid "Playlist name"
+msgstr "Naziv plejliste"
+
+msgid "Playlists"
+msgstr "Plejliste"
+
+msgid "Plays"
+msgstr "Пуштања"
+
+msgid "Plays YouTube tracks. Leave empty to use yt-dlp from your PATH."
+msgstr "Pušta pesme sa YouTube. Ostavite prazno da biste koristili yt-dlp iz PATH."
+
+msgid "Preload the next song so it starts without a pause."
+msgstr "Unapred učitava sledeću pesmu da počne bez pauze."
+
+msgid "Previous"
+msgstr "Претходна"
+
+msgid "Previous is unavailable while a radio station plays"
+msgstr "Prethodna nije dostupna dok svira radio stanica"
+
+msgid "Queue"
+msgstr "Red"
+
+msgid "Quit"
+msgstr "Изађи"
+
+msgid "Radio"
+msgstr "Radio"
+
+msgid "Random"
+msgstr "Насумично"
+
+msgid "Rate {n} star"
+msgid_plural "Rate {n} stars"
+msgstr[0] "Oceni sa {n} zvezdicom"
+msgstr[1] "Oceni sa {n} zvezdice"
+msgstr[2] "Oceni sa {n} zvezdica"
+
+msgid "Rating"
+msgstr "Оцена"
+
+msgid "Recently added"
+msgstr "Nedavno dodato"
+
+msgid "Recently played"
+msgstr "Nedavno puštano"
+
+msgid "Red"
+msgstr "Crvena"
+
+msgid "Refresh"
+msgstr "Освежи"
+
+msgid "Refresh this section"
+msgstr "Osveži ovaj odeljak"
+
+msgid "Release year"
+msgstr "Година издања"
+
+msgid "Remote control"
+msgstr "Daljinsko upravljanje"
+
+msgid "Remote control is unavailable: other players cannot find this one"
+msgstr "Daljinsko upravljanje nije dostupno: drugi plejeri ne mogu da pronađu ovaj"
+
+msgid "Remote control is unavailable: the network port could not be opened"
+msgstr "Daljinsko upravljanje nije dostupno: mrežni port nije mogao da se otvori"
+
+msgid "Remove"
+msgstr "Ukloni"
+
+msgid "Remove from favorites"
+msgstr "Ukloni iz favorita"
+
+msgid "Remove from playlist"
+msgstr "Ukloni iz plejliste"
+
+msgid "Remove from queue"
+msgstr "Ukloni iz reda"
+
+msgid "Remove the selected songs from this playlist"
+msgstr "Ukloni izabrane pesme iz ove plejliste"
+
+msgid "Removed {n} song from \"{}\""
+msgid_plural "Removed {n} songs from \"{}\""
+msgstr[0] "Uklonjena je {n} pesma iz \"{}\""
+msgstr[1] "Uklonjene su {n} pesme iz \"{}\""
+msgstr[2] "Uklonjeno je {n} pesama iz \"{}\""
+
+msgid "Removing..."
+msgstr "Uklanjanje..."
+
+msgid "Repeat: all"
+msgstr "Ponavljanje: sve"
+
+msgid "Repeat: off"
+msgstr "Ponavljanje: isključeno"
+
+msgid "Repeat: one"
+msgstr "Ponavljanje: jedna"
+
+msgid "ReplayGain"
+msgstr "ReplayGain"
+
+msgid "ReplayGain could not be changed: {}"
+msgstr "Promena ReplayGain nije uspela: {}"
+
+msgid "Report what you play to the server."
+msgstr "Prijavljuje serveru šta slušate."
+
+msgid "Rescan the library for new content"
+msgstr "Ponovo skeniraj biblioteku za novi sadržaj"
+
+msgid "Resize column"
+msgstr "Promeni širinu kolone"
+
+msgid "Save"
+msgstr "Сачувај"
+
+msgid "Save on this device"
+msgstr "Sačuvaj na ovom uređaju"
+
+msgid "Save the changes on the server"
+msgstr "Sačuvaj izmene na serveru"
+
+msgid "Save the changes on this device"
+msgstr "Sačuvaj izmene na ovom uređaju"
+
+msgid "Save to favorites on this device"
+msgstr "Sačuvaj u favorite na ovom uređaju"
+
+msgid "Save to server"
+msgstr "Sačuvaj na server"
+
+msgid "Saved on this device"
+msgstr "Sačuvano na ovom uređaju"
+
+msgid "Saved on this device, click to remove"
+msgstr "Sačuvano na ovom uređaju, kliknite za uklanjanje"
+
+msgid "Saving the station to the server..."
+msgstr "Čuvanje stanice na serveru..."
+
+msgid "Saving to the server..."
+msgstr "Čuvanje na serveru..."
+
+msgid "Saving..."
+msgstr "Čuvanje..."
+
+msgid "Scanning the library for new content..."
+msgstr "Skeniranje biblioteke za novi sadržaj..."
+
+msgid "Scanning the library: {}"
+msgstr "Skeniranje biblioteke: {}"
+
+msgid "Scrobble"
+msgstr "Skroblovanje"
+
+msgid "Scroll left"
+msgstr "Pomeri levo"
+
+msgid "Scroll lists and the queue to the song that is playing."
+msgstr "Pomera liste i red do pesme koja se pušta."
+
+msgid "Scroll right"
+msgstr "Pomeri desno"
+
+msgid "Search"
+msgstr "Претрага"
+
+msgid "Search failed: {}"
+msgstr "Pretraga nije uspela: {}"
+
+msgid "SEARCH RESULTS"
+msgstr "REZULTATI PRETRAGE"
+
+msgid "Search songs on YouTube Music"
+msgstr "Pretraži pesme na YouTube Music"
+
+msgid "Search songs, albums, artists"
+msgstr "Pretraži pesme, albume, umetnike"
+
+msgid "Search the radio-browser.info directory"
+msgstr "Pretraži imenik radio-browser.info"
+
+msgid "Search your library for songs, albums and artists"
+msgstr "Pretražite biblioteku za pesme, albume i umetnike"
+
+msgid "Searched from top to bottom until one has lyrics."
+msgstr "Pretražuju se odozgo nadole dok se ne pronađe tekst pesme."
+
+msgid "Searching for lyrics..."
+msgstr "Traženje teksta pesme..."
+
+msgid "Searching the radio directory failed: {}"
+msgstr "Pretraga radio imenika nije uspela: {}"
+
+msgid "Searching the radio-browser.info directory"
+msgstr "Pretraga imenika radio-browser.info"
+
+msgid "Searching..."
+msgstr "Pretraga..."
+
+msgid "Seeking is unavailable for live radio"
+msgstr "Premotavanje nije dostupno za radio uživo"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Server type"
+msgstr "Tip servera"
+
+msgid "Server type: {}"
+msgstr "Tip servera: {}"
+
+msgid "Servers"
+msgstr "Serveri"
+
+msgid "Set rating"
+msgstr "Постави оцену"
+
+msgid "Settings"
+msgstr "Подешавања"
+
+msgid "Share"
+msgstr "Podeli"
+
+msgid "Share ({})"
+msgstr "Podeli ({})"
+
+msgid "Share link copied to the clipboard: {}"
+msgstr "Link za deljenje je kopiran u privremenu memoriju: {}"
+
+msgid "Share this {}: copy a public link"
+msgstr "Podeli ({}): kopiraj javni link"
+
+msgid "Sharing is unavailable: {}"
+msgstr "Deljenje nije dostupno: {}"
+
+msgid "Show all top songs"
+msgstr "Prikaži sve najpopularnije pesme"
+
+msgid "Show fewer top songs"
+msgstr "Prikaži manje najpopularnijih pesama"
+
+msgid "Show in the tray"
+msgstr "Прикажи у системској палети"
+
+msgid "SHOW LESS"
+msgstr "PRIKAŽI MANJE"
+
+msgid "Show less of the biography"
+msgstr "Prikaži manje biografije"
+
+msgid "Show lyrics"
+msgstr "Prikaži tekst pesme"
+
+msgid "SHOW MORE"
+msgstr "PRIKAŽI VIŠE"
+
+msgid "Show more"
+msgstr "Prikaži više"
+
+msgid "Show playlists for {}"
+msgstr "Prikaži plejliste za {}"
+
+msgid "Show queue"
+msgstr "Prikaži red"
+
+msgid "Show the current song on your Discord profile."
+msgstr "Prikazuje trenutnu pesmu na vašem Discord profilu."
+
+msgid "Show the next page of stations"
+msgstr "Prikaži sledeću stranicu stanica"
+
+msgid "Show the queue next to the library; remembered on the next start."
+msgstr "Prikazuje red pored biblioteke; pamti se za sledeće pokretanje."
+
+msgid "Show the server and saved stations"
+msgstr "Prikaži stanice sa servera i sačuvane stanice"
+
+msgid "Show the whole biography"
+msgstr "Prikaži celu biografiju"
+
+msgid "Show {}"
+msgstr "Prikaži: {}"
+
+msgid "Showing playlists for {}"
+msgstr "Prikazuju se plejliste za {}"
+
+msgid "Showing the charts for {}"
+msgstr "Prikazuju se top liste za {}"
+
+msgid "Showing the radio-browser.info directory"
+msgstr "Prikazuje se imenik radio-browser.info"
+
+msgid "Showing the server and saved stations"
+msgstr "Prikazuju se stanice sa servera i sačuvane stanice"
+
+msgid "Shuffle"
+msgstr "Nasumično"
+
+msgid "Shuffle every song in {} and its subfolders"
+msgstr "Nasumično pusti sve pesme u {} i njegovim podfolderima"
+
+msgid "Shuffle play"
+msgstr "Nasumično puštanje"
+
+msgid "Shuffle: off"
+msgstr "Nasumično: isključeno"
+
+msgid "Shuffle: on"
+msgstr "Nasumično: uključeno"
+
+msgid "Sign in"
+msgstr "Prijavi se"
+
+msgid "Sign in to another server"
+msgstr "Prijavi se na drugi server"
+
+msgid "Sign in with browser"
+msgstr "Prijavi se preko pregledača"
+
+msgid "Sign out and forget this server's saved login?"
+msgstr "Odjaviti se i zaboraviti sačuvanu prijavu za ovaj server?"
+
+msgid "Sign out and forget this server?"
+msgstr "Odjaviti se i zaboraviti ovaj server?"
+
+msgid "Sign out of {}"
+msgstr "Odjavi se sa {}"
+
+msgid "Similar"
+msgstr "Slično"
+
+msgid "Similar songs come from your server, so YouTube tracks have none"
+msgstr "Slične pesme dolaze sa vašeg servera, pa ih YouTube pesme nemaju"
+
+msgid "Sleep timer: off"
+msgstr "Tajmer za spavanje: isključen"
+
+msgid "Sleep timer: {}"
+msgstr "Tajmer za spavanje: {}"
+
+msgid "Song count"
+msgstr "Број песама"
+
+msgid "Songs"
+msgstr "Pesme"
+
+msgid "Sort by {}"
+msgstr "Sortiraj po: {}"
+
+msgid "Sort by {}: ascending"
+msgstr "Sortiraj po: {}, rastuće"
+
+msgid "Sort by {}: descending"
+msgstr "Sortiraj po: {}, opadajuće"
+
+msgid "Sort: ascending"
+msgstr "Sortiranje: rastuće"
+
+msgid "Sort: descending"
+msgstr "Sortiranje: opadajuće"
+
+msgid "Starting volume, shared with the player bar."
+msgstr "Početna jačina zvuka, deli se sa trakom plejera."
+
+msgid "Station data from radio-browser.info"
+msgstr "Podaci o stanicama sa radio-browser.info"
+
+msgid "Station name"
+msgstr "Naziv stanice"
+
+msgid "Stations"
+msgstr "Stanice"
+
+msgid "Stay signed in"
+msgstr "Ostani prijavljen"
+
+msgid "Stop"
+msgstr "Заустави"
+
+msgid "Stop {}"
+msgstr "Zaustavi {}"
+
+msgid "Stream URL"
+msgstr "URL strima"
+
+msgid "Switch"
+msgstr "Prebaci"
+
+msgid "Switch between a dark and a light theme with the desktop. {}"
+msgstr "Prebacuje između tamne i svetle teme zajedno sa radnom površinom. {}"
+
+msgid "Switch to grid view"
+msgstr "Prebaci na prikaz mreže"
+
+msgid "Switch to list view"
+msgstr "Prebaci na prikaz liste"
+
+msgid "System default"
+msgstr "Podrazumevano u sistemu"
+
+msgid "System default follows the language of the desktop."
+msgstr "Podrazumevano u sistemu prati jezik radne površine."
+
+msgid "Tag, for example jazz"
+msgstr "Oznaka, na primer jazz"
+
+msgid "That device is no longer on the network"
+msgstr "Taj uređaj više nije na mreži"
+
+msgid "The audio device could not be changed: {}"
+msgstr "Promena audio uređaja nije uspela: {}"
+
+msgid "the connection was not allowed"
+msgstr "veza nije dozvoljena"
+
+msgid "The desktop currently prefers dark."
+msgstr "Radna površina trenutno daje prednost tamnoj temi."
+
+msgid "The desktop currently prefers light."
+msgstr "Radna površina trenutno daje prednost svetloj temi."
+
+msgid "The desktop has no preference, so the dark theme is used."
+msgstr "Radna površina nema podešenu prednost, pa se koristi tamna tema."
+
+msgid "The library scan is still running on the server"
+msgstr "Skeniranje biblioteke je još u toku na serveru"
+
+msgid "the network connection failed"
+msgstr "mrežna veza nije uspela"
+
+msgid "The queue is empty"
+msgstr "Red je prazan"
+
+msgid "The queue is incomplete: loading the rest of the list failed ({})"
+msgstr "Red nije potpun: učitavanje ostatka liste nije uspelo ({})"
+
+msgid "The radio directory could not be reached"
+msgstr "Radio imenik nije dostupan"
+
+msgid "The radio station stopped streaming"
+msgstr "Radio stanica je prestala sa emitovanjem"
+
+msgid "The server refused the station: {}"
+msgstr "Server je odbio stanicu: {}"
+
+msgid "Theme"
+msgstr "Тема"
+
+msgid "There is nothing to play in this list"
+msgstr "U ovoj listi nema ničeg za puštanje"
+
+msgid "This computer"
+msgstr "Ovaj računar"
+
+msgid "This Discover page does not exist"
+msgstr "Ova stranica odeljka Otkrij ne postoji"
+
+msgid "This folder is empty"
+msgstr "Ovaj folder je prazan"
+
+msgid "This mix is no longer available"
+msgstr "Ovaj miks više nije dostupan"
+
+msgid "This playlist is empty"
+msgstr "Ova plejlista je prazna"
+
+msgid "This server has no internet radio. Stations you add are saved on this device."
+msgstr "Ovaj server nema internet radio. Stanice koje dodate čuvaju se na ovom uređaju."
+
+msgid "this server has no public share links"
+msgstr "ovaj server nema javne linkove za deljenje"
+
+msgid "Time"
+msgstr "Vreme"
+
+msgid "Title"
+msgstr "Наслов"
+
+msgid "Top songs"
+msgstr "Najpopularnije pesme"
+
+msgid "Track"
+msgstr "Нумера"
+
+msgid "Tracks"
+msgstr "Pesme"
+
+msgid "Transcode format"
+msgstr "Format transkodiranja"
+
+msgid "Try again"
+msgstr "Pokušaj ponovo"
+
+msgid "Turn off the theme accent color to pick your own."
+msgstr "Isključite akcentnu boju teme da biste izabrali svoju."
+
+msgid "Unmute"
+msgstr "Uključi ton"
+
+msgid "Up next"
+msgstr "Следеће"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Use the theme accent color"
+msgstr "Koristi akcentnu boju teme"
+
+msgid "Use {}"
+msgstr "Koristi {}"
+
+msgid "Used while the desktop prefers dark."
+msgstr "Koristi se dok radna površina daje prednost tamnoj temi."
+
+msgid "Used while the desktop prefers light."
+msgstr "Koristi se dok radna površina daje prednost svetloj temi."
+
+msgid "Username"
+msgstr "Корисничко име"
+
+msgid "Uses your YouTube session in this browser for a personalized Discover home and Premium audio. yt-dlp copies its cookies to a private temporary file that Cadence deletes right after reading."
+msgstr "Koristi vašu YouTube sesiju u ovom pregledaču za personalizovanu početnu stranu odeljka Otkrij i Premium zvuk. yt-dlp kopira njene kolačiće u privatnu privremenu datoteku koju Cadence briše odmah nakon čitanja."
+
+msgid "Volume"
+msgstr "Jačina zvuka"
+
+msgid "Volume {}%"
+msgstr "Jačina zvuka {}%"
+
+msgid "With {}"
+msgstr "Sa {}"
+
+msgid "XDG_RUNTIME_DIR is not set, so there is no private place for the cookies"
+msgstr "XDG_RUNTIME_DIR nije podešen, pa nema privatnog mesta za kolačiće"
+
+msgid "Year"
+msgstr "Година"
+
+msgid "You are here: {}"
+msgstr "Ovde ste: {}"
+
+msgid "Your mixes"
+msgstr "Tvoji miksevi"
+
+msgid "Your user is not allowed to share on this server"
+msgstr "Vaš korisnik nema dozvolu za deljenje na ovom serveru"
+
+msgid "YouTube"
+msgstr "YouTube"
+
+msgid "YouTube albums are not in your library"
+msgstr "YouTube albumi nisu u vašoj biblioteci"
+
+msgid "YouTube artists are not in your library"
+msgstr "YouTube umetnici nisu u vašoj biblioteci"
+
+msgid "yt-dlp program"
+msgstr "Program yt-dlp"
+
+msgid "{n} album"
+msgid_plural "{n} albums"
+msgstr[0] "{n} албум"
+msgstr[1] "{n} албума"
+msgstr[2] "{n} албума"
+
+msgid "{n} folder"
+msgid_plural "{n} folders"
+msgstr[0] "{n} фасцикла"
+msgstr[1] "{n} фасцикле"
+msgstr[2] "{n} фасцикли"
+
+msgid "{n} item so far"
+msgid_plural "{n} items so far"
+msgstr[0] "{n} stavka do sada"
+msgstr[1] "{n} stavke do sada"
+msgstr[2] "{n} stavki do sada"
+
+msgid "{n} minute"
+msgid_plural "{n} minutes"
+msgstr[0] "{n} minut"
+msgstr[1] "{n} minuta"
+msgstr[2] "{n} minuta"
+
+msgid "{n} selected"
+msgid_plural "{n} selected"
+msgstr[0] "{n} izabrana"
+msgstr[1] "{n} izabrane"
+msgstr[2] "{n} izabranih"
+
+msgid "{n} song"
+msgid_plural "{n} songs"
+msgstr[0] "{n} pesma"
+msgstr[1] "{n} pesme"
+msgstr[2] "{n} pesama"
+
+msgid "{n} song from \"{}\" will play next"
+msgid_plural "{n} songs from \"{}\" will play next"
+msgstr[0] "{n} pesma iz \"{}\" biće puštena sledeća"
+msgstr[1] "{n} pesme iz \"{}\" biće puštene sledeće"
+msgstr[2] "{n} pesama iz \"{}\" biće pušteno sledeće"
+
+msgid "{n} song on YouTube Music"
+msgid_plural "{n} songs on YouTube Music"
+msgstr[0] "{n} pesma na YouTube Music"
+msgstr[1] "{n} pesme na YouTube Music"
+msgstr[2] "{n} pesama na YouTube Music"
+
+msgid "{n} song will play next"
+msgid_plural "{n} songs will play next"
+msgstr[0] "{n} pesma biće puštena sledeća"
+msgstr[1] "{n} pesme biće puštene sledeće"
+msgstr[2] "{n} pesama biće pušteno sledeće"
+
+msgid "{} (current theme)"
+msgstr "{} (trenutna tema)"
+
+msgid "{} (demo)"
+msgstr "{} (demo)"
+
+msgid "{} (unavailable)"
+msgstr "{} (nedostupno)"
+
+msgid "{} ({})"
+msgstr "{} ({})"
+
+msgid "{} at {}"
+msgstr "{} na {}"
+
+msgid "{} cannot be played: its stream address is not an internet stream"
+msgstr "{} se ne može pustiti: adresa strima nije internet strim"
+
+msgid "{} could not do that: {}"
+msgstr "{} to nije moglo da uradi: {}"
+
+msgid "{} could not take the music: {}"
+msgstr "{} nije moglo da preuzme muziku: {}"
+
+msgid "{} did not answer in time"
+msgstr "{} nije odgovorilo na vreme"
+
+msgid "{} is shown"
+msgstr "Prikazano: {}"
+
+msgid "{} kbps"
+msgstr "{} kbps"
+
+msgid "{} s"
+msgstr "{} s"
+
+msgid "{} {} kbps"
+msgstr "{} {} kbps"
+
+msgid "{} · {}"
+msgstr "{} · {}"
+
+msgid "{} • {}"
+msgstr "{} • {}"
+
+msgid "{}: off"
+msgstr "{}: isključeno"
+
+msgid "{}: on"
+msgstr "{}: uključeno"
+
+msgid "{}: {}"
+msgstr "{}: {}"
+
+msgid "{}: {} (dark)"
+msgstr "{}: {} (tamna)"
+
+msgid "{}: {} (light)"
+msgstr "{}: {} (svetla)"

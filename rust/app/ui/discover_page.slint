@@ -1,0 +1,325 @@
+import { ScrollView } from "std-widgets.slint";
+import { Theme, Icons } from "theme.slint";
+import { AppState, PlayerState } from "globals.slint";
+import { IconButton, TooltipAnchor } from "widgets.slint";
+import { Cell, Skeleton, TrackIndexCell } from "tracks.slint";
+import { DiscoverIcons, DiscoverPageKind, DiscoverSong, DiscoverState } from "discover_state.slint";
+import { SongMenu } from "song_menu.slint";
+import { CoverArt, PlayButton } from "cover_art.slint";
+
+component SongRowView inherits Rectangle {
+    in property <DiscoverSong> song;
+    property <bool> is-playing: root.song.id == PlayerState.song-id;
+    property <int> position: root.song.index - 1;
+    property <bool> wants-cover: !root.song.has-cover && root.song.can-load-cover;
+    background: touch.has-hover ? Theme.hover : transparent;
+
+    init => {
+        if (root.wants-cover) {
+            DiscoverState.song-cover-needed(root.position);
+        }
+    }
+    changed wants-cover => {
+        if (self.wants-cover) {
+            DiscoverState.song-cover-needed(root.position);
+        }
+    }
+    changed position => {
+        if (root.wants-cover) {
+            DiscoverState.song-cover-needed(root.position);
+        }
+    }
+
+    menu := SongMenu {
+        has-add-to-playlist: false;
+        has-share: false;
+        has-open-in-browser: true;
+        play => {
+            DiscoverState.play-song(root.position);
+        }
+        play-next => {
+            DiscoverState.play-song-next(root.position);
+        }
+        add-to-queue => {
+            DiscoverState.queue-song(root.position);
+        }
+        open-in-browser => {
+            DiscoverState.open-song-in-browser(root.position);
+        }
+
+        touch := TouchArea {
+            double-clicked => {
+                DiscoverState.play-song(root.position);
+            }
+            pointer-event(event) => {
+                if (event.kind == PointerEventKind.down && event.button == PointerEventButton.right) {
+                    menu.show({ x: self.mouse-x, y: self.mouse-y });
+                }
+            }
+
+            TooltipAnchor {
+                text: @tr("Double-click to play");
+                is-hovered: touch.has-hover;
+            }
+
+            HorizontalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+                spacing: 4px;
+
+                TrackIndexCell {
+                    width: 40px;
+                    index: root.song.index;
+                    is-playing: root.is-playing;
+                    is-row-hovered: touch.has-hover;
+                    play-tooltip: @tr("Play from this song");
+                    inset: 12px;
+                    play => {
+                        DiscoverState.play-song(root.position);
+                    }
+                }
+
+                Rectangle {
+                    width: 36px;
+
+                    CoverArt {
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 4px;
+                        background: Theme.surface-raised;
+                        source: root.song.cover;
+                        has-source: root.song.has-cover;
+                        icon: "";
+                    }
+                }
+
+                Cell {
+                    horizontal-stretch: 2;
+                    text: root.song.title;
+                    text-color: root.is-playing ? Theme.primary : Theme.foreground;
+                }
+
+                Cell {
+                    horizontal-stretch: 1;
+                    text: root.song.artists;
+                }
+
+                Cell {
+                    horizontal-stretch: 1;
+                    text: root.song.album;
+                }
+
+                Cell {
+                    width: 64px;
+                    text: root.song.duration;
+                }
+            }
+        }
+    }
+}
+
+component SongRows inherits Rectangle {
+    in property <length> viewport-top;
+    in property <length> viewport-height;
+    property <length> row-height: 44px;
+    property <int> row-count: DiscoverState.songs.length;
+    property <int> slot-count: min(root.row-count, ceil(max(0px, root.viewport-height) / root.row-height) + 2);
+    property <int> wanted-first-row: max(0, min(root.row-count - root.slot-count, floor(max(0px, root.viewport-top) / root.row-height)));
+    property <int> first-row;
+    height: root.row-count * root.row-height;
+
+    function report-shown-rows() {
+        DiscoverState.song-rows-shown(root.first-row, root.slot-count);
+    }
+
+    init => {
+        root.first-row = root.wanted-first-row;
+        root.report-shown-rows();
+    }
+
+    changed wanted-first-row => {
+        root.first-row = root.wanted-first-row;
+        root.report-shown-rows();
+    }
+
+    changed slot-count => {
+        root.report-shown-rows();
+    }
+
+    for slot in root.slot-count: SongRowView {
+        property <int> wanted-row-index: root.first-row + mod(slot + root.slot-count - mod(root.first-row, root.slot-count), root.slot-count);
+        property <int> row-index;
+        x: 0;
+        y: self.row-index * root.row-height;
+        width: parent.width;
+        height: root.row-height;
+        song: DiscoverState.songs[self.row-index];
+
+        init => {
+            self.row-index = self.wanted-row-index;
+        }
+
+        changed wanted-row-index => {
+            self.row-index = self.wanted-row-index;
+        }
+    }
+}
+
+component PageHeader inherits HorizontalLayout {
+    padding: 24px;
+    spacing: 24px;
+    alignment: start;
+
+    CoverArt {
+        width: 200px;
+        height: 200px;
+        border-radius: Theme.radius;
+        background: Theme.surface-raised;
+        source: DiscoverState.page-cover;
+        has-source: DiscoverState.has-page-cover;
+        icon: DiscoverState.page-kind == DiscoverPageKind.search-results ? Icons.search : (DiscoverState.page-kind == DiscoverPageKind.album ? Icons.album : Icons.playlist);
+        icon-color: Theme.border;
+        icon-size: 80px;
+    }
+
+    VerticalLayout {
+        alignment: end;
+        spacing: 8px;
+        horizontal-stretch: 1;
+
+        Text {
+            text: DiscoverState.page-kind == DiscoverPageKind.search-results ? @tr("SEARCH RESULTS") : (DiscoverState.page-kind == DiscoverPageKind.album ? @tr("ALBUM") : (DiscoverState.page-kind == DiscoverPageKind.mix ? @tr("MIX") : @tr("PLAYLIST")));
+            color: Theme.muted;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        if DiscoverState.is-page-loading && DiscoverState.page-title == "": Skeleton {
+            width: 280px;
+            height: 28px;
+            border-radius: 8px;
+        }
+
+        if !(DiscoverState.is-page-loading && DiscoverState.page-title == ""): Text {
+            text: DiscoverState.page-title;
+            color: Theme.foreground;
+            font-size: 30px;
+            font-weight: 800;
+            wrap: word-wrap;
+        }
+
+        Text {
+            text: DiscoverState.page-subtitle;
+            color: Theme.muted;
+            wrap: word-wrap;
+        }
+    }
+}
+
+component PageActions inherits HorizontalLayout {
+    property <bool> has-songs: DiscoverState.songs.length > 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    spacing: 12px;
+    alignment: start;
+    height: 56px;
+
+    PlayButton {
+        y: (parent.height - self.height) / 2;
+        size: 52px;
+        is-enabled: root.has-songs;
+        tooltip: root.has-songs ? @tr("Play all {n} song" | "Play all {n} songs" % DiscoverState.songs.length) : @tr("Nothing to play yet");
+        clicked => {
+            DiscoverState.play-page();
+        }
+    }
+
+    IconButton {
+        y: (parent.height - self.height) / 2;
+        width: 40px;
+        height: 40px;
+        icon: Icons.queue;
+        icon-size: 24px;
+        is-enabled: root.has-songs;
+        tooltip: root.has-songs ? @tr("Add all songs to the queue") : @tr("Nothing to add yet");
+        clicked => {
+            DiscoverState.queue-page();
+        }
+    }
+
+    if DiscoverState.has-page-link: IconButton {
+        y: (parent.height - self.height) / 2;
+        width: 40px;
+        height: 40px;
+        icon: DiscoverIcons.open-external;
+        icon-size: 22px;
+        tooltip: @tr("Open in YouTube Music");
+        clicked => {
+            DiscoverState.open-page-in-browser();
+        }
+    }
+}
+
+export component DiscoverCollectionPage inherits Rectangle {
+    scroll := ScrollView {
+        content-width: self.visible-width;
+        content-height: content.preferred-height;
+
+        content := VerticalLayout {
+            width: scroll.visible-width;
+            alignment: start;
+
+            HorizontalLayout {
+                padding-left: 16px;
+                padding-top: 12px;
+                alignment: start;
+
+                IconButton {
+                    icon: DiscoverIcons.back;
+                    is-enabled: AppState.can-go-back;
+                    tooltip: AppState.can-go-back ? @tr("Back") : @tr("Nothing to go back to");
+                    clicked => {
+                        AppState.back();
+                    }
+                }
+            }
+
+            PageHeader { }
+
+            PageActions { }
+
+            if DiscoverState.page-error != "": HorizontalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+
+                Text {
+                    text: DiscoverState.page-error;
+                    color: Theme.danger;
+                    wrap: word-wrap;
+                }
+            }
+
+            if !DiscoverState.is-page-loading && DiscoverState.page-error == "" && DiscoverState.songs.length == 0: HorizontalLayout {
+                padding-left: 24px;
+
+                Text {
+                    text: @tr("No songs here");
+                    color: Theme.muted;
+                }
+            }
+
+            Rectangle {
+                height: 12px;
+            }
+
+            SongRows {
+                viewport-top: -scroll.content-y - self.y;
+                viewport-height: scroll.visible-height;
+            }
+
+            Rectangle {
+                height: 32px;
+            }
+        }
+    }
+}

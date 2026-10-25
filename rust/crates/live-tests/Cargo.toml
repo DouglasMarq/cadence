@@ -1,0 +1,18 @@
+[package]
+name = "cadence-live-tests"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dev-dependencies]
+cadence-api.workspace = true
+cadence-api-jellyfin.workspace = true
+cadence-api-navidrome.workspace = true
+cadence-api-subsonic.workspace = true
+cadence-core.workspace = true
+reqwest.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[lints]
+workspace = true

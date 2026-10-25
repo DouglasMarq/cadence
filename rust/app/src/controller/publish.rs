@@ -1,0 +1,64 @@
+use cadence_core::queue::QueueTrack;
+
+use super::{Controller, UiUpdate};
+
+impl Controller {
+    pub(super) fn publish_all(&self) {
+        self.publish_volume();
+        self.publish_modes();
+        self.publish_queue();
+        self.publish_now_playing();
+        self.publish_playback();
+    }
+
+    pub(super) fn publish_now_playing(&self) {
+        let track = self
+            .queue
+            .current()
+            .map(|item| Box::new(QueueTrack::clone(&item.track)));
+        self.deps.ui.send(UiUpdate::NowPlaying(track));
+    }
+
+    pub(super) fn publish_playback(&self) {
+        self.deps.ui.send(UiUpdate::Playback {
+            is_playing: self.is_playing,
+            position_ms: self.shown_position_ms(),
+            duration_ms: self.shown_duration_ms(),
+        });
+    }
+
+    pub(super) fn shown_position_ms(&self) -> u64 {
+        self.radio
+            .as_ref()
+            .map_or(self.position_ms, |radio| radio.elapsed_ms())
+    }
+
+    fn shown_duration_ms(&self) -> u64 {
+        match self.radio {
+            Some(_) => 0,
+            None => self.duration_ms,
+        }
+    }
+
+    pub(super) fn publish_volume(&self) {
+        self.deps.ui.send(UiUpdate::Volume {
+            volume: self.settings.playback.volume_percent,
+            is_muted: self.settings.playback.is_muted,
+        });
+    }
+
+    pub(super) fn publish_modes(&self) {
+        self.deps.ui.send(UiUpdate::Modes {
+            is_shuffled: self.queue.is_shuffled(),
+            repeat: self.queue.repeat(),
+        });
+    }
+
+    pub(super) fn publish_queue(&self) {
+        self.deps.ui.send(UiUpdate::Queue(self.queue.view()));
+    }
+
+    pub(super) fn publish_queue_current(&self) {
+        self.publish_queue();
+    }
+}

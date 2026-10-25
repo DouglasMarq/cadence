@@ -1,0 +1,300 @@
+import { Behaviour, Motion, Theme, Icons, Format } from "theme.slint";
+import { AppState, PlayerState, RepeatState, Route } from "globals.slint";
+import { NowPlayingState, NowPlayingTab } from "now_playing.slint";
+import { Bar, Icon, IconButton, TooltipAnchor } from "widgets.slint";
+import { SleepTimerButton } from "sleep_timer.slint";
+import { DevicesButton } from "devices.slint";
+import { RadioIcons, RadioState } from "radio.slint";
+import { CoverArt } from "cover_art.slint";
+
+component PlayerWash inherits Rectangle {
+    in property <color> wash;
+    background: @linear-gradient(90deg, root.wash.with-alpha(0.55) 0%, root.wash.with-alpha(0.12) 35%, transparent 60%);
+}
+
+export component PlayerGlow inherits Rectangle {
+    in property <color> wash;
+
+    PlayerWash {
+        wash: root.wash;
+    }
+
+    Rectangle {
+        background: @linear-gradient(180deg, Theme.canvas 0%, Theme.canvas.with-alpha(0) 100%);
+    }
+}
+
+export component PlayerBar inherits Rectangle {
+    property <bool> is-radio: RadioState.is-active;
+    property <bool> can-play: PlayerState.has-song || root.is-radio;
+    property <string> info-tooltip: root.is-radio ? (AppState.route == Route.radio ? @tr("Listening to {}", RadioState.station-name) : @tr("Open radio")) : AppState.route == Route.now-playing ? @tr("Close now playing") : @tr("Open now playing");
+
+    function open-song-info() {
+        if (root.is-radio) {
+            AppState.navigate(Route.radio, "");
+        } else if (AppState.route == Route.now-playing) {
+            AppState.back();
+        } else {
+            AppState.navigate(Route.now-playing, "");
+        }
+    }
+    out property <color> wash: PlayerState.has-tint && !root.is-radio ? Theme.ambient(PlayerState.tint) : Theme.canvas;
+    height: 84px;
+    background: Theme.canvas;
+
+    animate wash {
+        duration: Motion.ambient;
+        easing: ease-in-out;
+    }
+
+    PlayerWash {
+        wash: root.wash;
+    }
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        spacing: 16px;
+
+        song-info := HorizontalLayout {
+            width: 30%;
+            spacing: 12px;
+            alignment: start;
+
+            CoverArt {
+                y: (parent.height - self.height) / 2;
+                width: 56px;
+                height: 56px;
+                border-radius: Theme.radius;
+                background: Theme.surface-raised;
+                drop-shadow-blur: 12px;
+                drop-shadow-offset-y: 2px;
+                drop-shadow-color: Theme.shadow;
+                source: PlayerState.cover;
+                has-source: PlayerState.has-cover && !root.is-radio;
+                icon: root.is-radio ? RadioIcons.radio : Icons.note;
+                icon-color: Theme.muted;
+                icon-size: 28px;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 4px;
+
+                Text {
+                    text: !root.is-radio ? PlayerState.title : (RadioState.stream-title != "" ? RadioState.stream-title : RadioState.station-name);
+                    color: Theme.foreground;
+                    font-weight: 600;
+                    overflow: elide;
+                }
+
+                Text {
+                    text: !root.is-radio ? PlayerState.artists : (RadioState.stream-title != "" ? RadioState.station-name : @tr("Internet radio"));
+                    color: Theme.muted;
+                    font-size: 12px;
+                    overflow: elide;
+                }
+            }
+        }
+
+        VerticalLayout {
+            horizontal-stretch: 1;
+            alignment: center;
+            spacing: 6px;
+
+            HorizontalLayout {
+                alignment: center;
+                spacing: 14px;
+
+                IconButton {
+                    icon: Icons.shuffle;
+                    is-active: PlayerState.is-shuffled;
+                    tooltip: PlayerState.is-shuffled ? @tr("Shuffle: on") : @tr("Shuffle: off");
+                    clicked => {
+                        PlayerState.toggle-shuffle();
+                    }
+                }
+
+                IconButton {
+                    icon: Icons.previous;
+                    icon-size: 24px;
+                    tooltip: root.is-radio ? @tr("Previous is unavailable while a radio station plays") : @tr("Previous");
+                    is-enabled: PlayerState.has-song && !root.is-radio;
+                    clicked => {
+                        PlayerState.previous();
+                    }
+                }
+
+                Rectangle {
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 19px;
+                    background: play-touch.has-hover ? (Theme.is-dark ? #ffffff : Theme.foreground.mix(Theme.background, 0.8)) : Theme.foreground;
+                    opacity: root.can-play ? 1 : 0.4;
+                    transform-scale: play-touch.pressed && root.can-play ? 0.92 : (play-touch.has-hover && root.can-play ? 1.06 : 1);
+
+                    animate transform-scale {
+                        duration: Motion.quick;
+                        easing: ease-out;
+                    }
+
+                    Icon {
+                        path: PlayerState.is-playing ? Icons.pause : Icons.play;
+                        color: Theme.background;
+                        width: 24px;
+                        height: 24px;
+                    }
+
+                    TooltipAnchor {
+                        text: PlayerState.is-playing ? (root.is-radio ? @tr("Pause the radio station") : @tr("Pause")) : (root.is-radio ? @tr("Play the radio station") : @tr("Play"));
+                        is-hovered: play-touch.has-hover;
+                    }
+
+                    play-touch := TouchArea {
+                        enabled: root.can-play;
+                        mouse-cursor: pointer;
+                        clicked => {
+                            PlayerState.toggle-pause();
+                        }
+                    }
+                }
+
+                IconButton {
+                    icon: Icons.next;
+                    icon-size: 24px;
+                    tooltip: root.is-radio ? @tr("Next is unavailable while a radio station plays") : @tr("Next");
+                    is-enabled: PlayerState.has-song && !root.is-radio;
+                    clicked => {
+                        PlayerState.next();
+                    }
+                }
+
+                IconButton {
+                    icon: PlayerState.repeat == RepeatState.one ? Icons.repeat-one : Icons.repeat;
+                    is-active: PlayerState.repeat != RepeatState.off;
+                    tooltip: PlayerState.repeat == RepeatState.off ? @tr("Repeat: off") : PlayerState.repeat == RepeatState.all ? @tr("Repeat: all") : @tr("Repeat: one");
+                    clicked => {
+                        PlayerState.cycle-repeat();
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 10px;
+
+                Text {
+                    width: 44px;
+                    text: Format.time(seek.is-holding ? seek.preview-ms : PlayerState.position-ms);
+                    color: Theme.muted;
+                    font-size: 11px;
+                    horizontal-alignment: right;
+                    vertical-alignment: center;
+                }
+
+                seek := Bar {
+                    property <int> preview-ms;
+                    is-enabled: !root.is-radio;
+                    tooltip: root.is-radio ? @tr("Seeking is unavailable for live radio") : PlayerState.duration-ms > 0 ? Format.time((self.is-dragging ? self.drag-preview : self.hover-value) * PlayerState.duration-ms) : "";
+                    is-tooltip-following-pointer: true;
+                    value: PlayerState.duration-ms > 0 ? PlayerState.position-ms / PlayerState.duration-ms : 0;
+                    changed(value) => {
+                        self.preview-ms = value * PlayerState.duration-ms;
+                    }
+                    committed(value) => {
+                        PlayerState.seek(value * PlayerState.duration-ms);
+                    }
+                }
+
+                Text {
+                    width: 44px;
+                    text: root.is-radio ? @tr("LIVE") : Format.time(PlayerState.duration-ms);
+                    color: Theme.muted;
+                    font-size: 11px;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        HorizontalLayout {
+            width: 30%;
+            alignment: end;
+            spacing: 8px;
+
+            DevicesButton {
+                y: (parent.height - self.height) / 2;
+            }
+
+            SleepTimerButton {
+                y: (parent.height - self.height) / 2;
+            }
+
+            IconButton {
+                y: (parent.height - self.height) / 2;
+                icon: "M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z";
+                is-active: AppState.route == Route.now-playing && NowPlayingState.tab == NowPlayingTab.lyrics;
+                tooltip: self.is-active ? @tr("Hide lyrics") : @tr("Show lyrics");
+                clicked => {
+                    if (self.is-active) {
+                        AppState.back();
+                    } else {
+                        NowPlayingState.tab = NowPlayingTab.lyrics;
+                        AppState.navigate(Route.now-playing, "");
+                    }
+                }
+            }
+
+            IconButton {
+                y: (parent.height - self.height) / 2;
+                icon: Icons.queue;
+                is-active: AppState.is-queue-open;
+                tooltip: AppState.is-queue-open ? @tr("Hide queue") : @tr("Show queue");
+                clicked => {
+                    AppState.is-queue-open = !AppState.is-queue-open;
+                }
+            }
+
+            IconButton {
+                y: (parent.height - self.height) / 2;
+                icon: PlayerState.is-muted || PlayerState.volume == 0 ? Icons.volume-off : Icons.volume;
+                tooltip: PlayerState.is-muted ? @tr("Unmute") : @tr("Mute");
+                clicked => {
+                    PlayerState.toggle-mute();
+                }
+            }
+
+            Bar {
+                y: (parent.height - self.height) / 2;
+                width: 110px;
+                value: PlayerState.is-muted ? 0 : PlayerState.volume / 100;
+                scroll-step: Behaviour.volume-step / Behaviour.max-volume;
+                tooltip: @tr("Volume {}%", self.is-adjusting ? Math.round(self.drag-preview * 100) : (PlayerState.is-muted ? 0 : PlayerState.volume));
+                changed(value) => {
+                    PlayerState.set-volume(Math.round(value * 100));
+                }
+            }
+        }
+    }
+
+    TooltipAnchor {
+        x: song-info.x;
+        width: song-info.width;
+        text: root.info-tooltip;
+        is-hovered: info-touch.has-hover;
+    }
+
+    info-touch := TouchArea {
+        x: song-info.x;
+        width: song-info.width;
+        enabled: root.can-play;
+        mouse-cursor: pointer;
+        accessible-role: button;
+        accessible-label: root.info-tooltip;
+        accessible-enabled: root.can-play;
+        accessible-action-default => {
+            root.open-song-info();
+        }
+        clicked => {
+            root.open-song-info();
+        }
+    }
+}

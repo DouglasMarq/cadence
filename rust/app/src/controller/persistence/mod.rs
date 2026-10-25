@@ -1,0 +1,145 @@
+mod draining;
+mod local_saves;
+mod restore;
+mod schedule;
+mod shutdown;
+mod writer;
+
+use std::sync::Arc;
+use std::time::Duration;
+
+use cadence_api::Credential;
+use cadence_core::model::ServerConfig;
+use tokio::sync::mpsc;
+
+pub(super) use draining::ShutdownState;
+pub use restore::{RestoredQueue, load_saved_queue};
+pub use schedule::SaveTimer;
+
+use super::{Command, Controller, UiUpdate, forward_command};
+use crate::store::Store;
+use schedule::SaveSchedule;
+use writer::QueueFileWriter;
+
+pub enum PersistenceEvent {
+    Restored(Option<Box<RestoredQueue>>),
+    SaveDue(SaveTimer),
+    SyncDue(u64),
+    QueueSaveFailed(u64),
+    StreamDrainDeadline,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RestoreState {
+    Settled,
+    Awaiting { is_server_queue_wanted: bool },
+}
+
+pub(super) struct QueuePersistence {
+    schedule: SaveSchedule,
+    writer: QueueFileWriter,
+    restore: RestoreState,
+}
+
+impl QueuePersistence {
+    pub(super) fn new(store: Arc<dyn Store>, commands: mpsc::UnboundedSender<Command>) -> Self {
+        Self {
+            schedule: SaveSchedule::default(),
+            writer: QueueFileWriter::new(store, commands),
+            restore: RestoreState::Settled,
+        }
+    }
+
+    pub(super) fn want_server_queue_after_restore(&mut self) {
+        if let RestoreState::Awaiting {
+            is_server_queue_wanted,
+        } = &mut self.restore
+        {
+            *is_server_queue_wanted = true;
+        }
+    }
+
+    pub(super) fn is_awaiting_restore(&self) -> bool {
+        matches!(self.restore, RestoreState::Awaiting { .. })
+    }
+}
+
+pub(super) fn send_after(
+    commands: &mpsc::UnboundedSender<Command>,
+    delay: Duration,
+    event: PersistenceEvent,
+) {
+    let commands = commands.clone();
+    let deadline = tokio::time::Instant::now() + delay;
+    tokio::spawn(async move {
+        tokio::time::sleep_until(deadline).await;
+        forward_command(&commands, Command::Persistence(event));
+    });
+}
+
+impl Controller {
+    pub(super) fn on_persistence_event(&mut self, event: PersistenceEvent) {
+        match event {
+            PersistenceEvent::Restored(restored) => self.restore_saved_queue(restored),
+            PersistenceEvent::SaveDue(timer) => self.local_save_due(timer),
+            PersistenceEvent::SyncDue(generation) => self.queue_sync_due(generation),
+            PersistenceEvent::QueueSaveFailed(revision) => {
+                self.persistence.schedule.mark_failed(revision);
+            }
+            PersistenceEvent::StreamDrainDeadline => self.stream_drain_deadline(),
+        }
+    }
+
+    pub(super) fn save_settings(&self) {
+        self.deps.session.publish_settings(&self.settings);
+        if let Err(error) = self.deps.store.save_settings(&self.settings) {
+            tracing::warn!("saving settings failed: {error:#}");
+            self.deps.ui.send(UiUpdate::Error(tr!(
+                "Could not save the settings: {}",
+                format!("{error:#}")
+            )));
+        }
+    }
+
+    pub(super) fn persist_credential(&mut self) {
+        let Some(server) = self.deps.session.get() else {
+            return;
+        };
+        let Some(credential) = server.credential() else {
+            return;
+        };
+        if self.saved_credential.as_ref() != Some(&credential)
+            && self.save_credential(server.config(), &credential).is_ok()
+        {
+            self.saved_credential = Some(credential);
+        }
+    }
+
+    pub(super) fn save_credential(
+        &self,
+        server: &ServerConfig,
+        credential: &Credential,
+    ) -> anyhow::Result<()> {
+        self.deps
+            .store
+            .set_credential(&server.id, credential)
+            .inspect_err(|error| self.report_credential_failure(server, error))
+    }
+
+    fn report_credential_failure(&self, server: &ServerConfig, error: &anyhow::Error) {
+        tracing::warn!("saving the login of {} failed: {error:#}", server.name);
+        self.deps.ui.send(UiUpdate::Error(tr!(
+            "Could not save the login for {}: {}",
+            server.name,
+            format!("{error:#}")
+        )));
+    }
+
+    fn queue_is_untouched(&self) -> bool {
+        self.queue.is_empty() && self.queue.revision() == 0
+    }
+
+    pub(super) fn saved_queue_is_still_loading(&self) -> bool {
+        self.persistence.is_awaiting_restore() && self.queue_is_untouched()
+    }
+}

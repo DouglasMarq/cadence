@@ -1,0 +1,66 @@
+[workspace]
+resolver = "3"
+members = [
+    "app",
+    "crates/api",
+    "crates/api-jellyfin",
+    "crates/api-navidrome",
+    "crates/api-subsonic",
+    "crates/core",
+    "crates/live-tests",
+    "crates/lyrics",
+    "crates/platform",
+    "crates/player",
+    "crates/radio-browser",
+    "crates/remote",
+    "crates/storage",
+    "crates/youtube",
+    "spikes/ui-slint",
+]
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+publish = false
+version = "0.1.0"
+
+[workspace.dependencies]
+async-trait = "0.1"
+cadence-api = { path = "crates/api" }
+cadence-api-jellyfin = { path = "crates/api-jellyfin" }
+cadence-api-navidrome = { path = "crates/api-navidrome" }
+cadence-api-subsonic = { path = "crates/api-subsonic" }
+cadence-core = { path = "crates/core" }
+cadence-lyrics = { path = "crates/lyrics" }
+cadence-platform = { path = "crates/platform" }
+cadence-player = { path = "crates/player" }
+cadence-radio-browser = { path = "crates/radio-browser" }
+cadence-remote = { path = "crates/remote" }
+cadence-storage = { path = "crates/storage" }
+cadence-youtube = { path = "crates/youtube" }
+image = { version = "0.25.10", default-features = false }
+lru = "0.18.5"
+rand = "0.10.3"
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls", "query"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tracing = "0.1"
+url = "2.5.8"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unreachable = "deny"
+todo = "deny"
+unimplemented = "deny"
+indexing_slicing = "deny"
+min_ident_chars = "deny"
+too_many_lines = "deny"

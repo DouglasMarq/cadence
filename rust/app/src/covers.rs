@@ -1,0 +1,132 @@
+use std::path::PathBuf;
+use std::sync::Arc;
+use std::time::Duration;
+
+use anyhow::Result;
+use async_trait::async_trait;
+use cadence_api::MusicServer;
+use cadence_storage::Paths;
+use cadence_storage::cover_cache::{CoverCache, CoverCacheConfig, DecodedImage};
+
+use crate::demo::render_cover;
+
+const COVER_DISK_CACHE_BYTES: u64 = 512 * 1024 * 1024;
+const COVER_MEMORY_CACHE_ITEMS: usize = 64;
+const COVER_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
+
+#[async_trait]
+pub trait CoverProvider: Send + Sync {
+    async fn cover(
+        &self,
+        server: &dyn MusicServer,
+        cover_art_id: &str,
+        size: u32,
+    ) -> Result<Arc<DecodedImage>>;
+
+    async fn cover_from_url(
+        &self,
+        cache_key: &str,
+        url: &str,
+        size: u32,
+    ) -> Result<Arc<DecodedImage>>;
+
+    fn cover_file(
+        &self,
+        server: &dyn MusicServer,
+        cover_art_id: &str,
+        size: u32,
+    ) -> Option<PathBuf>;
+}
+
+fn server_cover_key(server: &dyn MusicServer, cover_art_id: &str) -> String {
+    format!("{}:{cover_art_id}", server.config().id)
+}
+
+pub struct CachedCovers(CoverCache);
+
+impl CachedCovers {
+    pub fn new(paths: &Paths) -> Result<Self> {
+        let config = CoverCacheConfig {
+            dir: paths.cache_dir.join("covers"),
+            max_disk_bytes: COVER_DISK_CACHE_BYTES,
+            max_memory_items: COVER_MEMORY_CACHE_ITEMS,
+        };
+        let client = reqwest::Client::builder()
+            .timeout(COVER_REQUEST_TIMEOUT)
+            .build()?;
+        Ok(Self(CoverCache::new(config, client)?))
+    }
+}
+
+#[async_trait]
+impl CoverProvider for CachedCovers {
+    async fn cover(
+        &self,
+        server: &dyn MusicServer,
+        cover_art_id: &str,
+        size: u32,
+    ) -> Result<Arc<DecodedImage>> {
+        let cache_key = server_cover_key(server, cover_art_id);
+        let url = server.cover_art_url(cover_art_id, Some(size));
+        Ok(self.0.get(&cache_key, &url, size).await?)
+    }
+
+    async fn cover_from_url(
+        &self,
+        cache_key: &str,
+        url: &str,
+        size: u32,
+    ) -> Result<Arc<DecodedImage>> {
+        Ok(self.0.get(cache_key, url, size).await?)
+    }
+
+    fn cover_file(
+        &self,
+        server: &dyn MusicServer,
+        cover_art_id: &str,
+        size: u32,
+    ) -> Option<PathBuf> {
+        self.0
+            .cached_file(&server_cover_key(server, cover_art_id), size)
+    }
+}
+
+pub struct DemoCovers;
+
+#[async_trait]
+impl CoverProvider for DemoCovers {
+    async fn cover(
+        &self,
+        _server: &dyn MusicServer,
+        cover_art_id: &str,
+        size: u32,
+    ) -> Result<Arc<DecodedImage>> {
+        Ok(Arc::new(DecodedImage {
+            width: size,
+            height: size,
+            rgba: render_cover(cover_art_id, size),
+        }))
+    }
+
+    async fn cover_from_url(
+        &self,
+        cache_key: &str,
+        _url: &str,
+        size: u32,
+    ) -> Result<Arc<DecodedImage>> {
+        Ok(Arc::new(DecodedImage {
+            width: size,
+            height: size,
+            rgba: render_cover(cache_key, size),
+        }))
+    }
+
+    fn cover_file(
+        &self,
+        _server: &dyn MusicServer,
+        _cover_art_id: &str,
+        _size: u32,
+    ) -> Option<PathBuf> {
+        None
+    }
+}

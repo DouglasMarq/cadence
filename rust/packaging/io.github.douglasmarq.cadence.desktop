@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Cadence
+GenericName=Music Player
+Comment=Fast native music player for Navidrome, OpenSubsonic and Jellyfin
+Exec=cadence
+Icon=io.github.douglasmarq.cadence
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+Keywords=music;player;navidrome;subsonic;jellyfin;streaming;
+StartupWMClass=io.github.douglasmarq.cadence

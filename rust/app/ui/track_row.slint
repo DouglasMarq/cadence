@@ -1,0 +1,155 @@
+import { Motion, Theme, Icons } from "theme.slint";
+import { AppState, Route, TrackColumn, TracksState, TrackRow } from "globals.slint";
+import { TooltipAnchor } from "widgets.slint";
+import { Cell, FavoriteCell, LinkCell, RatingCell, Skeleton, TrackIndexCell } from "track_cells.slint";
+
+export component TrackRowView inherits Rectangle {
+    in property <TrackRow> track;
+    in property <length> list-width;
+    callback play();
+    callback clicked();
+    callback select(is-control-held: bool, is-shift-held: bool);
+    callback context-menu(window-x: length, window-y: length);
+    callback toggle-favorite();
+    callback rate(rating: int);
+    height: 36px;
+    background: root.track.is-selected ? Theme.selected : (touch.has-hover ? Theme.hover : transparent);
+
+    animate background {
+        duration: Motion.quick;
+    }
+
+    touch := TouchArea {
+        clicked => {
+            root.clicked();
+        }
+        double-clicked => {
+            if (root.track.is-loaded) {
+                root.play();
+            }
+        }
+        pointer-event(event) => {
+            if (event.kind == PointerEventKind.down && root.track.is-loaded) {
+                if (event.button == PointerEventButton.left) {
+                    root.select(event.modifiers.control, event.modifiers.shift);
+                } else if (event.button == PointerEventButton.right) {
+                    root.context-menu(self.absolute-position.x + self.mouse-x, self.absolute-position.y + self.mouse-y);
+                }
+            }
+        }
+
+        TooltipAnchor {
+            text: root.track.is-loaded ? @tr("Double-click to play") : "";
+            is-hovered: touch.has-hover;
+        }
+
+        HorizontalLayout {
+            TrackIndexCell {
+                width: TracksState.shown-width(TrackColumn.index, root.list-width);
+                index: root.track.index;
+                is-playing: root.track.is-playing;
+                is-row-hovered: touch.has-hover;
+                can-play: root.track.is-loaded;
+                playing-icon: Icons.equalizer;
+                play => {
+                    root.play();
+                }
+            }
+
+            if root.track.is-loaded: HorizontalLayout {
+                Cell {
+                    width: TracksState.shown-width(TrackColumn.title, root.list-width);
+                    text: root.track.title;
+                    text-color: root.track.is-playing ? Theme.primary : Theme.foreground;
+                }
+
+                if TracksState.is-artist-shown: LinkCell {
+                    width: TracksState.shown-width(TrackColumn.artist, root.list-width);
+                    text: root.track.artists;
+                    is-enabled: root.track.artist-id != "";
+                    clicked => {
+                        AppState.navigate(Route.artist-detail, root.track.artist-id);
+                    }
+                    context-menu(pointer-x, pointer-y) => {
+                        root.context-menu(pointer-x, pointer-y);
+                    }
+                }
+
+                if TracksState.is-album-shown: LinkCell {
+                    width: TracksState.shown-width(TrackColumn.album, root.list-width);
+                    text: root.track.album;
+                    is-enabled: root.track.album-id != "";
+                    clicked => {
+                        AppState.navigate(Route.album-detail, root.track.album-id);
+                    }
+                    context-menu(pointer-x, pointer-y) => {
+                        root.context-menu(pointer-x, pointer-y);
+                    }
+                }
+
+                if TracksState.is-year-shown: Cell {
+                    width: TracksState.shown-width(TrackColumn.year, root.list-width);
+                    text: root.track.year;
+                }
+
+                if TracksState.is-plays-shown: Cell {
+                    width: TracksState.shown-width(TrackColumn.plays, root.list-width);
+                    text: root.track.plays;
+                }
+
+                if TracksState.is-duration-shown: Cell {
+                    width: TracksState.shown-width(TrackColumn.duration, root.list-width);
+                    text: root.track.duration;
+                }
+
+                if TracksState.is-favorite-shown: FavoriteCell {
+                    width: TracksState.shown-width(TrackColumn.favorite, root.list-width);
+                    is-favorite: root.track.is-favorite;
+                    is-row-hovered: touch.has-hover;
+                    toggle => {
+                        root.toggle-favorite();
+                    }
+                    context-menu(pointer-x, pointer-y) => {
+                        root.context-menu(pointer-x, pointer-y);
+                    }
+                }
+
+                if TracksState.is-rating-shown: RatingCell {
+                    width: TracksState.shown-width(TrackColumn.rating, root.list-width);
+                    rating: root.track.rating;
+                    rate(value) => {
+                        root.rate(value);
+                    }
+                    context-menu(pointer-x, pointer-y) => {
+                        root.context-menu(pointer-x, pointer-y);
+                    }
+                }
+
+                Rectangle { }
+            }
+
+            if !root.track.is-loaded: HorizontalLayout {
+                spacing: 24px;
+                padding-right: 24px;
+
+                Rectangle {
+                    width: TracksState.shown-width(TrackColumn.title, root.list-width) - 24px;
+
+                    Skeleton {
+                        width: parent.width * 0.6;
+                    }
+                }
+
+                Rectangle {
+                    width: TracksState.shown-width(TrackColumn.artist, root.list-width) - 24px;
+
+                    Skeleton {
+                        width: parent.width * 0.5;
+                    }
+                }
+
+                Rectangle { }
+            }
+        }
+    }
+}

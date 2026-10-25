@@ -1,0 +1,178 @@
+import { Theme, Icons } from "theme.slint";
+import { AppState, Route } from "globals.slint";
+import { Icon, TooltipAnchor } from "widgets.slint";
+import { CoverArt, PlayButton } from "cover_art.slint";
+import { Shelf } from "shelf.slint";
+
+export struct HomeAlbum {
+    id: string,
+    name: string,
+    artist: string,
+    artist-id: string,
+    cover-id: string,
+    cover: image,
+    has-cover: bool,
+}
+
+export struct HomeShelf {
+    title: string,
+    albums: [HomeAlbum],
+    is-loading: bool,
+    is-refreshable: bool,
+}
+
+export global HomeState {
+    in property <[HomeShelf]> shelves;
+    callback load(string);
+    callback refresh(int);
+    callback play(string);
+    callback cover-needed(shelf-index: int, card-index: int);
+}
+
+component AlbumCard inherits Rectangle {
+    in property <HomeAlbum> album;
+    in property <bool> is-on-screen;
+    property <bool> wants-cover: root.is-on-screen && !root.album.has-cover && root.album.cover-id != "";
+    callback cover-needed();
+    width: 160px;
+    height: 214px;
+    accessible-role: button;
+    accessible-label: root.album.name;
+    accessible-action-default => {
+        AppState.navigate(Route.album-detail, root.album.id);
+    }
+
+    init => {
+        if (root.wants-cover) {
+            root.cover-needed();
+        }
+    }
+    changed wants-cover => {
+        if (self.wants-cover) {
+            root.cover-needed();
+        }
+    }
+
+    card-touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            AppState.navigate(Route.album-detail, root.album.id);
+        }
+    }
+
+    TooltipAnchor {
+        text: @tr("Open {}", root.album.name);
+        is-hovered: card-touch.has-hover;
+    }
+
+    CoverArt {
+        y: 0;
+        width: root.width;
+        height: root.width;
+        source: root.album.cover;
+        has-source: root.album.has-cover;
+        is-hovered: card-touch.has-hover || play-badge.is-hovered;
+
+        play-badge := PlayButton {
+            x: parent.width - self.width - 10px;
+            y: parent.height - self.height - 10px;
+            size: 40px;
+            is-shown: card-touch.has-hover || self.is-hovered;
+            tooltip: @tr("Play");
+            clicked => {
+                HomeState.play(root.album.id);
+            }
+        }
+    }
+
+    Text {
+        y: root.width + 8px;
+        width: root.width;
+        text: root.album.name;
+        color: Theme.foreground;
+        font-weight: 600;
+        overflow: elide;
+    }
+
+    Text {
+        y: root.width + 28px;
+        width: min(self.preferred-width, root.width);
+        text: root.album.artist;
+        color: artist-touch.has-hover && root.album.artist-id != "" ? Theme.foreground : Theme.muted;
+        font-size: 12px;
+        overflow: elide;
+
+        artist-touch := TouchArea {
+            enabled: root.album.artist-id != "";
+            mouse-cursor: pointer;
+            clicked => {
+                AppState.navigate(Route.artist-detail, root.album.artist-id);
+            }
+        }
+
+        TooltipAnchor {
+            text: root.album.artist-id != "" ? @tr("Go to {}", root.album.artist) : "";
+            is-hovered: artist-touch.has-hover;
+        }
+    }
+}
+
+component ShelfView inherits VerticalLayout {
+    in property <HomeShelf> shelf;
+    in property <int> index;
+    in property <bool> is-on-screen;
+
+    shelf-view := Shelf {
+        title: root.shelf.title;
+        card-count: root.shelf.albums.length;
+        is-loading: root.shelf.is-loading;
+        is-refreshable: root.shelf.is-refreshable;
+        empty-text: @tr("No albums");
+        refresh => {
+            HomeState.refresh(root.index);
+        }
+
+        for album[album-index] in root.shelf.albums: AlbumCard {
+            x: album-index * shelf-view.stride;
+            album: album;
+            is-on-screen: root.is-on-screen && self.x + shelf-view.scroll-x + self.width > 0 && self.x + shelf-view.scroll-x < shelf-view.visible-width;
+            cover-needed => {
+                HomeState.cover-needed(root.index, album-index);
+            }
+        }
+    }
+}
+
+export component HomeView inherits Rectangle {
+    min-width: 320px;
+    background: Theme.panel;
+
+    init => {
+        HomeState.load(AppState.detail-id);
+    }
+
+    page := Flickable {
+        content-width: self.width;
+        content-height: content.preferred-height;
+
+        content := VerticalLayout {
+            width: page.width;
+            padding: 20px;
+            padding-bottom: 32px;
+            spacing: 28px;
+
+            Text {
+                text: @tr("Home");
+                font-size: 24px;
+                font-weight: 700;
+                color: Theme.foreground;
+            }
+
+            for shelf[shelf-index] in HomeState.shelves: ShelfView {
+                shelf: shelf;
+                index: shelf-index;
+                is-on-screen: self.y + page.content-y + self.height > 0 && self.y + page.content-y < page.height;
+            }
+        }
+    }
+}

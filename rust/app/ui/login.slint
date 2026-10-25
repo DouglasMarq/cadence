@@ -1,0 +1,129 @@
+import { LineEdit } from "std-widgets.slint";
+import { Theme, Icons } from "theme.slint";
+import { LoginState, ServerKind } from "globals.slint";
+import { Icon, TooltipButton, TooltipComboBox } from "widgets.slint";
+
+component Label inherits Text {
+    color: Theme.muted;
+    font-size: 12px;
+}
+
+export component LoginView inherits Rectangle {
+    background: Theme.background;
+
+    VerticalLayout {
+        alignment: center;
+
+        HorizontalLayout {
+            alignment: center;
+
+            Rectangle {
+                width: 380px;
+                background: Theme.surface;
+                border-radius: 12px;
+                border-width: 1px;
+                border-color: Theme.border;
+
+                VerticalLayout {
+                    padding: 28px;
+                    spacing: 10px;
+
+                    HorizontalLayout {
+                        spacing: 10px;
+                        alignment: start;
+
+                        Icon {
+                            path: Icons.cadence;
+                            color: Theme.primary;
+                            width: 28px;
+                            height: 28px;
+                        }
+
+                        Text {
+                            text: "Cadence";
+                            font-size: 22px;
+                            font-weight: 700;
+                            color: Theme.foreground;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    Text {
+                        text: @tr("Connect to your music server");
+                        color: Theme.muted;
+                    }
+
+                    Rectangle {
+                        height: 6px;
+                    }
+
+                    Label {
+                        text: @tr("Server type");
+                    }
+
+                    TooltipComboBox {
+                        tooltip: @tr("Server type: {}", self.current-value);
+                        model: ["Navidrome", "Subsonic", "Jellyfin"];
+                        current-index: LoginState.server-type == ServerKind.subsonic ? 1 : (LoginState.server-type == ServerKind.jellyfin ? 2 : 0);
+                        is-enabled: !LoginState.is-busy;
+                        selected => {
+                            LoginState.server-type = [ServerKind.navidrome, ServerKind.subsonic, ServerKind.jellyfin][self.current-index];
+                        }
+                    }
+
+                    Label {
+                        text: @tr("URL");
+                    }
+
+                    LineEdit {
+                        placeholder-text: "https://music.example.com";
+                        text <=> LoginState.url;
+                        enabled: !LoginState.is-busy;
+                    }
+
+                    Label {
+                        text: @tr("Username");
+                    }
+
+                    LineEdit {
+                        text <=> LoginState.username;
+                        enabled: !LoginState.is-busy;
+                    }
+
+                    Label {
+                        text: @tr("Password");
+                    }
+
+                    LineEdit {
+                        input-type: password;
+                        text <=> LoginState.password;
+                        enabled: !LoginState.is-busy;
+                        accepted => {
+                            LoginState.login();
+                        }
+                    }
+
+                    if LoginState.error != "": Text {
+                        text: LoginState.error;
+                        color: Theme.danger;
+                        wrap: word-wrap;
+                    }
+
+                    Rectangle {
+                        height: 6px;
+                    }
+
+                    TooltipButton {
+                        text: LoginState.is-busy ? @tr("Connecting...") : @tr("Sign in");
+                        tooltip: @tr("Connect to this server");
+                        is-primary: true;
+                        is-enabled: !LoginState.is-busy;
+                        clicked => {
+                            LoginState.login();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

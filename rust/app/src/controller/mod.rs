@@ -1,0 +1,171 @@
+mod command;
+mod connection;
+mod dispatch;
+mod list_streams;
+mod media_session;
+mod persistence;
+mod playback;
+mod player_events;
+mod preload;
+mod publish;
+mod queue_ops;
+mod radio;
+mod remote;
+mod scrobbling;
+mod server_queue;
+mod settings_changes;
+mod sleep;
+mod stream_pages;
+mod streaming;
+mod track_ops;
+mod ui_update;
+mod volume;
+mod youtube;
+
+use std::sync::Arc;
+
+use cadence_api::Credential;
+use cadence_core::queue::{Queue, QueueTrack, Uid};
+use cadence_storage::queue_store::StoredQueue;
+use cadence_storage::settings::Settings;
+use tokio::sync::mpsc;
+
+pub use command::{Command, SettingsSnapshot, TrackCommand, YouTubeCommand, forward_command};
+pub use persistence::{PersistenceEvent, load_saved_queue};
+#[cfg(test)]
+pub use radio::RADIO_STREAM_UID;
+pub use radio::{RadioCommand, RadioNowPlaying};
+pub use remote::{AdoptedQueue, RemoteCommand};
+pub use ui_update::{UiSink, UiUpdate};
+pub use volume::MAX_VOLUME;
+pub use youtube::YouTubeResolution;
+
+use crate::audio::AudioOutput;
+use crate::covers::CoverProvider;
+use crate::media::MediaSession;
+use crate::play_queue_sync::PlayQueueSync;
+use crate::scrobble::ScrobbleTracker;
+use crate::session::Session;
+use crate::sleep_timer::SleepTimer;
+use crate::store::Store;
+use list_streams::ListStreams;
+use persistence::{QueuePersistence, ShutdownState};
+use youtube::YouTubeStreams;
+
+pub struct Deps {
+    pub audio: Box<dyn AudioOutput>,
+    pub media: Box<dyn MediaSession>,
+    pub store: Arc<dyn Store>,
+    pub session: Session,
+    pub ui: Arc<dyn UiSink>,
+    pub commands: mpsc::UnboundedSender<Command>,
+    pub covers: Arc<dyn CoverProvider>,
+}
+
+pub struct Controller {
+    deps: Deps,
+    queue: Queue,
+    settings: Settings,
+    scrobble_tracker: ScrobbleTracker,
+    loaded: Option<Uid>,
+    loading: Option<Uid>,
+    preloaded: Option<Uid>,
+    is_playing: bool,
+    position_ms: u64,
+    duration_ms: u64,
+    play_request: u64,
+    queue_sync: PlayQueueSync,
+    persistence: QueuePersistence,
+    sleep_timer: SleepTimer,
+    saved_credential: Option<Credential>,
+    list_streams: ListStreams,
+    shutdown: ShutdownState,
+    radio: Option<radio::RadioPlayback>,
+    youtube: YouTubeStreams,
+}
+
+fn initial_queue(stored: Option<StoredQueue>, seed: Option<u64>) -> (Queue, u64) {
+    match stored {
+        Some(stored) => (Queue::from_snapshot(stored.snapshot), stored.position_ms),
+        None => (seed.map_or_else(Queue::new, Queue::with_seed), 0),
+    }
+}
+
+impl Controller {
+    pub fn new(
+        deps: Deps,
+        settings: Settings,
+        stored: Option<StoredQueue>,
+        seed: Option<u64>,
+    ) -> Self {
+        let (queue, position_ms) = initial_queue(stored, seed);
+        let duration_ms = queue.current().map_or(0, |item| item.track.duration_ms);
+        let persistence = QueuePersistence::new(Arc::clone(&deps.store), deps.commands.clone());
+        deps.session.publish_settings(&settings);
+        let mut controller = Self {
+            deps,
+            queue,
+            settings,
+            scrobble_tracker: ScrobbleTracker::default(),
+            loaded: None,
+            loading: None,
+            preloaded: None,
+            is_playing: false,
+            position_ms,
+            duration_ms,
+            play_request: 0,
+            queue_sync: PlayQueueSync::default(),
+            persistence,
+            sleep_timer: SleepTimer::default(),
+            saved_credential: None,
+            list_streams: ListStreams::default(),
+            shutdown: ShutdownState::default(),
+            radio: None,
+            youtube: YouTubeStreams::default(),
+        };
+        controller.publish_all();
+        controller.update_media_volume();
+        controller
+    }
+
+    pub async fn run(mut self, mut commands: mpsc::UnboundedReceiver<Command>) {
+        while let Some(command) = commands.recv().await {
+            self.handle(command);
+            if !self.is_running() {
+                break;
+            }
+        }
+    }
+
+    #[cfg(test)]
+    pub fn queue(&self) -> &Queue {
+        &self.queue
+    }
+
+    #[cfg(test)]
+    pub fn is_playing(&self) -> bool {
+        self.is_playing
+    }
+
+    #[cfg(test)]
+    pub fn is_resolving(&self) -> bool {
+        self.youtube.is_loading()
+    }
+
+    #[cfg(test)]
+    pub fn sleep_status(&self) -> Option<crate::sleep_timer::SleepStatus> {
+        self.sleep_timer.status()
+    }
+
+    fn current_track(&self) -> Option<QueueTrack> {
+        self.queue
+            .current()
+            .map(|item| QueueTrack::clone(&item.track))
+    }
+
+    fn current_duration_ms(&self) -> u64 {
+        self.queue
+            .current()
+            .map_or(0, |item| item.track.duration_ms)
+    }
+}

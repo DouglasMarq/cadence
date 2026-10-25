@@ -1,0 +1,83 @@
+use slint::ComponentHandle;
+
+use super::deps::DetailDeps;
+use super::detail::lock;
+use crate::controller::Command;
+use crate::list_stream::{ListRow, Placement, PlaylistId, RowRanges, SongSource};
+use crate::ui::{AppWindow, PlayerState};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PlayStart {
+    FromTop {
+        is_shuffled: bool,
+    },
+    AtRow {
+        index: usize,
+        song_id: Option<String>,
+    },
+}
+
+impl PlayStart {
+    fn shuffles(&self) -> bool {
+        matches!(self, Self::FromTop { is_shuffled: true })
+    }
+
+    fn command(self, playlist_id: PlaylistId) -> Command {
+        let source = SongSource::Playlist(playlist_id);
+        match self {
+            Self::FromTop { .. } => Command::EnqueueFromList {
+                source,
+                ranges: vec![RowRanges::WHOLE_LIST],
+                placement: Placement::Now,
+            },
+            Self::AtRow { index, song_id } => Command::PlayFromList {
+                source,
+                song_id,
+                row_index: ListRow(index),
+            },
+        }
+    }
+}
+
+pub fn play_playlist(window: &AppWindow, deps: &DetailDeps, start: PlayStart) {
+    let playlist_id = lock(&deps.shared).id.clone();
+    if playlist_id.is_empty() {
+        return;
+    }
+    if start.shuffles() && !window.global::<PlayerState>().get_is_shuffled() {
+        deps.context.send(Command::ToggleShuffle);
+    }
+    deps.context.send(start.command(PlaylistId(playlist_id)));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn playing_from_the_top_streams_every_row_and_rows_start_at_their_song() {
+        let top = PlayStart::FromTop { is_shuffled: true };
+        assert!(top.shuffles());
+        assert!(matches!(
+            top.command(PlaylistId("playlist-1".into())),
+            Command::EnqueueFromList {
+                source: SongSource::Playlist(PlaylistId(id)),
+                ranges,
+                placement: Placement::Now,
+            } if id == "playlist-1" && ranges.len() == 1 && ranges.first() == Some(&RowRanges::WHOLE_LIST)
+        ));
+        let row = PlayStart::AtRow {
+            index: 700,
+            song_id: None,
+        };
+        assert!(!row.shuffles());
+        assert!(matches!(
+            row.command(PlaylistId("playlist-1".into())),
+            Command::PlayFromList {
+                song_id: None,
+                row_index: ListRow(700),
+                ..
+            }
+        ));
+    }
+}

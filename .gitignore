@@ -1,0 +1,8 @@
+.DS_Store
+*.log*
+.idea
+.scratch
+
+### Claude Code ###
+.claude/settings.local.json
+.claude/worktrees/

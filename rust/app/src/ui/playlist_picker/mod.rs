@@ -1,0 +1,17 @@
+mod choices;
+mod dialog;
+mod handle;
+mod listed_requests;
+mod picker;
+mod playlist_writes;
+mod requests;
+mod streamed;
+mod view;
+
+pub use handle::PlaylistPicker;
+pub use view::install;
+
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+mod view_tests;

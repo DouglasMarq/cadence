@@ -1,0 +1,829 @@
+import { AboutSlint, LineEdit, ScrollView } from "std-widgets.slint";
+import { Behaviour, Theme, Icons } from "theme.slint";
+import { AppState, PlayerState } from "globals.slint";
+import { ActionChip, Bar, IconButton, SettingRow, TooltipAnchor, TooltipButton, TooltipComboBox, TooltipSwitch } from "widgets.slint";
+import { AppearanceOptions } from "appearance_settings.slint";
+import { DevicesState, TextAction } from "devices.slint";
+
+export struct ServerRow {
+    id: string,
+    name: string,
+    kind: string,
+    detail: string,
+    is-current: bool,
+}
+
+export struct LyricsSourceRow {
+    id: string,
+    name: string,
+    is-enabled: bool,
+}
+
+export enum ReplayGain { off, track, album }
+
+export global SettingsState {
+    in property <bool> is-loaded;
+    in-out property <ReplayGain> replay-gain;
+    in-out property <bool> is-gapless: true;
+    in-out property <int> crossfade-seconds;
+    in property <int> max-crossfade-seconds: 12;
+    in property <[string]> devices;
+    in-out property <int> device-index;
+    in property <[string]> bitrates;
+    in-out property <int> bitrate-index;
+    in property <[string]> formats;
+    in-out property <int> format-index;
+    in-out property <bool> is-scrobbling-enabled: true;
+    in-out property <bool> is-mpris-enabled: true;
+    in-out property <bool> is-discord-enabled;
+    in-out property <bool> is-remote-control-enabled;
+    in-out property <bool> is-remote-approval-skipped;
+    in property <[LyricsSourceRow]> lyrics-sources;
+    in property <[ServerRow]> servers;
+    in property <string> switching;
+    in-out property <bool> is-following-current-song;
+    in-out property <bool> is-tray-enabled: true;
+    in-out property <bool> is-close-to-tray;
+    callback tray-changed();
+    in property <[string]> languages;
+    in-out property <int> language-index;
+    callback language-changed();
+    callback load(string);
+    callback playback-changed();
+    callback integrations-changed();
+    callback forget-devices();
+    callback interface-changed();
+    callback toggle-lyrics-source(int);
+    callback move-lyrics-source(int, int);
+    callback switch-server(string);
+    callback remove-server(string);
+    callback add-server();
+    callback log-out();
+    in-out property <string> yt-dlp-path;
+    in property <[string]> cookie-browsers;
+    in-out property <int> cookie-browser-index;
+    in property <[string]> chart-countries;
+    in-out property <int> chart-country-index;
+    in-out property <string> youtube-link;
+    callback youtube-changed();
+    callback play-youtube-link();
+    callback play-youtube-link-next();
+    callback add-youtube-link();
+}
+
+component Section inherits Rectangle {
+    in property <string> title;
+    background: Theme.surface;
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: Theme.border;
+
+    VerticalLayout {
+        padding: 20px;
+        spacing: 18px;
+
+        Text {
+            text: root.title;
+            color: Theme.foreground;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        @children
+    }
+}
+
+component Picker inherits TooltipComboBox {
+    in property <string> label;
+    width: 220px;
+    tooltip: @tr("{}: {}", root.label, root.current-value);
+}
+
+component ReplayGainPicker inherits Picker {
+    property <ReplayGain> mode: SettingsState.replay-gain;
+    current-index: root.index-of(root.mode);
+
+    pure function index-of(mode: ReplayGain) -> int {
+        return mode == ReplayGain.track ? 1 : (mode == ReplayGain.album ? 2 : 0);
+    }
+
+    changed mode => {
+        root.current-index = root.index-of(root.mode);
+    }
+    selected => {
+        SettingsState.replay-gain = [ReplayGain.off, ReplayGain.track, ReplayGain.album][root.current-index];
+        SettingsState.playback-changed();
+    }
+}
+
+component YouTubeSection inherits Section {
+    property <bool> has-link: SettingsState.youtube-link != "";
+    title: @tr("YouTube");
+
+    SettingRow {
+        title: @tr("yt-dlp program");
+        description: @tr("Plays YouTube tracks. Leave empty to use yt-dlp from your PATH.");
+
+        path-edit := LineEdit {
+            width: 220px;
+            placeholder-text: "yt-dlp";
+            text <=> SettingsState.yt-dlp-path;
+            accepted => {
+                SettingsState.youtube-changed();
+            }
+            changed has-focus => {
+                if (!self.has-focus) {
+                    SettingsState.youtube-changed();
+                }
+            }
+        }
+    }
+
+    SettingRow {
+        title: @tr("Sign in with browser");
+        description: @tr("Uses your YouTube session in this browser for a personalized Discover home and Premium audio. yt-dlp copies its cookies to a private temporary file that Cadence deletes right after reading.");
+
+        Picker {
+            label: @tr("Sign in with browser");
+            model: SettingsState.cookie-browsers;
+            current-index <=> SettingsState.cookie-browser-index;
+            selected => {
+                SettingsState.youtube-changed();
+            }
+        }
+    }
+
+    SettingRow {
+        title: @tr("Chart country");
+        description: @tr("Default country for the Discover charts. Automatic follows your system region.");
+
+        Picker {
+            label: @tr("Chart country");
+            model: SettingsState.chart-countries;
+            current-index <=> SettingsState.chart-country-index;
+            selected => {
+                SettingsState.youtube-changed();
+            }
+        }
+    }
+
+    SettingRow {
+        title: @tr("Play a YouTube link");
+        description: @tr("Paste a YouTube or YouTube Music link to try yt-dlp.");
+
+        LineEdit {
+            width: 220px;
+            placeholder-text: "https://music.youtube.com/watch?v=";
+            text <=> SettingsState.youtube-link;
+            accepted => {
+                SettingsState.play-youtube-link();
+            }
+        }
+
+        ActionChip {
+            text: @tr("Play");
+            is-enabled: root.has-link;
+            tooltip: root.has-link ? @tr("Play this link now") : @tr("Paste a link first");
+            clicked => {
+                SettingsState.play-youtube-link();
+            }
+        }
+
+        ActionChip {
+            text: @tr("Play next");
+            is-enabled: root.has-link;
+            tooltip: root.has-link ? @tr("Play this link after the current song") : @tr("Paste a link first");
+            clicked => {
+                SettingsState.play-youtube-link-next();
+            }
+        }
+
+        ActionChip {
+            text: @tr("Add to queue");
+            is-enabled: root.has-link;
+            tooltip: root.has-link ? @tr("Add this link to the end of the queue") : @tr("Paste a link first");
+            clicked => {
+                SettingsState.add-youtube-link();
+            }
+        }
+    }
+}
+
+component Divider inherits Rectangle {
+    height: 1px;
+    background: Theme.border;
+}
+
+component LyricsSourceItem inherits Rectangle {
+    in property <LyricsSourceRow> source;
+    in property <int> index;
+    in property <int> count;
+    height: 40px;
+    border-radius: Theme.radius;
+    background: touch.has-hover ? Theme.hover : transparent;
+
+    touch := TouchArea { }
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 4px;
+        spacing: 8px;
+
+        Text {
+            text: (root.index + 1) + ".";
+            width: 20px;
+            color: Theme.muted;
+            vertical-alignment: center;
+        }
+
+        Text {
+            text: root.source.name;
+            color: root.source.is-enabled ? Theme.foreground : Theme.muted;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+        }
+
+        IconButton {
+            y: (parent.height - self.height) / 2;
+            icon: Icons.arrow-up;
+            tooltip: @tr("Move up");
+            is-enabled: root.index > 0;
+            clicked => {
+                SettingsState.move-lyrics-source(root.index, -1);
+            }
+        }
+
+        IconButton {
+            y: (parent.height - self.height) / 2;
+            icon: Icons.arrow-down;
+            tooltip: @tr("Move down");
+            is-enabled: root.index < root.count - 1;
+            clicked => {
+                SettingsState.move-lyrics-source(root.index, 1);
+            }
+        }
+
+        TooltipSwitch {
+            label: root.source.name;
+            is-checked: root.source.is-enabled;
+            toggled => {
+                SettingsState.toggle-lyrics-source(root.index);
+            }
+        }
+    }
+}
+
+component ServerItem inherits Rectangle {
+    in property <ServerRow> server;
+    in-out property <string> confirming;
+    property <bool> is-confirming: root.confirming == root.server.id;
+    property <bool> is-busy: SettingsState.switching != "";
+    min-height: 56px;
+    border-radius: Theme.radius;
+    background: root.server.is-current ? Theme.selected : (touch.has-hover ? Theme.hover : transparent);
+
+    touch := TouchArea { }
+
+    HorizontalLayout {
+        padding: 10px;
+        padding-left: 14px;
+        spacing: 10px;
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 3px;
+            horizontal-stretch: 1;
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+
+                Text {
+                    text: root.server.name;
+                    color: Theme.foreground;
+                    font-weight: 600;
+                    overflow: elide;
+                }
+
+                Rectangle {
+                    width: kind-text.preferred-width + 12px;
+                    height: 18px;
+                    border-radius: 9px;
+                    background: Theme.surface-raised;
+
+                    kind-text := Text {
+                        text: root.server.kind;
+                        color: Theme.muted;
+                        font-size: 11px;
+                    }
+                }
+
+                if root.server.is-current: Rectangle {
+                    width: current-text.preferred-width + 12px;
+                    height: 18px;
+                    border-radius: 9px;
+                    background: Theme.primary;
+
+                    current-text := Text {
+                        text: @tr("Current");
+                        color: Theme.on-primary;
+                        font-size: 11px;
+                        font-weight: 600;
+                    }
+                }
+            }
+
+            Text {
+                text: root.server.detail;
+                color: Theme.muted;
+                font-size: 12px;
+                overflow: elide;
+            }
+        }
+
+        if !root.server.is-current && !root.is-confirming: TooltipButton {
+            text: SettingsState.switching == root.server.id ? @tr("Connecting...") : @tr("Switch");
+            tooltip: @tr("Connect to {}", root.server.name);
+            is-enabled: !root.is-busy;
+            clicked => {
+                SettingsState.switch-server(root.server.id);
+            }
+        }
+
+        if !root.is-confirming: TooltipButton {
+            text: @tr("Remove");
+            tooltip: @tr("Forget {}", root.server.name);
+            is-enabled: !root.is-busy;
+            clicked => {
+                root.confirming = root.server.id;
+            }
+        }
+
+        if root.is-confirming: Text {
+            text: root.server.is-current ? @tr("Sign out and forget this server?") : @tr("Forget this server?");
+            color: Theme.danger;
+            vertical-alignment: center;
+        }
+
+        if root.is-confirming: TooltipButton {
+            text: @tr("Cancel");
+            tooltip: @tr("Keep {}", root.server.name);
+            clicked => {
+                root.confirming = "";
+            }
+        }
+
+        if root.is-confirming: TooltipButton {
+            text: @tr("Remove");
+            tooltip: @tr("Forget {}", root.server.name);
+            is-primary: true;
+            clicked => {
+                root.confirming = "";
+                SettingsState.remove-server(root.server.id);
+            }
+        }
+    }
+}
+
+export component SettingsView inherits Rectangle {
+    property <string> confirming;
+    property <bool> is-confirming-logout;
+    background: Theme.panel;
+
+    init => {
+        SettingsState.load(AppState.detail-id);
+    }
+
+    scroll := ScrollView {
+        VerticalLayout {
+            width: scroll.visible-width;
+            padding: 28px;
+            padding-top: 24px;
+            spacing: 20px;
+            alignment: start;
+
+            Text {
+                text: @tr("Settings");
+                color: Theme.foreground;
+                font-size: 24px;
+                font-weight: 700;
+            }
+
+            Section {
+                title: @tr("Playback");
+
+                SettingRow {
+                    title: @tr("Volume");
+                    description: @tr("Starting volume, shared with the player bar.");
+
+                    VerticalLayout {
+                        alignment: center;
+
+                        volume-bar := Bar {
+                            width: 160px;
+                            value: PlayerState.volume / 100;
+                            scroll-step: Behaviour.volume-step / Behaviour.max-volume;
+                            tooltip: @tr("Volume {}%", self.is-adjusting ? Math.round(self.drag-preview * 100) : PlayerState.volume);
+                            changed(value) => {
+                                PlayerState.set-volume(Math.round(value * 100));
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: (volume-bar.is-adjusting ? Math.round(volume-bar.drag-preview * 100) : PlayerState.volume) + "%";
+                        width: 40px;
+                        color: Theme.muted;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("ReplayGain");
+                    description: @tr("Normalize loudness using the track or album gain tags.");
+
+                    ReplayGainPicker {
+                        label: @tr("ReplayGain");
+                        model: [@tr("Off"), @tr("Track"), @tr("Album")];
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Gapless playback");
+                    description: @tr("Preload the next song so it starts without a pause.");
+
+                    TooltipSwitch {
+                        label: @tr("Gapless playback");
+                        is-checked <=> SettingsState.is-gapless;
+                        toggled => {
+                            SettingsState.playback-changed();
+                        }
+                    }
+                }
+
+                crossfade-option := SettingRow {
+                    title: @tr("Crossfade");
+                    description: @tr("Fade the end of each song into the next one. Off keeps gapless playback.");
+                    property <int> shown-seconds: crossfade-bar.is-adjusting ? Math.round(crossfade-bar.drag-preview * SettingsState.max-crossfade-seconds) : SettingsState.crossfade-seconds;
+                    property <string> shown-label: self.shown-seconds == 0 ? @tr("Off") : @tr("{} s", self.shown-seconds);
+
+                    VerticalLayout {
+                        alignment: center;
+
+                        crossfade-bar := Bar {
+                            width: 160px;
+                            value: SettingsState.crossfade-seconds / SettingsState.max-crossfade-seconds;
+                            scroll-step: 1 / SettingsState.max-crossfade-seconds;
+                            tooltip: @tr("Crossfade: {}", crossfade-option.shown-label);
+                            committed(value) => {
+                                SettingsState.crossfade-seconds = Math.round(value * SettingsState.max-crossfade-seconds);
+                                SettingsState.playback-changed();
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: crossfade-option.shown-label;
+                        width: 40px;
+                        color: Theme.muted;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Audio device");
+                    description: @tr("Output used by the player.");
+
+                    Picker {
+                        label: @tr("Audio device");
+                        model: SettingsState.devices;
+                        current-index <=> SettingsState.device-index;
+                        selected => {
+                            SettingsState.playback-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Maximum bitrate");
+                    description: @tr("Ask the server to transcode down to this bitrate. Applies from the next song.");
+
+                    Picker {
+                        label: @tr("Maximum bitrate");
+                        model: SettingsState.bitrates;
+                        current-index <=> SettingsState.bitrate-index;
+                        selected => {
+                            SettingsState.playback-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Transcode format");
+                    description: @tr("Format the server should transcode to. Applies from the next song.");
+
+                    Picker {
+                        label: @tr("Transcode format");
+                        model: SettingsState.formats;
+                        current-index <=> SettingsState.format-index;
+                        selected => {
+                            SettingsState.playback-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Scrobble");
+                    description: @tr("Report what you play to the server.");
+
+                    TooltipSwitch {
+                        label: @tr("Scrobble");
+                        is-checked <=> SettingsState.is-scrobbling-enabled;
+                        toggled => {
+                            SettingsState.playback-changed();
+                        }
+                    }
+                }
+            }
+
+            Section {
+                title: @tr("Integrations");
+
+                SettingRow {
+                    title: @tr("MPRIS");
+                    description: @tr("Media keys and desktop media controls. Takes effect after a restart.");
+
+                    TooltipSwitch {
+                        label: @tr("MPRIS");
+                        is-checked <=> SettingsState.is-mpris-enabled;
+                        toggled => {
+                            SettingsState.integrations-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Discord Rich Presence");
+                    description: @tr("Show the current song on your Discord profile.");
+
+                    TooltipSwitch {
+                        label: @tr("Discord Rich Presence");
+                        is-checked <=> SettingsState.is-discord-enabled;
+                        toggled => {
+                            SettingsState.integrations-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Remote control");
+                    description: @tr("Let other Cadence players on this network control this one. Each device asks for your approval the first time.");
+
+                    TooltipSwitch {
+                        label: @tr("Remote control");
+                        is-checked <=> SettingsState.is-remote-control-enabled;
+                        toggled => {
+                            SettingsState.integrations-changed();
+                        }
+                    }
+                }
+
+                if SettingsState.is-remote-control-enabled: SettingRow {
+                    title: @tr("Allow without asking");
+                    description: @tr("Any device on this network can control this player without your approval. Banned devices are still refused.");
+
+                    TooltipSwitch {
+                        label: @tr("Allow without asking");
+                        is-checked <=> SettingsState.is-remote-approval-skipped;
+                        toggled => {
+                            SettingsState.integrations-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Approved devices");
+                    description: @tr("Devices you allowed can control this player without asking again.");
+
+                    TextAction {
+                        text: @tr("Forget all");
+                        tooltip: @tr("Ask again before any device can control this player");
+                        clicked => {
+                            SettingsState.forget-devices();
+                        }
+                    }
+                }
+
+                if DevicesState.banned.length > 0: Text {
+                    text: @tr("Banned devices");
+                    color: Theme.foreground;
+                }
+
+                for device in DevicesState.banned: SettingRow {
+                    title: device.name;
+                    description: device.address;
+
+                    TextAction {
+                        text: @tr("Remove");
+                        tooltip: @tr("Let \"{}\" ask to control this player again", device.name);
+                        clicked => {
+                            DevicesState.unban-device(device.id);
+                        }
+                    }
+                }
+
+                Divider { }
+
+                VerticalLayout {
+                    spacing: 6px;
+
+                    Text {
+                        text: @tr("Lyrics sources");
+                        color: Theme.foreground;
+                    }
+
+                    Text {
+                        text: @tr("Searched from top to bottom until one has lyrics.");
+                        color: Theme.muted;
+                        font-size: 12px;
+                    }
+
+                    VerticalLayout {
+                        padding-top: 4px;
+                        spacing: 2px;
+
+                        for row[index] in SettingsState.lyrics-sources: LyricsSourceItem {
+                            source: row;
+                            index: index;
+                            count: SettingsState.lyrics-sources.length;
+                        }
+                    }
+                }
+            }
+
+            YouTubeSection { }
+
+            Section {
+                title: @tr("Servers");
+
+                VerticalLayout {
+                    spacing: 4px;
+
+                    for row in SettingsState.servers: ServerItem {
+                        server: row;
+                        confirming <=> root.confirming;
+                    }
+
+                    if SettingsState.is-loaded && SettingsState.servers.length == 0: Text {
+                        text: @tr("No saved servers.");
+                        color: Theme.muted;
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+
+                    TooltipButton {
+                        text: @tr("Add server");
+                        tooltip: @tr("Sign in to another server");
+                        is-enabled: SettingsState.switching == "";
+                        clicked => {
+                            SettingsState.add-server();
+                        }
+                    }
+
+                    if !root.is-confirming-logout: TooltipButton {
+                        text: @tr("Log out");
+                        tooltip: @tr("Sign out of {}", AppState.server-name);
+                        is-enabled: SettingsState.switching == "" && AppState.server-name != "";
+                        clicked => {
+                            root.is-confirming-logout = true;
+                        }
+                    }
+
+                    if root.is-confirming-logout: Text {
+                        text: @tr("Sign out and forget this server's saved login?");
+                        color: Theme.danger;
+                        vertical-alignment: center;
+                    }
+
+                    if root.is-confirming-logout: TooltipButton {
+                        text: @tr("Cancel");
+                        tooltip: @tr("Stay signed in");
+                        clicked => {
+                            root.is-confirming-logout = false;
+                        }
+                    }
+
+                    if root.is-confirming-logout: TooltipButton {
+                        text: @tr("Log out");
+                        tooltip: @tr("Sign out of {}", AppState.server-name);
+                        is-primary: true;
+                        clicked => {
+                            root.is-confirming-logout = false;
+                            SettingsState.log-out();
+                        }
+                    }
+                }
+            }
+
+            Section {
+                title: @tr("Appearance");
+
+                AppearanceOptions { }
+            }
+
+            Section {
+                title: @tr("Interface");
+
+                SettingRow {
+                    title: @tr("Language");
+                    description: @tr("System default follows the language of the desktop.");
+
+                    Picker {
+                        label: @tr("Language");
+                        model: SettingsState.languages;
+                        current-index <=> SettingsState.language-index;
+                        selected => {
+                            SettingsState.language-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Open the queue panel");
+                    description: @tr("Show the queue next to the library; remembered on the next start.");
+
+                    TooltipSwitch {
+                        label: @tr("Open the queue panel");
+                        is-checked <=> AppState.is-queue-open;
+                        toggled => {
+                            SettingsState.interface-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Follow current song");
+                    description: @tr("Scroll lists and the queue to the song that is playing.");
+
+                    TooltipSwitch {
+                        label: @tr("Follow current song");
+                        is-checked <=> SettingsState.is-following-current-song;
+                        toggled => {
+                            SettingsState.interface-changed();
+                        }
+                    }
+                }
+
+                SettingRow {
+                    title: @tr("Show in the tray");
+                    description: @tr("Keep a Cadence icon with playback controls in the menu bar or system tray.");
+
+                    TooltipSwitch {
+                        label: @tr("Show in the tray");
+                        is-checked <=> SettingsState.is-tray-enabled;
+                        toggled => {
+                            SettingsState.tray-changed();
+                        }
+                    }
+                }
+
+                if SettingsState.is-tray-enabled: SettingRow {
+                    title: @tr("Close to the tray");
+                    description: @tr("Closing the window keeps the music playing; quit from the tray icon.");
+
+                    TooltipSwitch {
+                        label: @tr("Close to the tray");
+                        is-checked <=> SettingsState.is-close-to-tray;
+                        toggled => {
+                            SettingsState.tray-changed();
+                        }
+                    }
+                }
+            }
+
+            Section {
+                title: @tr("About {}", "Cadence");
+
+                HorizontalLayout {
+                    alignment: start;
+
+                    about-slint-hover := TouchArea {
+                        mouse-cursor: pointer;
+
+                        AboutSlint { }
+
+                        TooltipAnchor {
+                            text: @tr("Open {}", "slint.dev");
+                            is-hovered: about-slint-hover.has-hover;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,309 @@
+import { LineEdit, ListView } from "std-widgets.slint";
+import { Theme, Icons } from "theme.slint";
+import { Icon, SearchField, TooltipAnchor, TooltipButton } from "widgets.slint";
+
+export struct PickerRow {
+    id: string,
+    name: string,
+    info: string,
+}
+
+export component Modal inherits Rectangle {
+    in property <string> title;
+    in property <length> card-width: 420px;
+    callback cancel();
+    forward-focus: scope;
+    background: #000000a6;
+
+    scope := FocusScope {
+        key-pressed(event) => {
+            if (event.text == Key.Escape) {
+                root.cancel();
+                return accept;
+            }
+            return reject;
+        }
+
+        backdrop-touch := TouchArea {
+            clicked => {
+                root.cancel();
+            }
+        }
+
+        TooltipAnchor {
+            text: @tr("Click to close");
+            is-hovered: backdrop-touch.has-hover;
+        }
+
+        card := Rectangle {
+            width: min(root.card-width, root.width - 40px);
+            height: min(layout.preferred-height, root.height - 40px);
+            x: (root.width - self.width) / 2;
+            y: (root.height - self.height) / 2;
+            border-radius: 8px;
+            background: Theme.surface;
+            border-width: 1px;
+            border-color: Theme.border;
+            clip: true;
+
+            TouchArea { }
+
+            layout := VerticalLayout {
+                padding: 20px;
+                spacing: 14px;
+
+                Text {
+                    text: root.title;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: Theme.foreground;
+                    overflow: elide;
+                }
+
+                @children
+            }
+        }
+    }
+}
+
+export component DialogButtons inherits HorizontalLayout {
+    in property <string> confirm-text: @tr("OK");
+    in property <bool> is-confirm-enabled: true;
+    in property <bool> is-danger;
+    in property <string> confirm-tooltip;
+    in property <string> cancel-tooltip: @tr("Close without changes");
+    callback confirm();
+    callback cancel();
+    spacing: 8px;
+    alignment: end;
+
+    TooltipButton {
+        text: @tr("Cancel");
+        tooltip: root.cancel-tooltip;
+        clicked => {
+            root.cancel();
+        }
+    }
+
+    Rectangle {
+        min-width: confirm-text.preferred-width + 28px;
+        height: 32px;
+        border-radius: 4px;
+        background: root.is-danger ? Theme.danger : Theme.primary;
+        opacity: root.is-confirm-enabled ? (confirm-touch.has-hover ? 0.85 : 1) : 0.4;
+
+        confirm-text := Text {
+            text: root.confirm-text;
+            color: root.is-danger ? #ffffff : Theme.on-primary;
+            font-weight: 600;
+        }
+
+        TooltipAnchor {
+            text: root.confirm-tooltip;
+            is-hovered: confirm-touch.has-hover;
+        }
+
+        confirm-touch := TouchArea {
+            enabled: root.is-confirm-enabled;
+            mouse-cursor: pointer;
+            clicked => {
+                root.confirm();
+            }
+        }
+    }
+}
+
+export component NameDialog inherits Modal {
+    in property <string> initial-name;
+    in property <bool> is-busy;
+    callback submit(string);
+    title: @tr("New playlist");
+
+    init => {
+        name-edit.focus();
+    }
+
+    name-edit := LineEdit {
+        placeholder-text: @tr("Playlist name");
+        text: root.initial-name;
+        accepted(text) => {
+            if (!root.is-busy && text != "") {
+                root.submit(text);
+            }
+        }
+    }
+
+    DialogButtons {
+        confirm-text: root.is-busy ? @tr("Creating...") : @tr("Create");
+        confirm-tooltip: @tr("Create the playlist");
+        is-confirm-enabled: !root.is-busy && name-edit.text != "";
+        cancel => {
+            root.cancel();
+        }
+        confirm => {
+            root.submit(name-edit.text);
+        }
+    }
+}
+
+export global PlaylistPickerState {
+    in property <bool> is-open;
+    in property <[PickerRow]> rows;
+    in property <int> song-count;
+    in property <bool> is-loading;
+    in property <bool> is-busy;
+    in-out property <bool> is-creating;
+    in-out property <string> filter;
+    callback filter-edited(string);
+    callback pick(string);
+    callback create(string);
+    callback cancel();
+}
+
+component PickerItem inherits Rectangle {
+    in property <string> icon;
+    in property <string> name;
+    in property <string> info;
+    in property <bool> is-enabled: true;
+    in property <string> tooltip;
+    callback clicked();
+    height: 44px;
+    border-radius: 4px;
+    background: touch.has-hover && root.is-enabled ? Theme.hover : transparent;
+    opacity: root.is-enabled ? 1 : 0.5;
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 10px;
+
+        Icon {
+            y: (parent.height - self.height) / 2;
+            path: root.icon;
+            color: Theme.muted;
+            width: 18px;
+            height: 18px;
+        }
+
+        Text {
+            text: root.name;
+            color: Theme.foreground;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+
+        Text {
+            text: root.info;
+            color: Theme.muted;
+            font-size: 12px;
+            vertical-alignment: center;
+        }
+    }
+
+    TooltipAnchor {
+        text: root.tooltip;
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        enabled: root.is-enabled;
+        mouse-cursor: pointer;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+component PickerList inherits Modal {
+    title: @tr("Add {n} song to playlist" | "Add {n} songs to playlist" % PlaylistPickerState.song-count);
+    card-width: 460px;
+
+    init => {
+        filter-edit.focus();
+    }
+
+    filter-edit := SearchField {
+        placeholder-text: @tr("Filter playlists");
+        text: PlaylistPickerState.filter;
+        edited(text) => {
+            PlaylistPickerState.filter = text;
+            PlaylistPickerState.filter-edited(text);
+        }
+        accepted => {
+            if (PlaylistPickerState.rows.length == 1 && !PlaylistPickerState.is-busy) {
+                PlaylistPickerState.pick(PlaylistPickerState.rows[0].id);
+            }
+        }
+    }
+
+    PickerItem {
+        icon: Icons.playlist;
+        name: @tr("New playlist");
+        tooltip: @tr("Create a playlist with these songs");
+        is-enabled: !PlaylistPickerState.is-busy;
+        clicked => {
+            PlaylistPickerState.is-creating = true;
+        }
+    }
+
+    Rectangle {
+        height: 1px;
+        background: Theme.border;
+    }
+
+    Rectangle {
+        height: 300px;
+
+        ListView {
+            for row in PlaylistPickerState.rows: PickerItem {
+                icon: Icons.note;
+                name: row.name;
+                info: row.info;
+                tooltip: @tr("Add to {}", row.name);
+                is-enabled: !PlaylistPickerState.is-busy;
+                clicked => {
+                    PlaylistPickerState.pick(row.id);
+                }
+            }
+        }
+
+        if PlaylistPickerState.rows.length == 0: Text {
+            text: PlaylistPickerState.is-loading ? @tr("Loading playlists...") : @tr("No playlists found");
+            color: Theme.muted;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+
+    HorizontalLayout {
+        alignment: end;
+
+        TooltipButton {
+            text: @tr("Cancel");
+            tooltip: @tr("Close without adding the songs");
+            clicked => {
+                PlaylistPickerState.cancel();
+            }
+        }
+    }
+}
+
+export component PlaylistPicker inherits Rectangle {
+    if !PlaylistPickerState.is-creating: PickerList {
+        cancel => {
+            PlaylistPickerState.cancel();
+        }
+    }
+
+    if PlaylistPickerState.is-creating: NameDialog {
+        initial-name: PlaylistPickerState.filter;
+        is-busy: PlaylistPickerState.is-busy;
+        cancel => {
+            PlaylistPickerState.is-creating = false;
+        }
+        submit(name) => {
+            PlaylistPickerState.create(name);
+        }
+    }
+}

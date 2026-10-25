@@ -1,0 +1,402 @@
+import { ListView } from "std-widgets.slint";
+import { Theme, Icons, Typography } from "theme.slint";
+import { AppState, PlayerState, Route, TrackRow } from "globals.slint";
+import { AmbientBackdrop, Icon, IconButton, TooltipAnchor, TooltipButton } from "widgets.slint";
+import { Cell, HeaderCell, Skeleton } from "tracks.slint";
+import { ShareButton, ShareKind, ShareState } from "share.slint";
+import { SongMenu } from "song_menu.slint";
+import { CoverArt, PlayButton } from "cover_art.slint";
+
+export struct PlaylistSongRow {
+    track: TrackRow,
+    album-id: string,
+    artist-id: string,
+    is-selected: bool,
+}
+
+export enum PlaylistSongAction { play, play-next, add-to-queue, add-to-playlist, remove }
+
+export global PlaylistDetailState {
+    in property <color> tint;
+    in property <bool> has-tint;
+    in property <string> name;
+    in property <string> comment;
+    in property <string> info;
+    in property <image> cover;
+    in property <bool> has-cover;
+    in property <[PlaylistSongRow]> rows;
+    in property <bool> is-loading;
+    in property <bool> is-busy;
+    in property <int> selected-count;
+    in-out property <length> index-width: 56px;
+    in-out property <length> title-width: 320px;
+    in-out property <length> artist-width: 200px;
+    in-out property <length> album-width: 240px;
+    in-out property <length> duration-width: 72px;
+    callback load(string);
+    callback play(bool);
+    callback play-row(int);
+    callback select(int, bool, bool);
+    callback select-all();
+    callback clear-selection();
+    callback remove-selected();
+    callback add-selected-to-playlist();
+    callback context-action(int, PlaylistSongAction);
+}
+
+component SongRow inherits Rectangle {
+    in property <PlaylistSongRow> item;
+    in property <int> index;
+    callback pressed();
+    property <bool> is-playing: root.item.track.is-loaded && root.item.track.id == PlayerState.song-id;
+    height: 36px;
+    background: root.item.is-selected ? Theme.selected : (touch.has-hover ? Theme.hover : transparent);
+
+    touch := TouchArea {
+        pointer-event(event) => {
+            if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) {
+                root.pressed();
+                PlaylistDetailState.select(root.index, event.modifiers.control || event.modifiers.meta, event.modifiers.shift);
+            }
+        }
+        double-clicked => {
+            PlaylistDetailState.play-row(root.index);
+        }
+
+        TooltipAnchor {
+            text: @tr("Double-click to play");
+            is-hovered: touch.has-hover;
+        }
+
+        SongMenu {
+            can-share: root.item.track.is-loaded;
+            has-go-to-album: true;
+            can-go-to-album: root.item.album-id != "";
+            has-go-to-artist: true;
+            can-go-to-artist: root.item.artist-id != "";
+            has-remove: true;
+            play => {
+                PlaylistDetailState.context-action(root.index, PlaylistSongAction.play);
+            }
+            play-next => {
+                PlaylistDetailState.context-action(root.index, PlaylistSongAction.play-next);
+            }
+            add-to-queue => {
+                PlaylistDetailState.context-action(root.index, PlaylistSongAction.add-to-queue);
+            }
+            add-to-playlist => {
+                PlaylistDetailState.context-action(root.index, PlaylistSongAction.add-to-playlist);
+            }
+            share => {
+                ShareState.share(ShareKind.song, root.item.track.id, root.item.track.title);
+            }
+            go-to-album => {
+                AppState.navigate(Route.album-detail, root.item.album-id);
+            }
+            go-to-artist => {
+                AppState.navigate(Route.artist-detail, root.item.artist-id);
+            }
+            remove => {
+                PlaylistDetailState.context-action(root.index, PlaylistSongAction.remove);
+            }
+
+            HorizontalLayout {
+                Rectangle {
+                    width: PlaylistDetailState.index-width;
+
+                    if !root.is-playing: Text {
+                        x: 0;
+                        width: parent.width - 16px;
+                        text: root.item.track.index;
+                        color: Theme.muted;
+                        horizontal-alignment: right;
+                        vertical-alignment: center;
+                    }
+
+                    if root.is-playing: Icon {
+                        x: parent.width - 16px - self.width;
+                        path: Icons.note;
+                        color: Theme.primary;
+                        width: 16px;
+                        height: 16px;
+                    }
+                }
+
+                if root.item.track.is-loaded: Cell {
+                    width: PlaylistDetailState.title-width;
+                    text: root.item.track.title;
+                    text-color: root.is-playing ? Theme.primary : Theme.foreground;
+                }
+
+                if !root.item.track.is-loaded: Rectangle {
+                    width: PlaylistDetailState.title-width;
+
+                    Skeleton {
+                        x: 12px;
+                        width: parent.width * 0.6;
+                    }
+                }
+
+                Cell {
+                    width: PlaylistDetailState.artist-width;
+                    text: root.item.track.artists;
+                }
+
+                Cell {
+                    width: PlaylistDetailState.album-width;
+                    text: root.item.track.album;
+                }
+
+                Cell {
+                    width: PlaylistDetailState.duration-width;
+                    text: root.item.track.duration;
+                }
+
+                Rectangle { }
+            }
+        }
+    }
+}
+
+export component PlaylistDetailView inherits Rectangle {
+    property <string> id: AppState.detail-id;
+    min-width: 320px;
+    background: Theme.panel;
+    forward-focus: keys;
+
+    init => {
+        PlaylistDetailState.load(root.id);
+    }
+
+    changed id => {
+        if (AppState.route == Route.playlist-detail) {
+            PlaylistDetailState.load(root.id);
+        }
+    }
+
+    AmbientBackdrop {
+        y: 0;
+        width: parent.width;
+        height: 300px;
+        tint: PlaylistDetailState.tint;
+        has-tint: PlaylistDetailState.has-tint;
+    }
+
+    keys := FocusScope {
+        key-pressed(event) => {
+            if (event.text == Key.Delete && PlaylistDetailState.selected-count > 0) {
+                PlaylistDetailState.remove-selected();
+                return accept;
+            }
+            if (event.text == Key.Escape && PlaylistDetailState.selected-count > 0) {
+                PlaylistDetailState.clear-selection();
+                return accept;
+            }
+            if ((event.modifiers.control || event.modifiers.meta) && (event.text == "a" || event.text == "A")) {
+                PlaylistDetailState.select-all();
+                return accept;
+            }
+            return reject;
+        }
+
+        VerticalLayout {
+            HorizontalLayout {
+                padding: 20px;
+                spacing: 20px;
+                height: 220px;
+
+                CoverArt {
+                    width: 180px;
+                    height: 180px;
+                    background: Theme.surface-raised;
+                    drop-shadow-blur: 28px;
+                    drop-shadow-offset-y: 6px;
+                    drop-shadow-color: Theme.shadow;
+                    source: PlaylistDetailState.cover;
+                    has-source: PlaylistDetailState.has-cover;
+                    icon: Icons.playlist;
+                    icon-color: Theme.muted;
+                    icon-size: 64px;
+                }
+
+                VerticalLayout {
+                    alignment: end;
+                    spacing: 8px;
+
+                    Text {
+                        text: @tr("PLAYLIST");
+                        color: Theme.foreground.with-alpha(0.75);
+                        font-size: Typography.caption;
+                        font-weight: 700;
+                        letter-spacing: Typography.caption-spacing;
+                    }
+
+                    if PlaylistDetailState.is-loading && PlaylistDetailState.name == "": Skeleton {
+                        width: 260px;
+                        height: 28px;
+                        border-radius: 6px;
+                    }
+
+                    Text {
+                        text: PlaylistDetailState.name;
+                        color: Theme.foreground;
+                        font-size: Typography.title + 8px;
+                        font-weight: Typography.display-weight;
+                        letter-spacing: -0.5px;
+                        overflow: elide;
+                    }
+
+                    if PlaylistDetailState.comment != "": Text {
+                        text: PlaylistDetailState.comment;
+                        color: Theme.muted;
+                        wrap: word-wrap;
+                        max-height: 40px;
+                        overflow: elide;
+                    }
+
+                    Text {
+                        text: PlaylistDetailState.info;
+                        color: Theme.muted;
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                padding-left: 20px;
+                padding-right: 20px;
+                padding-bottom: 12px;
+                spacing: 12px;
+                alignment: start;
+
+                PlayButton {
+                    size: 48px;
+                    clicked => {
+                        PlaylistDetailState.play(false);
+                    }
+                }
+
+                IconButton {
+                    y: (parent.height - self.height) / 2;
+                    width: 40px;
+                    height: 40px;
+                    icon: Icons.shuffle;
+                    icon-size: 24px;
+                    tooltip: @tr("Shuffle play");
+                    is-enabled: PlaylistDetailState.rows.length > 0;
+                    clicked => {
+                        PlaylistDetailState.play(true);
+                    }
+                }
+
+                ShareButton {
+                    y: (parent.height - self.height) / 2;
+                    kind: ShareKind.playlist;
+                    item-id: root.id;
+                    item-name: PlaylistDetailState.name;
+                    noun: @tr("playlist");
+                }
+
+                if PlaylistDetailState.selected-count > 0: HorizontalLayout {
+                    spacing: 8px;
+                    padding-left: 12px;
+
+                    Text {
+                        text: @tr("{n} selected" | "{n} selected" % PlaylistDetailState.selected-count);
+                        color: Theme.muted;
+                        vertical-alignment: center;
+                    }
+
+                    TooltipButton {
+                        y: (parent.height - self.height) / 2;
+                        text: @tr("Add to playlist");
+                        tooltip: @tr("Add the selected songs to a playlist");
+                        clicked => {
+                            PlaylistDetailState.add-selected-to-playlist();
+                        }
+                    }
+
+                    TooltipButton {
+                        y: (parent.height - self.height) / 2;
+                        text: PlaylistDetailState.is-busy ? @tr("Removing...") : @tr("Remove");
+                        tooltip: @tr("Remove the selected songs from this playlist");
+                        is-enabled: !PlaylistDetailState.is-busy;
+                        clicked => {
+                            PlaylistDetailState.remove-selected();
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                height: 33px;
+                min-width: 0px;
+                clip: true;
+
+                HorizontalLayout {
+                    x: list.content-x;
+
+                    HeaderCell {
+                        text: "#";
+                        is-sortable: false;
+                        align: right;
+                        column-width <=> PlaylistDetailState.index-width;
+                    }
+
+                    HeaderCell {
+                        text: @tr("Title");
+                        is-sortable: false;
+                        column-width <=> PlaylistDetailState.title-width;
+                    }
+
+                    HeaderCell {
+                        text: @tr("Artist");
+                        is-sortable: false;
+                        column-width <=> PlaylistDetailState.artist-width;
+                    }
+
+                    HeaderCell {
+                        text: @tr("Album");
+                        is-sortable: false;
+                        column-width <=> PlaylistDetailState.album-width;
+                    }
+
+                    HeaderCell {
+                        text: @tr("Time");
+                        is-sortable: false;
+                        column-width <=> PlaylistDetailState.duration-width;
+                    }
+
+                    Rectangle { }
+                }
+
+                Rectangle {
+                    y: parent.height - 1px;
+                    height: 1px;
+                    background: Theme.border;
+                }
+            }
+
+            Rectangle {
+                min-width: 0px;
+                clip: true;
+
+                list := ListView {
+                    for row[row-index] in PlaylistDetailState.rows: SongRow {
+                        item: row;
+                        index: row-index;
+                        pressed => {
+                            keys.focus();
+                        }
+                    }
+                }
+
+                if PlaylistDetailState.rows.length == 0: Text {
+                    text: PlaylistDetailState.is-loading ? @tr("Loading...") : @tr("This playlist is empty");
+                    color: Theme.muted;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}

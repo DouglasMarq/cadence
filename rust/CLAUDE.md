@@ -1,0 +1,34 @@
+# Rust rewrite: code standards
+
+These apply to everything under `rust/`. Clippy enforces the mechanical ones (`cargo clippy --workspace --all-targets -- -D warnings`).
+
+## Readability
+
+- Code documents itself. No comments of any kind (`//`, `///`, `//!`, `/* */`), in Rust or Slint.
+- The `#[allow(...)]` on the generated Slint module (`app/src/ui/mod.rs`) is accepted as is: it covers generated code and needs no justification.
+- Descriptive names for functions, variables, parameters and closure arguments. No one-letter or cryptic names (`i`, `k`, `e`, `s`, `tx`, `res`, `tmp`): use `index`, `key`, `error`, `song`, `sender`, `response`.
+- Small functions and small files. A function does one thing; split long ones into well-named helpers. Split files that mix concerns into modules.
+- At most three parameters per function, `self` and constructors excluded. Clippy's `too-many-arguments-threshold = 4` counts `self`, so it catches methods with `self` plus four and free functions with five; a free function with four parameters is only caught in review.
+- Prefer `match`, early returns, `let ... else` and `Option`/`Result` combinators over `if`/`else` chains.
+
+## Types
+
+- Strictly typed: no `serde_json::Value`, `dyn Any` or stringly-typed state outside the raw response decoding of an API client. Model states with enums and newtypes.
+
+## Errors
+
+- Never crash in the user's face: no `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!` or indexing that can go out of bounds in non-test code. Use `?`, `.get()`, `.ok_or(..)`, `.unwrap_or(..)`, `.unwrap_or_default()`.
+- Ignorable failures (a missing cover, a failed scrobble, an MPRIS update) are logged with `tracing` and otherwise silent.
+- Failures the user must know about (login, playback, saving a playlist) are shown in the UI through `AppState.status`.
+
+## Performance
+
+- Large collections are streamed: views page data from the server while the user scrolls and only keep what is needed for the visible rows plus a bounded cache. Never load a whole library into memory or into a Slint model.
+- Decoded images live in bounded caches.
+
+## Behaviour
+
+- Refactors keep behaviour identical; the tests are the contract. Add tests when changing logic.
+- Line coverage of the workspace stays at 80% or more: check it with `cargo llvm-cov --workspace --fail-under-lines 80` before committing. Branch coverage needs a nightly toolchain and is not measured: the 70% branch target of `.claude/rules/testing.md` is not verified.
+- Every clickable or draggable control has a tooltip; stateful controls show their state.
+- User-visible text is translatable: `@tr(...)` in Slint, `tr!`/`tr_plural!` in Rust, with every value passed as a placeholder argument and never concatenated into a sentence. Logs, identifiers and server data stay untranslated. Run `scripts/translations.py`, translate the new entries of every catalog and make `scripts/translations.py check` pass.

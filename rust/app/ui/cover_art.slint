@@ -1,0 +1,179 @@
+import { Motion, Theme, Icons } from "theme.slint";
+import { Icon, TooltipAnchor } from "widgets.slint";
+import { Skeleton } from "track_cells.slint";
+
+export component CoverArt inherits Rectangle {
+    in property <image> source;
+    in property <bool> has-source;
+    in property <string> icon: Icons.album;
+    in property <bool> is-hovered;
+    in property <bool> is-round;
+    in property <color> icon-color: Theme.foreground.with-alpha(0.3);
+    in property <length> icon-size: root.width * 0.32;
+    border-radius: root.is-round ? root.width / 2 : Theme.radius-card;
+    background: Theme.placeholder;
+    clip: true;
+
+    if !root.has-source && root.icon != "": Icon {
+        path: root.icon;
+        color: root.icon-color;
+        width: root.icon-size;
+        height: root.icon-size;
+    }
+
+    if root.has-source: Image {
+        width: parent.width;
+        height: parent.height;
+        source: root.source;
+        image-fit: cover;
+        transform-scale: root.is-hovered ? 1.05 : 1;
+
+        animate transform-scale {
+            duration: Motion.quick * 3;
+            easing: ease-out;
+        }
+    }
+
+    Rectangle {
+        background: root.is-hovered ? #00000033 : #00000000;
+
+        animate background {
+            duration: Motion.quick;
+        }
+    }
+
+    @children
+}
+
+export component MediaCard inherits Rectangle {
+    in property <string> title;
+    in property <string> subtitle;
+    in property <image> cover;
+    in property <bool> has-cover;
+    in property <bool> is-round;
+    in property <bool> is-loaded: true;
+    out property <bool> is-hovered: touch.has-hover;
+    callback open();
+    height: self.width + 52px;
+
+    touch := TouchArea {
+        mouse-cursor: root.is-loaded ? pointer : default;
+        clicked => {
+            if (root.is-loaded) {
+                root.open();
+            }
+        }
+    }
+
+    TooltipAnchor {
+        text: root.is-loaded ? @tr("Open {}", root.title) : "";
+        is-hovered: touch.has-hover;
+    }
+
+    CoverArt {
+        x: 0;
+        y: 0;
+        width: root.width;
+        height: root.width;
+        source: root.cover;
+        has-source: root.has-cover;
+        icon: root.is-round ? Icons.artist : Icons.album;
+        is-round: root.is-round;
+        is-hovered: touch.has-hover;
+    }
+
+    @children
+
+    if root.is-loaded: VerticalLayout {
+        y: root.width + 8px;
+        height: 44px;
+        spacing: 2px;
+        alignment: start;
+
+        Text {
+            text: root.title;
+            color: Theme.foreground;
+            font-weight: 600;
+            overflow: elide;
+            horizontal-alignment: root.is-round ? center : left;
+        }
+
+        if root.subtitle != "": Text {
+            text: root.subtitle;
+            color: Theme.muted;
+            font-size: 12px;
+            overflow: elide;
+            horizontal-alignment: root.is-round ? center : left;
+        }
+    }
+
+    if !root.is-loaded: Skeleton {
+        x: 0;
+        y: root.width + 12px;
+        width: root.width * 0.7;
+    }
+}
+
+export component PlayButton inherits Rectangle {
+    in property <string> tooltip: @tr("Play");
+    in property <length> size: 44px;
+    in property <bool> is-shown: true;
+    in property <bool> is-enabled: true;
+    out property <bool> is-hovered: touch.has-hover;
+    callback clicked();
+    width: root.size;
+    height: root.size;
+    accessible-role: button;
+    accessible-label: root.tooltip;
+    accessible-enabled: root.is-enabled;
+    accessible-action-default => {
+        root.activate();
+    }
+
+    function activate() {
+        if (root.is-enabled) {
+            root.clicked();
+        }
+    }
+
+    Rectangle {
+        visible: root.is-shown;
+        y: root.is-shown ? 0px : 8px;
+        width: root.size;
+        height: root.size;
+        border-radius: root.size / 2;
+        background: touch.has-hover && root.is-enabled ? Theme.primary.brighter(15%) : Theme.primary;
+        opacity: !root.is-shown ? 0 : (root.is-enabled ? 1 : 0.5);
+        transform-scale: !root.is-enabled ? 1 : (touch.pressed ? 0.92 : (touch.has-hover ? 1.06 : 1));
+
+        animate y, opacity {
+            duration: Motion.quick * 1.5;
+            easing: ease-out;
+        }
+
+        animate transform-scale {
+            duration: Motion.quick;
+            easing: ease-out;
+        }
+
+        Icon {
+            path: Icons.play;
+            color: Theme.on-primary;
+            width: root.size * 0.55;
+            height: root.size * 0.55;
+        }
+    }
+
+    TooltipAnchor {
+        text: root.tooltip;
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        enabled: root.is-shown;
+        mouse-cursor: root.is-enabled ? pointer : default;
+        clicked => {
+            root.activate();
+        }
+    }
+}

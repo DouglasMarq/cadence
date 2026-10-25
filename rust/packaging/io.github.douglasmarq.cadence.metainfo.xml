@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.douglasmarq.cadence</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Cadence</name>
+  <summary>Fast native music player for Navidrome, OpenSubsonic and Jellyfin</summary>
+  <developer id="io.github.douglasmarq">
+    <name>Cadence contributors</name>
+  </developer>
+  <description>
+    <p>
+      Cadence is a fast, native music player for your self-hosted library (Navidrome,
+      OpenSubsonic, Jellyfin), with YouTube Music discovery, personal mixes and
+      player-to-player control. It is written in Rust and plays audio through mpv.
+    </p>
+    <ul>
+      <li>Connects to Navidrome, OpenSubsonic, Subsonic and Jellyfin servers</li>
+      <li>Browses albums, artists, genres, playlists and songs from large libraries</li>
+      <li>Gapless playback, a play queue that is restored on restart and scrobbling</li>
+      <li>Synchronized lyrics, media keys and desktop media controls (MPRIS)</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.douglasmarq.cadence.desktop</launchable>
+  <url type="homepage">https://github.com/DouglasMarq/cadence</url>
+  <url type="bugtracker">https://github.com/DouglasMarq/cadence/issues</url>
+  <url type="vcs-browser">https://github.com/DouglasMarq/cadence</url>
+  <categories>
+    <category>AudioVideo</category>
+    <category>Audio</category>
+    <category>Player</category>
+  </categories>
+  <keywords>
+    <keyword>music</keyword>
+    <keyword>navidrome</keyword>
+    <keyword>subsonic</keyword>
+    <keyword>jellyfin</keyword>
+  </keywords>
+  <provides>
+    <binary>cadence</binary>
+    <dbus type="user">org.mpris.MediaPlayer2.cadence</dbus>
+  </provides>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">720</display_length>
+  </requires>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-10-13" type="development">
+      <description>
+        <p>First native build, released as Cadence.</p>
+      </description>
+    </release>
+  </releases>
+</component>

@@ -1,0 +1,198 @@
+use std::rc::Rc;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+
+use cadence_api::MusicServer;
+use cadence_core::model::Paging;
+use slint::platform::software_renderer::{MinimalSoftwareWindow, RepaintBufferType, Rgb565Pixel};
+use slint::{ComponentHandle, PhysicalSize, SharedString};
+use tokio::runtime::Runtime;
+use tokio::sync::mpsc::{self, UnboundedReceiver};
+
+use super::super::{AppState, AppWindow, Context, HomeAlbum, HomeState, Page, Route};
+use super::install;
+use super::model::with_home_model;
+use super::shelf::{SHELF_SIZE, Shelf};
+use crate::connect::DemoConnector;
+use crate::controller::Command;
+use crate::covers::DemoCovers;
+use crate::demo::FakeServer;
+use crate::session::Session;
+use crate::store::JsonStore;
+use crate::ui::test_window::{Jobs, claim_routed_platform, routed_runtime};
+
+struct Screen {
+    software_window: Rc<MinimalSoftwareWindow>,
+    queue: Jobs,
+    size: PhysicalSize,
+}
+
+impl Screen {
+    fn pump(&self) {
+        let events: Vec<_> = self
+            .queue
+            .lock()
+            .map(|mut queue| queue.drain(..).collect())
+            .unwrap_or_default();
+        for event in events {
+            event();
+        }
+        slint::platform::update_timers_and_animations();
+        let mut buffer =
+            vec![Rgb565Pixel::default(); (self.size.width * self.size.height) as usize];
+        self.software_window.draw_if_needed(|renderer| {
+            renderer.render(&mut buffer, self.size.width as usize);
+        });
+        self.software_window.request_redraw();
+    }
+
+    fn pump_briefly(&self) {
+        self.pump();
+        std::thread::sleep(Duration::from_millis(5));
+    }
+}
+
+fn install_headless_platform() -> Option<Screen> {
+    let size = PhysicalSize::new(1000, 700);
+    let software_window = MinimalSoftwareWindow::new(RepaintBufferType::NewBuffer);
+    software_window.set_size(size);
+    let Some(queue) = claim_routed_platform(&software_window) else {
+        eprintln!("skipped: another headless test owns the Slint event loop proxy");
+        return None;
+    };
+    Some(Screen {
+        software_window,
+        queue,
+        size,
+    })
+}
+
+fn demo_context(
+    runtime: &Runtime,
+    store_dir: &tempfile::TempDir,
+    server: &Arc<FakeServer>,
+) -> (Context, UnboundedReceiver<Command>) {
+    let session = Session::default();
+    session.set(Some(server.clone()));
+    let (commands, received) = mpsc::unbounded_channel();
+    let context = Context {
+        runtime: runtime.handle().clone(),
+        commands,
+        session,
+        store: Arc::new(JsonStore::new(store_dir.path())),
+        connector: Arc::new(DemoConnector::default()),
+        covers: Arc::new(DemoCovers),
+        remote: crate::remote::Remote::default(),
+    };
+    (context, received)
+}
+
+fn open_home(context: &Context) -> AppWindow {
+    let window = AppWindow::new().unwrap_or_else(|error| panic!("window: {error}"));
+    crate::ui::nav::install(&window);
+    install(&window, context);
+    window
+        .show()
+        .unwrap_or_else(|error| panic!("show: {error}"));
+    let app = window.global::<AppState>();
+    app.set_page(Page::Main);
+    app.invoke_navigate(Route::Home, "".into());
+    window
+}
+
+fn has_loaded_shelves(window: &AppWindow) -> bool {
+    with_home_model(window, |model| {
+        (0..4).all(|shelf| model.cards(shelf).len() == SHELF_SIZE)
+            && model.cards(0).first().is_some_and(|card| card.has_cover)
+    })
+    .unwrap_or(false)
+}
+
+fn wait_for_shelves(window: &AppWindow, screen: &Screen) {
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while !has_loaded_shelves(window) && Instant::now() < deadline {
+        screen.pump_briefly();
+    }
+    for _ in 0..20 {
+        screen.pump_briefly();
+    }
+    assert!(has_loaded_shelves(window), "home shelves did not load");
+}
+
+fn assert_first_shelf_matches_server(cards: &[HomeAlbum], runtime: &Runtime, server: &FakeServer) {
+    let expected = runtime
+        .block_on(server.album_list(
+            &Shelf::RecentlyAdded.query(),
+            Paging {
+                start_index: 0,
+                limit: SHELF_SIZE,
+            },
+        ))
+        .map(|page| page.items)
+        .unwrap_or_default();
+    let names: Vec<_> = cards.iter().map(|card| card.name.to_string()).collect();
+    let expected: Vec<_> = expected.iter().map(|album| album.name.clone()).collect();
+    assert_eq!(names, expected);
+}
+
+fn assert_only_visible_covers_loaded(window: &AppWindow, cards: &[HomeAlbum]) {
+    let covers = |shelf: usize| {
+        with_home_model(window, |model| {
+            model
+                .cards(shelf)
+                .iter()
+                .filter(|card| card.has_cover)
+                .count()
+        })
+        .unwrap_or_default()
+    };
+    assert!(
+        (1..SHELF_SIZE).contains(&covers(0)),
+        "only visible cards load covers"
+    );
+    assert!(!cards[SHELF_SIZE - 1].has_cover);
+    assert_eq!(covers(3), 0, "the off-screen shelf has no covers");
+}
+
+fn assert_album_songs_sent(
+    runtime: &Runtime,
+    received: &mut UnboundedReceiver<Command>,
+    album_id: &SharedString,
+) {
+    let command = runtime
+        .block_on(async { tokio::time::timeout(Duration::from_secs(5), received.recv()).await });
+    match command {
+        Ok(Some(Command::PlaySongs { songs, song_id })) => {
+            assert!(song_id.is_none());
+            assert!(!songs.is_empty());
+            assert!(
+                songs
+                    .iter()
+                    .all(|song| song.album_id.as_deref() == Some(album_id.as_str()))
+            );
+        }
+        _ => panic!("expected PlaySongs"),
+    }
+}
+
+#[test]
+fn home_route_renders_shelves_with_lazy_covers_and_plays_albums() {
+    let Some(screen) = install_headless_platform() else {
+        return;
+    };
+    let runtime = routed_runtime(1);
+    let store_dir = tempfile::tempdir().unwrap_or_else(|error| panic!("temp dir: {error}"));
+    let server = Arc::new(FakeServer::new(2_400));
+    let (context, mut received) = demo_context(&runtime, &store_dir, &server);
+
+    let window = open_home(&context);
+    wait_for_shelves(&window, &screen);
+
+    let cards = with_home_model(&window, |model| model.cards(0)).unwrap_or_default();
+    assert_first_shelf_matches_server(&cards, &runtime, &server);
+    assert_only_visible_covers_loaded(&window, &cards);
+    window
+        .global::<HomeState>()
+        .invoke_play(cards[0].id.clone());
+    assert_album_songs_sent(&runtime, &mut received, &cards[0].id);
+}

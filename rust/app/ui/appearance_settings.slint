@@ -1,0 +1,326 @@
+import { LineEdit, ScrollView } from "std-widgets.slint";
+import { Theme, Icons, Palettes, ThemePalette } from "theme.slint";
+import { Icon, SettingRow, TooltipAnchor, TooltipSwitch } from "widgets.slint";
+
+export enum SystemScheme { no-preference, dark, light }
+
+export struct AccentPreset {
+    swatch: color,
+    name: string,
+}
+
+export global AppearanceState {
+    in-out property <bool> is-following-system;
+    in-out property <int> theme-index;
+    in-out property <int> dark-theme-index;
+    in-out property <int> light-theme-index;
+    in-out property <bool> is-using-theme-accent: true;
+    in-out property <color> accent: #6366f1;
+    in-out property <string> accent-text: "#6366f1";
+    in property <SystemScheme> system-scheme;
+    out property <[AccentPreset]> accent-presets: [
+        { swatch: #6366f1, name: @tr("Indigo") },
+        { swatch: #f59e0b, name: @tr("Amber") },
+        { swatch: #10b981, name: @tr("Green") },
+        { swatch: #e5484d, name: @tr("Red") },
+        { swatch: #d946ef, name: @tr("Magenta") },
+    ];
+    callback changed();
+    callback accent-entered(text: string);
+}
+
+component PaletteSwatches inherits VerticalLayout {
+    in property <ThemePalette> palette;
+    alignment: center;
+
+    HorizontalLayout {
+        spacing: 3px;
+
+        for swatch in [root.palette.background, root.palette.surface, root.palette.foreground, root.palette.primary]: Rectangle {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border-width: 1px;
+            border-color: #80808066;
+            background: swatch;
+        }
+    }
+}
+
+component ThemeListItem inherits Rectangle {
+    in property <ThemePalette> palette;
+    in property <bool> is-current;
+    callback clicked();
+    height: 32px;
+    border-radius: 4px;
+    background: root.is-current ? Theme.selected : (touch.has-hover ? Theme.hover : transparent);
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 10px;
+
+        PaletteSwatches {
+            palette: root.palette;
+            horizontal-stretch: 0;
+        }
+
+        Text {
+            text: root.palette.name;
+            color: Theme.foreground;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+    }
+
+    TooltipAnchor {
+        text: root.is-current ? @tr("{} (current theme)", root.palette.name) : @tr("Use {}", root.palette.name);
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+component GroupHeading inherits Text {
+    color: Theme.muted;
+    font-size: 11px;
+    font-weight: 600;
+    height: 24px;
+    vertical-alignment: center;
+}
+
+export component ThemePicker inherits Rectangle {
+    in property <string> label;
+    in-out property <int> selected;
+    property <ThemePalette> palette: Palettes.all[root.selected];
+    property <length> list-height: 360px;
+    callback chosen();
+    width: 260px;
+    height: 34px;
+    border-radius: Theme.radius;
+    border-width: 1px;
+    border-color: Theme.border;
+    background: touch.has-hover ? Theme.surface-raised : Theme.background;
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 10px;
+
+        PaletteSwatches {
+            palette: root.palette;
+            horizontal-stretch: 0;
+        }
+
+        Text {
+            text: root.palette.name;
+            color: Theme.foreground;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+
+        Icon {
+            y: (parent.height - self.height) / 2;
+            path: Icons.arrow-down;
+            color: Theme.muted;
+        }
+    }
+
+    TooltipAnchor {
+        text: root.palette.is-dark ? @tr("{}: {} (dark)", root.label, root.palette.name) : @tr("{}: {} (light)", root.label, root.palette.name);
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            menu.show();
+        }
+    }
+
+    menu := PopupWindow {
+        y: root.height + 4px;
+        width: root.width;
+        height: root.list-height;
+
+        Rectangle {
+            background: Theme.surface-raised;
+            border-radius: Theme.radius;
+            border-width: 1px;
+            border-color: Theme.border;
+        }
+
+        ScrollView {
+            width: parent.width;
+            height: parent.height;
+
+            VerticalLayout {
+                padding: 6px;
+
+                GroupHeading {
+                    text: @tr("DARK THEMES");
+                }
+
+                for entry[index] in Palettes.all: VerticalLayout {
+                    if index > 0 && !entry.is-dark && Palettes.all[index - 1].is-dark: GroupHeading {
+                        text: @tr("LIGHT THEMES");
+                    }
+
+                    ThemeListItem {
+                        palette: entry;
+                        is-current: index == root.selected;
+                        clicked => {
+                            root.selected = index;
+                            root.chosen();
+                            menu.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+component AccentSwatch inherits Rectangle {
+    in property <AccentPreset> preset;
+    in property <bool> is-current;
+    in property <bool> is-enabled;
+    callback clicked();
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    background: root.preset.swatch;
+    border-width: root.is-current ? 2px : 0px;
+    border-color: Theme.foreground;
+    opacity: root.is-enabled ? 1 : 0.4;
+
+    TooltipAnchor {
+        text: root.is-current ? @tr("Accent color {} (selected)", root.preset.name) : (root.is-enabled ? @tr("Accent color {}", root.preset.name) : @tr("Accent color {} (theme accent in use)", root.preset.name));
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        enabled: root.is-enabled;
+        mouse-cursor: pointer;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+component AccentInput inherits Rectangle {
+    width: 110px;
+    height: input.preferred-height;
+
+    hover := TouchArea {
+        input := LineEdit {
+            width: parent.width;
+            enabled: !AppearanceState.is-using-theme-accent;
+            placeholder-text: "#6366f1";
+            text <=> AppearanceState.accent-text;
+            accepted(text) => {
+                AppearanceState.accent-entered(text);
+            }
+        }
+    }
+
+    TooltipAnchor {
+        text: AppearanceState.is-using-theme-accent ? @tr("Custom accent color: {} (theme accent in use)", AppearanceState.accent-text) : @tr("Custom accent color: {}, press Enter to apply", AppearanceState.accent-text);
+        is-hovered: hover.has-hover;
+    }
+}
+
+export component AppearanceOptions inherits VerticalLayout {
+    property <string> system-description: AppearanceState.system-scheme == SystemScheme.light ? @tr("The desktop currently prefers light.") : (AppearanceState.system-scheme == SystemScheme.dark ? @tr("The desktop currently prefers dark.") : @tr("The desktop has no preference, so the dark theme is used."));
+    spacing: 18px;
+
+    SettingRow {
+        title: @tr("Follow system color scheme");
+        description: @tr("Switch between a dark and a light theme with the desktop. {}", root.system-description);
+
+        TooltipSwitch {
+            label: @tr("Follow system color scheme");
+            is-checked <=> AppearanceState.is-following-system;
+            toggled => {
+                AppearanceState.changed();
+            }
+        }
+    }
+
+    if !AppearanceState.is-following-system: SettingRow {
+        title: @tr("Theme");
+        description: @tr("Colors used across the whole app.");
+
+        ThemePicker {
+            label: @tr("Theme");
+            selected <=> AppearanceState.theme-index;
+            chosen => {
+                AppearanceState.changed();
+            }
+        }
+    }
+
+    if AppearanceState.is-following-system: SettingRow {
+        title: @tr("Dark theme");
+        description: @tr("Used while the desktop prefers dark.");
+
+        ThemePicker {
+            label: @tr("Dark theme");
+            selected <=> AppearanceState.dark-theme-index;
+            chosen => {
+                AppearanceState.changed();
+            }
+        }
+    }
+
+    if AppearanceState.is-following-system: SettingRow {
+        title: @tr("Light theme");
+        description: @tr("Used while the desktop prefers light.");
+
+        ThemePicker {
+            label: @tr("Light theme");
+            selected <=> AppearanceState.light-theme-index;
+            chosen => {
+                AppearanceState.changed();
+            }
+        }
+    }
+
+    SettingRow {
+        title: @tr("Use the theme accent color");
+        description: @tr("Highlight with the color that comes with the theme.");
+
+        TooltipSwitch {
+            label: @tr("Use the theme accent color");
+            is-checked <=> AppearanceState.is-using-theme-accent;
+            toggled => {
+                AppearanceState.changed();
+            }
+        }
+    }
+
+    SettingRow {
+        title: @tr("Accent color");
+        description: AppearanceState.is-using-theme-accent ? @tr("Turn off the theme accent color to pick your own.") : @tr("Pick a color, or type one as #rrggbb and press Enter.");
+
+        for preset in AppearanceState.accent-presets: AccentSwatch {
+            y: (parent.height - self.height) / 2;
+            preset: preset;
+            is-enabled: !AppearanceState.is-using-theme-accent;
+            is-current: !AppearanceState.is-using-theme-accent && AppearanceState.accent == preset.swatch;
+            clicked => {
+                AppearanceState.accent = preset.swatch;
+                AppearanceState.changed();
+            }
+        }
+
+        AccentInput { }
+    }
+}

@@ -1,0 +1,170 @@
+import { ShareState } from "share.slint";
+
+export component SongMenu inherits ContextMenuArea {
+    in property <bool> has-songs: true;
+    in property <bool> has-add-to-playlist: true;
+    in property <bool> has-share: true;
+    in property <bool> can-share: true;
+    in property <bool> has-open-in-browser;
+    in property <bool> has-favorites;
+    in property <bool> has-rating;
+    in property <bool> has-go-to-album;
+    in property <bool> can-go-to-album: true;
+    in property <bool> has-go-to-artist;
+    in property <bool> can-go-to-artist: true;
+    in property <bool> has-remove;
+    callback play();
+    callback play-next();
+    callback add-to-queue();
+    callback add-to-playlist();
+    callback share();
+    callback open-in-browser();
+    callback favorite(is-favorite: bool);
+    callback rate(rating: int);
+    callback go-to-album();
+    callback go-to-artist();
+    callback remove();
+
+    Menu {
+        MenuItem {
+            title: @tr("Play");
+            enabled: root.has-songs;
+            activated => {
+                root.play();
+            }
+        }
+
+        MenuItem {
+            title: @tr("Play next");
+            enabled: root.has-songs;
+            activated => {
+                root.play-next();
+            }
+        }
+
+        MenuItem {
+            title: @tr("Add to queue");
+            enabled: root.has-songs;
+            activated => {
+                root.add-to-queue();
+            }
+        }
+
+        if root.has-add-to-playlist || root.has-share || root.has-open-in-browser: MenuSeparator { }
+
+        if root.has-add-to-playlist: MenuItem {
+            title: @tr("Add to playlist");
+            enabled: root.has-songs;
+            activated => {
+                root.add-to-playlist();
+            }
+        }
+
+        if root.has-share: MenuItem {
+            title: ShareState.menu-title;
+            enabled: ShareState.is-available && !ShareState.is-busy && root.can-share && root.has-songs;
+            activated => {
+                root.share();
+            }
+        }
+
+        if root.has-open-in-browser: MenuItem {
+            title: @tr("Open in YouTube Music");
+            activated => {
+                root.open-in-browser();
+            }
+        }
+
+        if root.has-favorites || root.has-rating: MenuSeparator { }
+
+        if root.has-favorites: MenuItem {
+            title: @tr("Add to favorites");
+            enabled: root.has-songs;
+            activated => {
+                root.favorite(true);
+            }
+        }
+
+        if root.has-favorites: MenuItem {
+            title: @tr("Remove from favorites");
+            enabled: root.has-songs;
+            activated => {
+                root.favorite(false);
+            }
+        }
+
+        if root.has-rating: Menu {
+            title: @tr("Set rating");
+            enabled: root.has-songs;
+
+            MenuItem {
+                title: @tr("No rating");
+                activated => {
+                    root.rate(0);
+                }
+            }
+
+            MenuItem {
+                title: @tr("1 star");
+                activated => {
+                    root.rate(1);
+                }
+            }
+
+            MenuItem {
+                title: @tr("2 stars");
+                activated => {
+                    root.rate(2);
+                }
+            }
+
+            MenuItem {
+                title: @tr("3 stars");
+                activated => {
+                    root.rate(3);
+                }
+            }
+
+            MenuItem {
+                title: @tr("4 stars");
+                activated => {
+                    root.rate(4);
+                }
+            }
+
+            MenuItem {
+                title: @tr("5 stars");
+                activated => {
+                    root.rate(5);
+                }
+            }
+        }
+
+        if root.has-go-to-album || root.has-go-to-artist: MenuSeparator { }
+
+        if root.has-go-to-album: MenuItem {
+            title: @tr("Go to album");
+            enabled: root.can-go-to-album;
+            activated => {
+                root.go-to-album();
+            }
+        }
+
+        if root.has-go-to-artist: MenuItem {
+            title: @tr("Go to artist");
+            enabled: root.can-go-to-artist;
+            activated => {
+                root.go-to-artist();
+            }
+        }
+
+        if root.has-remove: MenuSeparator { }
+
+        if root.has-remove: MenuItem {
+            title: @tr("Remove from playlist");
+            activated => {
+                root.remove();
+            }
+        }
+    }
+}

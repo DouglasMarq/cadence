@@ -1,0 +1,355 @@
+use std::cell::RefCell;
+use std::cmp::Ordering;
+
+use cadence_core::model::ItemKind;
+use slint::{Image, Model, ModelNotify, ModelRc, ModelTracker, VecModel};
+
+use super::card::{CardData, CardPage, CardSource};
+use super::cover_cache::remember_cover;
+use super::grid_state::{GridRequest, GridState, RowChange};
+use crate::ui::CardRow;
+
+pub struct CardGrid {
+    state: RefCell<GridState>,
+    notify: ModelNotify,
+    fetch: Box<dyn Fn(GridRequest)>,
+}
+
+impl CardGrid {
+    pub fn new(fetch: impl Fn(GridRequest) + 'static) -> Self {
+        Self {
+            state: RefCell::default(),
+            notify: ModelNotify::default(),
+            fetch: Box::new(fetch),
+        }
+    }
+
+    pub fn reset(&self, source: Option<CardSource>) {
+        let request = {
+            let mut state = self.state.borrow_mut();
+            state.restart(source);
+            state.claim_first_page()
+        };
+        self.notify.reset();
+        if let Some(request) = request {
+            (self.fetch)(request);
+        }
+    }
+
+    pub fn kind(&self) -> Option<ItemKind> {
+        self.state.borrow().source().map(CardSource::kind)
+    }
+
+    pub fn set_columns(&self, columns: usize) {
+        let columns = columns.max(1);
+        {
+            let mut state = self.state.borrow_mut();
+            if state.columns() == columns {
+                return;
+            }
+            state.set_columns(columns);
+        }
+        self.notify.reset();
+    }
+
+    pub fn is_current(&self, generation: u64) -> bool {
+        self.state.borrow().is_current(generation)
+    }
+
+    pub fn apply_page(&self, generation: u64, page: usize, listed: CardPage) {
+        if !self.is_current(generation) {
+            return;
+        }
+        let reported = self.state.borrow().reported_total_change(listed.total);
+        match reported {
+            Some(total) => self.relay_cards(page, listed.cards, total),
+            None => self.insert_cards(page, listed),
+        }
+    }
+
+    fn relay_cards(&self, page: usize, cards: Vec<CardData>, total: usize) {
+        self.state.borrow_mut().relay_cards(page, cards, total);
+        self.notify.reset();
+    }
+
+    fn insert_cards(&self, page: usize, listed: CardPage) {
+        let change = {
+            let mut state = self.state.borrow_mut();
+            let change = state.row_change_after(page, &listed);
+            state.insert_cards(page, listed);
+            change
+        };
+        self.notify_row_change(change);
+    }
+
+    fn notify_row_change(&self, change: RowChange) {
+        let RowChange {
+            old_rows,
+            new_rows,
+            changed,
+        } = change;
+        match new_rows.cmp(&old_rows) {
+            Ordering::Greater => self.notify.row_added(old_rows, new_rows - old_rows),
+            Ordering::Less => self.notify.row_removed(new_rows, old_rows - new_rows),
+            Ordering::Equal => {}
+        }
+        for row in changed.start..changed.end.min(old_rows.min(new_rows)) {
+            self.notify.row_changed(row);
+        }
+    }
+
+    pub fn is_waiting_for(&self, generation: u64, page: usize) -> bool {
+        self.state.borrow().is_waiting_for(generation, page)
+    }
+
+    pub fn page_failed(&self, generation: u64, page: usize) {
+        self.state.borrow_mut().page_failed(generation, page);
+    }
+
+    pub fn apply_cover(&self, cover_id: &str, image: Option<Image>) {
+        let Some(image) = image else {
+            return;
+        };
+        remember_cover(cover_id.to_owned(), image);
+        let rows = {
+            let mut state = self.state.borrow_mut();
+            state.cover_loaded(cover_id);
+            state.rows_with_cover(cover_id)
+        };
+        for row in rows {
+            self.notify.row_changed(row);
+        }
+    }
+
+    pub fn is_favorite(&self, id: &str) -> Option<bool> {
+        self.state.borrow().is_favorite(id)
+    }
+
+    pub fn set_favorite(&self, id: &str, is_favorite: bool) {
+        let row = {
+            let mut state = self.state.borrow_mut();
+            state.override_favorite(id, is_favorite);
+            state.row_of_card(id)
+        };
+        if let Some(row) = row {
+            self.notify.row_changed(row);
+        }
+    }
+
+    fn request_row(&self, row: usize) {
+        let requests = self.state.borrow_mut().claim_row(row);
+        for request in requests {
+            (self.fetch)(request);
+        }
+    }
+}
+
+impl Model for CardGrid {
+    type Data = CardRow;
+
+    fn row_count(&self) -> usize {
+        self.state.borrow().rows()
+    }
+
+    fn row_data(&self, row: usize) -> Option<CardRow> {
+        self.request_row(row);
+        let cards = self.state.borrow().cards_for_row(row)?;
+        Some(CardRow {
+            cards: ModelRc::new(VecModel::from(cards)),
+        })
+    }
+
+    fn model_tracker(&self) -> &dyn ModelTracker {
+        &self.notify
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::rc::Rc;
+
+    use cadence_core::model::{AlbumListQuery, ArtistListQuery};
+
+    use super::*;
+    use crate::ui::genres::grid_state::GRID_PAGE;
+
+    type RequestLog = Rc<RefCell<Vec<String>>>;
+
+    fn logging_grid(log: &RequestLog) -> CardGrid {
+        let sink = Rc::clone(log);
+        CardGrid::new(move |request| {
+            sink.borrow_mut().push(match request {
+                GridRequest::Page {
+                    generation, page, ..
+                } => format!("page {generation}:{page}"),
+                GridRequest::Cover { cover_id } => format!("cover {cover_id}"),
+            });
+        })
+    }
+
+    fn cards(range: std::ops::Range<usize>) -> Vec<CardData> {
+        range
+            .map(|number| CardData {
+                id: format!("album-{number}"),
+                title: format!("Album {number}"),
+                subtitle: String::new(),
+                cover_id: Some(format!("al-{number}")),
+                is_favorite: true,
+            })
+            .collect()
+    }
+
+    fn listed(cards: Vec<CardData>, total: Option<usize>) -> CardPage {
+        CardPage { cards, total }
+    }
+
+    fn drain(log: &RequestLog) -> Vec<String> {
+        log.borrow_mut().drain(..).collect()
+    }
+
+    #[test]
+    fn grid_pages_rows_and_lazy_covers() {
+        let log: RequestLog = Rc::default();
+        let grid = logging_grid(&log);
+        grid.set_columns(4);
+        grid.reset(Some(CardSource::Albums(AlbumListQuery::default())));
+        assert_eq!(drain(&log), ["page 1:0"]);
+        assert_eq!(grid.row_count(), 0);
+
+        assert!(grid.is_current(1));
+        grid.apply_page(1, 0, listed(cards(0..GRID_PAGE), None));
+        assert_eq!(grid.row_count(), (GRID_PAGE + 1).div_ceil(4));
+        let row = grid.row_data(0).map(|row| row.cards).unwrap_or_default();
+        assert_eq!(row.row_count(), 4);
+        assert!(
+            row.row_data(0)
+                .is_some_and(|card| card.is_loaded && !card.has_cover)
+        );
+        assert_eq!(
+            drain(&log),
+            [
+                "page 1:1",
+                "cover al-0",
+                "cover al-1",
+                "cover al-2",
+                "cover al-3"
+            ]
+        );
+        grid.row_data(0);
+        assert!(drain(&log).is_empty());
+
+        grid.row_data(GRID_PAGE / 4);
+        assert!(drain(&log).is_empty());
+        assert!(grid.is_current(1));
+        grid.apply_page(1, 1, listed(cards(GRID_PAGE..GRID_PAGE + 2), None));
+        assert_eq!(grid.row_count(), (GRID_PAGE + 2).div_ceil(4));
+
+        grid.apply_cover("al-1", Some(Image::default()));
+        let row = grid.row_data(0).map(|row| row.cards).unwrap_or_default();
+        assert!(row.row_data(1).is_some_and(|card| card.has_cover));
+
+        grid.reset(None);
+        assert!(!grid.is_current(1));
+        grid.apply_page(1, 2, listed(cards(0..1), Some(1)));
+        assert_eq!(grid.row_count(), 0);
+        assert!(drain(&log).is_empty());
+    }
+
+    #[test]
+    fn grid_total_and_columns_shape_the_rows() {
+        let log: RequestLog = Rc::default();
+        let grid = logging_grid(&log);
+        grid.reset(Some(CardSource::Artists(ArtistListQuery::default())));
+        assert!(grid.is_current(1));
+        grid.apply_page(1, 0, listed(cards(0..10), Some(10)));
+        assert_eq!(grid.row_count(), 10);
+        grid.set_columns(3);
+        assert_eq!(grid.row_count(), 4);
+        assert_eq!(grid.row_data(3).map(|row| row.cards.row_count()), Some(1));
+        assert!(grid.row_data(4).is_none());
+        assert_eq!(grid.kind(), Some(ItemKind::Artist));
+    }
+
+    #[test]
+    fn grid_favorites_flip_in_place() {
+        let log: RequestLog = Rc::default();
+        let grid = logging_grid(&log);
+        grid.set_columns(2);
+        grid.reset(Some(CardSource::Albums(AlbumListQuery::default())));
+        grid.apply_page(1, 0, listed(cards(0..3), Some(3)));
+        assert_eq!(grid.is_favorite("album-2"), Some(true));
+        grid.set_favorite("album-2", false);
+        assert_eq!(grid.is_favorite("album-2"), Some(false));
+        let row = grid.row_data(1).map(|row| row.cards).unwrap_or_default();
+        assert!(row.row_data(0).is_some_and(|card| !card.is_favorite));
+        assert_eq!(grid.is_favorite("missing"), None);
+    }
+
+    fn requested_pages(log: &RequestLog) -> Vec<String> {
+        drain(log)
+            .into_iter()
+            .filter(|request| request.starts_with("page"))
+            .collect()
+    }
+
+    #[test]
+    fn grid_evicts_far_pages_and_fetches_them_again() {
+        let log: RequestLog = Rc::default();
+        let grid = logging_grid(&log);
+        grid.set_columns(GRID_PAGE);
+        grid.reset(Some(CardSource::Albums(AlbumListQuery::default())));
+        let total = Some(GRID_PAGE * 30);
+        assert!(grid.is_current(1));
+        grid.apply_page(1, 0, listed(cards(0..GRID_PAGE), total));
+        drain(&log);
+        for row in 0..30 {
+            grid.row_data(row);
+            for request in requested_pages(&log) {
+                let page = request
+                    .rsplit(':')
+                    .next()
+                    .and_then(|page| page.parse::<usize>().ok())
+                    .unwrap_or_default();
+                let range = page * GRID_PAGE..(page + 1) * GRID_PAGE;
+                grid.apply_page(1, page, listed(cards(range), total));
+            }
+        }
+        assert_eq!(grid.is_favorite("album-0"), None);
+        let row = grid.row_data(0).map(|row| row.cards).unwrap_or_default();
+        assert!(row.iter().all(|card| !card.is_loaded));
+        assert_eq!(requested_pages(&log), ["page 1:0"]);
+        assert!(grid.is_waiting_for(1, 0));
+        assert!(!grid.is_waiting_for(0, 0));
+        grid.page_failed(1, 0);
+        assert!(!grid.is_waiting_for(1, 0));
+        grid.row_data(0);
+        assert!(requested_pages(&log).is_empty());
+    }
+
+    #[test]
+    fn a_changed_server_total_reloads_the_cached_cards() {
+        let log: RequestLog = Rc::default();
+        let grid = logging_grid(&log);
+        grid.set_columns(GRID_PAGE);
+        grid.reset(Some(CardSource::Albums(AlbumListQuery::default())));
+        let total = GRID_PAGE * 5;
+        assert!(grid.is_current(1));
+        grid.apply_page(1, 0, listed(cards(0..GRID_PAGE), Some(total)));
+        drain(&log);
+        grid.row_data(1);
+        assert_eq!(requested_pages(&log), ["page 1:1", "page 1:2"]);
+        let changed = Some(total + 1);
+        assert!(grid.is_current(1));
+        grid.apply_page(1, 1, listed(cards(GRID_PAGE..GRID_PAGE * 2), changed));
+        assert_eq!(grid.is_favorite("album-0"), None);
+        assert_eq!(grid.row_count(), 6);
+        assert!(!grid.is_current(1));
+        grid.apply_page(1, 2, listed(cards(0..GRID_PAGE), Some(total)));
+        grid.row_data(0);
+        assert_eq!(requested_pages(&log), ["page 2:0"]);
+    }
+}

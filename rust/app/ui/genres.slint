@@ -1,0 +1,478 @@
+import { ListView } from "std-widgets.slint";
+import { Motion, Theme, Icons } from "theme.slint";
+import { AppState, PlayerState, Route, TrackRow } from "globals.slint";
+import { TrackRowView } from "tracks.slint";
+import { TracksHeader } from "tracks_header.slint";
+import { Icon, IconButton, PillTab, SearchField, TooltipAnchor } from "widgets.slint";
+import { MediaCard } from "cover_art.slint";
+
+export enum GenresTab { albums, tracks }
+
+export struct Card {
+    id: string,
+    title: string,
+    subtitle: string,
+    cover: image,
+    has-cover: bool,
+    is-favorite: bool,
+    is-loaded: bool,
+}
+
+export struct CardRow {
+    cards: [Card],
+}
+
+export struct TrackItem {
+    track: TrackRow,
+    is-favorite: bool,
+}
+
+export struct GenreRow {
+    id: string,
+    name: string,
+    albums: string,
+    tracks: string,
+}
+
+export global LibraryIcons {
+    out property <string> arrow-back: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z";
+}
+
+export global GenresState {
+    in property <[GenreRow]> genres;
+    in property <bool> is-genres-loading;
+    in property <string> title;
+    in property <string> album-count;
+    in property <string> track-count;
+    in property <[CardRow]> albums;
+    in property <bool> is-albums-loading;
+    in property <[TrackItem]> tracks;
+    in property <bool> is-tracks-loading;
+    in-out property <GenresTab> tab;
+    callback load(string);
+    callback filter-edited(string);
+    callback album-columns(int);
+    callback play-track(int);
+}
+
+export component FavoriteButton inherits Rectangle {
+    in property <bool> is-favorite;
+    callback clicked();
+    accessible-role: button;
+    accessible-label: root.is-favorite ? @tr("Remove from favorites") : @tr("Add to favorites");
+    accessible-action-default => {
+        root.clicked();
+    }
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background: touch.has-hover ? Theme.hover : transparent;
+
+    animate background {
+        duration: Motion.quick;
+    }
+
+    Icon {
+        path: root.is-favorite ? Icons.heart : Icons.heart-outline;
+        color: root.is-favorite ? Theme.primary : (touch.has-hover ? Theme.foreground : Theme.muted);
+        width: 18px;
+        height: 18px;
+    }
+
+    TooltipAnchor {
+        text: root.is-favorite ? @tr("Remove from favorites") : @tr("Add to favorites");
+        is-hovered: touch.has-hover;
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+export component CardView inherits MediaCard {
+    in property <Card> card;
+    in property <bool> is-favorite-shown;
+    callback toggle-favorite();
+    title: root.card.title;
+    subtitle: root.card.subtitle;
+    cover: root.card.cover;
+    has-cover: root.card.has-cover;
+    is-loaded: root.card.is-loaded;
+
+    if root.is-favorite-shown && root.card.is-loaded && (root.is-hovered || !root.card.is-favorite): Rectangle {
+        x: root.width - self.width - 8px;
+        y: root.is-round ? root.width - self.height - 8px : 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 16px;
+        background: #000000b0;
+
+        FavoriteButton {
+            is-favorite: root.card.is-favorite;
+            clicked => {
+                root.toggle-favorite();
+            }
+        }
+    }
+}
+
+export component CardGrid inherits Rectangle {
+    in property <[CardRow]> rows;
+    in property <bool> is-round;
+    in property <bool> is-favorite-shown;
+    in property <bool> is-loading;
+    in property <string> empty-text;
+    property <length> gap: 16px;
+    property <length> side-padding: 20px;
+    out property <int> columns: max(1, min(10, Math.floor((root.width - 2 * root.side-padding + root.gap) / (176px + root.gap))));
+    property <length> card-width: (root.width - 2 * root.side-padding - (root.columns - 1) * root.gap) / root.columns;
+    callback columns-changed(int);
+    callback open(string);
+    callback toggle-favorite(string);
+
+    init => {
+        root.columns-changed(root.columns);
+    }
+
+    changed columns => {
+        root.columns-changed(root.columns);
+    }
+
+    ListView {
+        for row in root.rows: HorizontalLayout {
+            padding-left: root.side-padding;
+            padding-right: root.side-padding;
+            padding-bottom: 20px;
+            spacing: root.gap;
+            alignment: start;
+
+            for card in row.cards: CardView {
+                width: root.card-width;
+                card: card;
+                is-round: root.is-round;
+                is-favorite-shown: root.is-favorite-shown;
+                open => {
+                    root.open(card.id);
+                }
+                toggle-favorite => {
+                    root.toggle-favorite(card.id);
+                }
+            }
+        }
+    }
+
+    if !root.is-loading && root.rows.length == 0: Text {
+        text: root.empty-text;
+        color: Theme.muted;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+export component TrackTable inherits Rectangle {
+    in property <[TrackItem]> rows;
+    in property <bool> is-loading;
+    in property <bool> is-favorite-shown;
+    in property <string> empty-text: @tr("No tracks found");
+    callback play(int);
+    callback toggle-favorite(int);
+    min-width: 320px;
+
+    VerticalLayout {
+        TracksHeader {
+            content-x: list.content-x;
+            list-width: list.visible-width;
+            is-sortable: false;
+        }
+
+        Rectangle {
+            min-width: 0px;
+            clip: true;
+
+            list := ListView {
+                for item in root.rows: Rectangle {
+                    height: 36px;
+
+                    TrackRowView {
+                        list-width: list.visible-width;
+                        track: {
+                            id: item.track.id,
+                            index: item.track.index,
+                            title: item.track.title,
+                            artists: item.track.artists,
+                            album: item.track.album,
+                            duration: item.track.duration,
+                            year: item.track.year,
+                            plays: item.track.plays,
+                            is-loaded: item.track.is-loaded,
+                            is-playing: item.track.is-loaded && item.track.id == PlayerState.song-id,
+                        };
+                        play => {
+                            root.play(item.track.index - 1);
+                        }
+                    }
+
+                    if root.is-favorite-shown && item.track.is-loaded: FavoriteButton {
+                        x: parent.width - self.width - 12px;
+                        is-favorite: item.is-favorite;
+                        clicked => {
+                            root.toggle-favorite(item.track.index - 1);
+                        }
+                    }
+                }
+            }
+
+            if !root.is-loading && root.rows.length == 0: Text {
+                text: root.empty-text;
+                color: Theme.muted;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+}
+
+component GenreList inherits VerticalLayout {
+    HorizontalLayout {
+        padding: 20px;
+        padding-bottom: 12px;
+        spacing: 12px;
+
+        Text {
+            text: @tr("Genres");
+            font-size: 24px;
+            font-weight: 700;
+            color: Theme.foreground;
+            vertical-alignment: center;
+        }
+
+        Text {
+            text: GenresState.is-genres-loading ? "" : GenresState.genres.length;
+            color: Theme.muted;
+            vertical-alignment: center;
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+        }
+
+        SearchField {
+            min-width: 140px;
+            preferred-width: 280px;
+            max-width: 280px;
+            horizontal-stretch: 1;
+            placeholder-text: @tr("Filter");
+            edited(text) => {
+                GenresState.filter-edited(text);
+            }
+        }
+    }
+
+    Rectangle {
+        height: 33px;
+
+        HorizontalLayout {
+            padding-left: 20px;
+            padding-right: 20px;
+
+            Text {
+                text: @tr("Name");
+                color: Theme.muted;
+                font-size: 12px;
+                font-weight: 600;
+                vertical-alignment: center;
+                horizontal-stretch: 1;
+            }
+
+            Text {
+                width: 100px;
+                text: @tr("Albums");
+                color: Theme.muted;
+                font-size: 12px;
+                font-weight: 600;
+                vertical-alignment: center;
+                horizontal-alignment: right;
+            }
+
+            Text {
+                width: 100px;
+                text: @tr("Tracks");
+                color: Theme.muted;
+                font-size: 12px;
+                font-weight: 600;
+                vertical-alignment: center;
+                horizontal-alignment: right;
+            }
+        }
+
+        Rectangle {
+            y: parent.height - 1px;
+            height: 1px;
+            background: Theme.border;
+        }
+    }
+
+    Rectangle {
+        ListView {
+            for genre in GenresState.genres: Rectangle {
+                height: 40px;
+                background: touch.has-hover ? Theme.hover : transparent;
+
+                animate background {
+                    duration: Motion.quick;
+                }
+
+                touch := TouchArea {
+                    mouse-cursor: pointer;
+                    clicked => {
+                        AppState.navigate(Route.genres, genre.id);
+                    }
+                }
+
+                TooltipAnchor {
+                    text: @tr("Open {}", genre.name);
+                    is-hovered: touch.has-hover;
+                }
+
+                HorizontalLayout {
+                    padding-left: 20px;
+                    padding-right: 20px;
+                    spacing: 12px;
+
+                    Icon {
+                        y: (parent.height - self.height) / 2;
+                        path: Icons.genre;
+                        color: Theme.muted;
+                        width: 18px;
+                        height: 18px;
+                    }
+
+                    Text {
+                        text: genre.name;
+                        color: Theme.foreground;
+                        vertical-alignment: center;
+                        overflow: elide;
+                        horizontal-stretch: 1;
+                    }
+
+                    Text {
+                        width: 100px;
+                        text: genre.albums;
+                        color: Theme.muted;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                    }
+
+                    Text {
+                        width: 100px;
+                        text: genre.tracks;
+                        color: Theme.muted;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                    }
+                }
+            }
+        }
+
+        if !GenresState.is-genres-loading && GenresState.genres.length == 0: Text {
+            text: @tr("No genres found");
+            color: Theme.muted;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component GenreDetail inherits VerticalLayout {
+    HorizontalLayout {
+        padding: 20px;
+        padding-bottom: 12px;
+        spacing: 12px;
+
+        if AppState.can-go-back: IconButton {
+            y: (parent.height - self.height) / 2;
+            icon: LibraryIcons.arrow-back;
+            tooltip: @tr("Back");
+            clicked => {
+                AppState.back();
+            }
+        }
+
+        Text {
+            text: GenresState.title;
+            font-size: 24px;
+            font-weight: 700;
+            color: Theme.foreground;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+        }
+
+        PillTab {
+            y: (parent.height - self.height) / 2;
+            text: @tr("Albums");
+            count: GenresState.album-count;
+            is-active: GenresState.tab == GenresTab.albums;
+            clicked => {
+                GenresState.tab = GenresTab.albums;
+            }
+        }
+
+        PillTab {
+            y: (parent.height - self.height) / 2;
+            text: @tr("Tracks");
+            count: GenresState.track-count;
+            is-active: GenresState.tab == GenresTab.tracks;
+            clicked => {
+                GenresState.tab = GenresTab.tracks;
+            }
+        }
+    }
+
+    Rectangle {
+        if GenresState.tab == GenresTab.albums: CardGrid {
+            rows: GenresState.albums;
+            is-loading: GenresState.is-albums-loading;
+            empty-text: @tr("No albums found");
+            columns-changed(columns) => {
+                GenresState.album-columns(columns);
+            }
+            open(id) => {
+                AppState.navigate(Route.album-detail, id);
+            }
+        }
+
+        if GenresState.tab == GenresTab.tracks: TrackTable {
+            rows: GenresState.tracks;
+            is-loading: GenresState.is-tracks-loading;
+            play(index) => {
+                GenresState.play-track(index);
+            }
+        }
+    }
+}
+
+export component GenresView inherits Rectangle {
+    property <string> id: AppState.detail-id;
+    min-width: 320px;
+    background: Theme.panel;
+
+    init => {
+        GenresState.load(root.id);
+    }
+
+    changed id => {
+        if (AppState.route == Route.genres) {
+            GenresState.load(root.id);
+        }
+    }
+
+    if root.id == "": GenreList { }
+    if root.id != "": GenreDetail { }
+}

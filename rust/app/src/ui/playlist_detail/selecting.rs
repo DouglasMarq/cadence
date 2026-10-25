@@ -1,0 +1,45 @@
+use slint::ComponentHandle;
+
+use super::binding::with_model;
+use super::model::PlaylistSongsModel;
+use crate::ui::{AppWindow, PlaylistDetailState, clamp_i32};
+
+fn update_selection(window: &AppWindow, change: impl FnOnce(&PlaylistSongsModel)) {
+    let Some(count) = with_model(window, |model| {
+        change(model);
+        model.selected_count()
+    }) else {
+        return;
+    };
+    window
+        .global::<PlaylistDetailState>()
+        .set_selected_count(clamp_i32(count as u64));
+}
+
+pub fn install_selection(window: &AppWindow) {
+    let state = window.global::<PlaylistDetailState>();
+
+    let weak = window.as_weak();
+    state.on_select(move |index, is_toggle_held, is_range_held| {
+        let (Some(window), Ok(index)) = (weak.upgrade(), usize::try_from(index)) else {
+            return;
+        };
+        update_selection(&window, |model| {
+            model.click(index, is_toggle_held, is_range_held);
+        });
+    });
+
+    let weak = window.as_weak();
+    state.on_select_all(move || {
+        if let Some(window) = weak.upgrade() {
+            update_selection(&window, PlaylistSongsModel::select_all);
+        }
+    });
+
+    let weak = window.as_weak();
+    state.on_clear_selection(move || {
+        if let Some(window) = weak.upgrade() {
+            update_selection(&window, PlaylistSongsModel::clear_selection);
+        }
+    });
+}

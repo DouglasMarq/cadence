@@ -1,0 +1,141 @@
+use cadence_core::lrc::lrc_timestamp;
+
+use crate::types::StructuredLyric;
+
+const MAIN_LYRIC_KIND: &str = "main";
+
+fn is_main_lyric(lyric: &StructuredLyric) -> bool {
+    lyric
+        .kind
+        .as_deref()
+        .is_none_or(|kind| kind == MAIN_LYRIC_KIND)
+}
+
+fn has_text(lyric: &StructuredLyric) -> bool {
+    lyric.line.iter().any(|line| !line.value.trim().is_empty())
+}
+
+fn preferred_lyric(lyrics: &[StructuredLyric]) -> Option<&StructuredLyric> {
+    let readable: Vec<&StructuredLyric> = lyrics.iter().filter(|lyric| has_text(lyric)).collect();
+    readable
+        .iter()
+        .find(|lyric| lyric.is_synced && is_main_lyric(lyric))
+        .or_else(|| readable.iter().find(|lyric| is_main_lyric(lyric)))
+        .or_else(|| readable.first())
+        .copied()
+}
+
+fn plain_text(lyric: &StructuredLyric) -> String {
+    let lines: Vec<&str> = lyric.line.iter().map(|line| line.value.as_str()).collect();
+    lines.join("\n")
+}
+
+fn lrc_offset_tag(lyric: &StructuredLyric) -> Option<String> {
+    lyric
+        .offset
+        .filter(|offset| offset.is_finite() && *offset != 0.0)
+        .map(|offset| format!("[offset:{}]", offset.round() as i64))
+}
+
+fn lrc_text(lyric: &StructuredLyric) -> String {
+    let timed_lines = lyric.line.iter().map(|line| {
+        let start = line
+            .start
+            .filter(|start| start.is_finite() && *start > 0.0)
+            .map_or(0, |start| start.round() as u64);
+        format!("{}{}", lrc_timestamp(start), line.value)
+    });
+    let lines: Vec<String> = lrc_offset_tag(lyric)
+        .into_iter()
+        .chain(timed_lines)
+        .collect();
+    lines.join("\n")
+}
+
+pub fn lyrics_to_lrc_or_plain_text(lyrics: &[StructuredLyric]) -> Option<String> {
+    let lyric = preferred_lyric(lyrics)?;
+    match lyric.is_synced {
+        true => Some(lrc_text(lyric)),
+        false => Some(plain_text(lyric)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::LyricLine;
+
+    fn lyric(is_synced: bool, kind: Option<&str>, lines: &[(u64, &str)]) -> StructuredLyric {
+        StructuredLyric {
+            kind: kind.map(Into::into),
+            lang: Some("eng".into()),
+            line: lines
+                .iter()
+                .map(|(start, value)| LyricLine {
+                    start: Some(*start as f64),
+                    value: (*value).into(),
+                })
+                .collect(),
+            offset: None,
+            is_synced,
+        }
+    }
+
+    #[test]
+    fn formats_synced_as_lrc() {
+        let mut synced = lyric(true, None, &[(0, "a"), (61_234, "b"), (3_600_000, "c")]);
+        synced.offset = Some(-250.0);
+        assert_eq!(
+            lyrics_to_lrc_or_plain_text(&[synced]).as_deref(),
+            Some("[offset:-250]\n[00:00.00]a\n[01:01.23]b\n[60:00.00]c")
+        );
+    }
+
+    #[test]
+    fn prefers_synced_main() {
+        let items = [
+            lyric(false, None, &[(0, "plain")]),
+            lyric(true, Some("translation"), &[(0, "tr")]),
+            lyric(true, Some("main"), &[(1000, "sync")]),
+        ];
+        assert_eq!(
+            lyrics_to_lrc_or_plain_text(&items).as_deref(),
+            Some("[00:01.00]sync")
+        );
+    }
+
+    #[test]
+    fn plain_and_empty() {
+        let items = [lyric(false, None, &[(0, "a"), (0, "b")])];
+        assert_eq!(lyrics_to_lrc_or_plain_text(&items).as_deref(), Some("a\nb"));
+        assert_eq!(
+            lyrics_to_lrc_or_plain_text(&[lyric(true, None, &[(0, " ")])]),
+            None
+        );
+        assert_eq!(lyrics_to_lrc_or_plain_text(&[]), None);
+    }
+
+    #[test]
+    fn given_a_blank_synced_lyric_and_a_plain_one_when_choosing_then_the_plain_text_is_shown() {
+        let items = [
+            lyric(true, Some("main"), &[(0, " "), (1000, "")]),
+            lyric(false, Some("main"), &[(0, "words")]),
+        ];
+        assert_eq!(
+            lyrics_to_lrc_or_plain_text(&items).as_deref(),
+            Some("words")
+        );
+    }
+
+    #[test]
+    fn given_only_a_translation_has_text_when_choosing_then_the_translation_is_shown() {
+        let items = [
+            lyric(true, Some("main"), &[]),
+            lyric(true, Some("translation"), &[(2000, "hola")]),
+        ];
+        assert_eq!(
+            lyrics_to_lrc_or_plain_text(&items).as_deref(),
+            Some("[00:02.00]hola")
+        );
+    }
+}

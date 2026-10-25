@@ -1,0 +1,71 @@
+use cadence_api::{ApiError, Result};
+use cadence_core::model::ItemKind;
+
+use super::SubsonicServer;
+use crate::client::Params;
+
+const MAX_RATING: u8 = 5;
+
+fn favorite_id_key(kind: ItemKind) -> Result<&'static str> {
+    match kind {
+        ItemKind::Song => Ok("id"),
+        ItemKind::Album => Ok("albumId"),
+        ItemKind::Artist => Ok("artistId"),
+        ItemKind::Playlist => Err(ApiError::Unsupported("favorite playlists")),
+    }
+}
+
+fn favorite_endpoint(is_favorite: bool) -> &'static str {
+    match is_favorite {
+        true => "star.view",
+        false => "unstar.view",
+    }
+}
+
+impl SubsonicServer {
+    pub(super) async fn update_favorite(
+        &self,
+        kind: ItemKind,
+        ids: &[String],
+        is_favorite: bool,
+    ) -> Result<()> {
+        let key = favorite_id_key(kind)?;
+        if ids.is_empty() {
+            return Ok(());
+        }
+        self.send_annotation(
+            favorite_endpoint(is_favorite),
+            Params::new().add_each(key, ids),
+        )
+        .await
+    }
+
+    async fn send_annotation(&self, endpoint: &str, params: Params) -> Result<()> {
+        let outcome = self.send(endpoint, params).await;
+        self.list_caches.forget_annotations();
+        outcome
+    }
+
+    pub(super) async fn update_rating(&self, kind: ItemKind, id: &str, rating: u8) -> Result<()> {
+        if kind == ItemKind::Playlist {
+            return Err(ApiError::Unsupported("rating playlists"));
+        }
+        let params = Params::new()
+            .add("id", id)
+            .add("rating", rating.min(MAX_RATING));
+        self.send_annotation("setRating.view", params).await
+    }
+
+    pub(super) async fn submit_scrobble(
+        &self,
+        song_id: &str,
+        is_submission: bool,
+        timestamp_ms: Option<i64>,
+    ) -> Result<()> {
+        let params = Params::new()
+            .add("id", song_id)
+            .add("submission", is_submission)
+            .add_optional("time", timestamp_ms.filter(|_| is_submission));
+        self.send("scrobble.view", params).await
+    }
+}

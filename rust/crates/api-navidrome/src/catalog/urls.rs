@@ -1,0 +1,37 @@
+use cadence_api::StreamOptions;
+
+use crate::NavidromeServer;
+use crate::query::QueryParams;
+
+const CACHE_BUSTER_SEPARATOR: &str = "&_=";
+
+impl NavidromeServer {
+    pub(crate) fn build_stream_url(&self, song_id: &str, options: &StreamOptions) -> String {
+        let mut params: QueryParams = vec![("id", song_id.to_owned())];
+        params.extend(
+            options
+                .format
+                .as_ref()
+                .map(|format| ("format", format.as_str().to_owned())),
+        );
+        params.extend(
+            options
+                .max_bitrate_kbps
+                .map(|bitrate| ("maxBitRate", bitrate.to_string())),
+        );
+        self.subsonic_url("stream", &params)
+    }
+
+    pub(crate) fn build_cover_art_url(&self, cover_art_id: &str, size: Option<u32>) -> String {
+        let mut params = cover_art_id_params(cover_art_id);
+        params.extend(size.map(|size| ("size", size.to_string())));
+        self.subsonic_url("getCoverArt", &params)
+    }
+}
+
+fn cover_art_id_params(cover_art_id: &str) -> QueryParams {
+    match cover_art_id.split_once(CACHE_BUSTER_SEPARATOR) {
+        Some((id, cache_buster)) => vec![("id", id.to_owned()), ("_", cache_buster.to_owned())],
+        None => vec![("id", cover_art_id.to_owned())],
+    }
+}

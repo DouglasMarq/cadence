@@ -1,0 +1,183 @@
+use std::sync::Arc;
+
+use slint::ComponentHandle;
+
+use super::choices::replay_gain_setting;
+use super::display::set_lyrics_rows;
+use super::language::apply_language;
+use super::loading::{load, save_integrations};
+use super::lyrics_sources::lyrics_move_target;
+use super::servers::{log_out, remove_server, switch_server};
+use super::view::{PlaybackForm, SettingsScope, Shared};
+use super::youtube::apply_youtube;
+use super::youtube_link::{add_link, play_link, play_link_next};
+use crate::controller::Command;
+use crate::remote::RemoteRequest;
+use crate::ui::{AppState, AppWindow, Context, SettingsState, login};
+
+type WindowAction = fn(&AppWindow, &Context, &Arc<Shared>);
+
+#[derive(Clone)]
+struct Binding {
+    weak_window: slint::Weak<AppWindow>,
+    context: Context,
+    shared: Arc<Shared>,
+}
+
+impl Binding {
+    fn new(window: &AppWindow, context: &Context, shared: &Arc<Shared>) -> Self {
+        Self {
+            weak_window: window.as_weak(),
+            context: context.clone(),
+            shared: Arc::clone(shared),
+        }
+    }
+
+    fn run(&self, action: impl FnOnce(&AppWindow, &Context, &Arc<Shared>)) {
+        if let Some(window) = self.weak_window.upgrade() {
+            action(&window, &self.context, &self.shared);
+        }
+    }
+
+    fn run_in_scope(&self, action: impl FnOnce(&SettingsScope)) {
+        self.run(|window, context, shared| {
+            action(&SettingsScope {
+                window,
+                context,
+                shared,
+            });
+        });
+    }
+
+    fn scoped_action(&self, action: fn(&SettingsScope)) -> impl Fn() + 'static {
+        let binding = self.clone();
+        move || binding.run_in_scope(action)
+    }
+
+    fn action(&self, action: WindowAction) -> impl Fn() + 'static {
+        let binding = self.clone();
+        move || binding.run(action)
+    }
+}
+
+fn apply_playback(window: &AppWindow, context: &Context, shared: &Arc<Shared>) {
+    let state = window.global::<SettingsState>();
+    let form = PlaybackForm {
+        replay_gain: replay_gain_setting(state.get_replay_gain()),
+        is_gapless: state.get_is_gapless(),
+        crossfade_seconds: state.get_crossfade_seconds(),
+        device: state.get_device_index(),
+        bitrate: state.get_bitrate_index(),
+        format: state.get_format_index(),
+        is_scrobbling_enabled: state.get_is_scrobbling_enabled(),
+    };
+    let mut view = shared.view();
+    let playback = view.playback(form);
+    view.settings.playback = playback.clone();
+    context.send(Command::ApplyPlayback(playback));
+}
+
+fn apply_integrations(window: &AppWindow, context: &Context, shared: &Arc<Shared>) {
+    let state = window.global::<SettingsState>();
+    let mut view = shared.view();
+    view.settings.integrations.is_mpris_enabled = state.get_is_mpris_enabled();
+    view.settings.integrations.is_discord_rich_presence_enabled = state.get_is_discord_enabled();
+    view.settings.integrations.is_remote_control_enabled = state.get_is_remote_control_enabled();
+    view.settings.integrations.is_remote_approval_skipped = state.get_is_remote_approval_skipped();
+    context
+        .remote
+        .approvals
+        .skip_asking(state.get_is_remote_approval_skipped());
+    context.remote.request(RemoteRequest::SetHosting(
+        state.get_is_remote_control_enabled(),
+    ));
+    save_integrations(context, &mut view);
+}
+
+fn toggle_lyrics_source(scope: &SettingsScope, row: i32) {
+    let mut view = scope.shared.view();
+    let Some(source) = usize::try_from(row)
+        .ok()
+        .and_then(|position| view.lyrics.get_mut(position))
+    else {
+        return;
+    };
+    source.is_enabled = !source.is_enabled;
+    set_lyrics_rows(&scope.window.global::<SettingsState>(), &view.lyrics);
+    save_integrations(scope.context, &mut view);
+}
+
+fn reorder_lyrics_source(scope: &SettingsScope, row: i32, delta: i32) {
+    let mut view = scope.shared.view();
+    let (Ok(row), Ok(delta)) = (usize::try_from(row), isize::try_from(delta)) else {
+        return;
+    };
+    let Some(target) = lyrics_move_target(&view.lyrics, row, delta) else {
+        return;
+    };
+    view.lyrics.swap(row, target);
+    set_lyrics_rows(&scope.window.global::<SettingsState>(), &view.lyrics);
+    save_integrations(scope.context, &mut view);
+}
+
+fn apply_interface(window: &AppWindow, context: &Context, shared: &Arc<Shared>) {
+    let is_following_current_song = window
+        .global::<SettingsState>()
+        .get_is_following_current_song();
+    let is_queue_panel_open = window.global::<AppState>().get_is_queue_open();
+    let mut view = shared.view();
+    view.settings.ui.is_following_current_song = is_following_current_song;
+    view.settings.ui.is_queue_panel_open = is_queue_panel_open;
+    context.send(Command::SaveInterface {
+        is_queue_panel_open,
+        is_following_current_song,
+    });
+}
+
+fn install_lyrics_source_callbacks(state: &SettingsState, binding: &Binding) {
+    let toggle_binding = binding.clone();
+    state.on_toggle_lyrics_source(move |row| {
+        toggle_binding.run_in_scope(|scope| toggle_lyrics_source(scope, row));
+    });
+    let reorder_binding = binding.clone();
+    state.on_move_lyrics_source(move |row, delta| {
+        reorder_binding.run_in_scope(|scope| reorder_lyrics_source(scope, row, delta));
+    });
+}
+
+fn install_server_callbacks(state: &SettingsState, binding: &Binding) {
+    let switch_binding = binding.clone();
+    state.on_switch_server(move |id| {
+        switch_binding.run_in_scope(|scope| switch_server(scope, id));
+    });
+    let remove_binding = binding.clone();
+    state.on_remove_server(move |id| {
+        remove_binding.run_in_scope(|scope| remove_server(scope, &id));
+    });
+    state.on_add_server(binding.action(|window, _, _| login::show_login(window, "")));
+    state.on_log_out(binding.action(|window, context, shared| log_out(window, context, shared)));
+}
+
+fn install_youtube_callbacks(state: &SettingsState, binding: &Binding) {
+    state.on_youtube_changed(binding.action(apply_youtube));
+    state.on_play_youtube_link(binding.scoped_action(play_link));
+    state.on_play_youtube_link_next(binding.scoped_action(play_link_next));
+    state.on_add_youtube_link(binding.scoped_action(add_link));
+}
+
+pub(super) fn install_with(window: &AppWindow, context: &Context, shared: &Arc<Shared>) {
+    let state = window.global::<SettingsState>();
+    let binding = Binding::new(window, context, shared);
+    let reload = binding.action(load);
+    state.on_load(move |_| reload());
+    state.on_playback_changed(binding.action(apply_playback));
+    state.on_integrations_changed(binding.action(apply_integrations));
+    let forget_context = context.clone();
+    state.on_forget_devices(move || forget_context.remote.request(RemoteRequest::ForgetDevices));
+    install_lyrics_source_callbacks(&state, &binding);
+    state.on_interface_changed(binding.action(apply_interface));
+    state.on_language_changed(binding.action(apply_language));
+    install_server_callbacks(&state, &binding);
+    install_youtube_callbacks(&state, &binding);
+    load(window, context, shared);
+}

@@ -1,0 +1,123 @@
+use cadence_core::queue::{Advance, Uid};
+use cadence_player::PlayerEvent;
+
+use super::{Controller, UiUpdate};
+
+enum StartedTrack {
+    Loading,
+    Preloaded,
+    Unrelated,
+}
+
+impl Controller {
+    pub(super) fn on_player_event(&mut self, event: PlayerEvent) {
+        match self.is_radio_playing() {
+            true => self.on_radio_player_event(event),
+            false => self.on_queue_player_event(event),
+        }
+    }
+
+    fn on_queue_player_event(&mut self, event: PlayerEvent) {
+        match event {
+            PlayerEvent::Started { uid } => self.on_started(uid),
+            PlayerEvent::Position {
+                position_ms,
+                duration_ms,
+            } => self.on_position(position_ms, duration_ms),
+            PlayerEvent::Paused => self.set_playing(false),
+            PlayerEvent::Resumed => self.set_playing(true),
+            PlayerEvent::TrackEnded { uid } => self.on_track_ended(uid),
+            PlayerEvent::Error { uid, message } => self.on_player_error(uid, message),
+            PlayerEvent::Idle => self.on_idle(),
+            PlayerEvent::StreamTitle(_) => {}
+        }
+    }
+
+    fn on_position(&mut self, position_ms: u64, duration_ms: Option<u64>) {
+        if self.loading.is_some() || self.loaded.is_none() {
+            return;
+        }
+        self.position_ms = position_ms;
+        if let Some(duration_ms) = duration_ms.filter(|reported_ms| *reported_ms > 0) {
+            self.duration_ms = duration_ms;
+        }
+        self.scrobble_tracker
+            .record_position(position_ms, self.is_playing);
+        if let Some(submission) = self.scrobble_tracker.take_due_submission() {
+            self.send_scrobble(submission.song_id, true, Some(submission.timestamp_ms));
+        }
+        self.publish_playback();
+    }
+
+    fn on_track_ended(&mut self, uid: Uid) {
+        if self.loaded != Some(uid) || self.preloaded.is_some() {
+            return;
+        }
+        if self.sleep_timer.ends_with_track() {
+            self.sleep_at_track_end();
+            return;
+        }
+        match self.queue.next(Advance::Auto).is_some() {
+            true => self.load_current(0),
+            false => self.stop(),
+        }
+    }
+
+    fn on_player_error(&mut self, uid: Option<Uid>, message: String) {
+        if uid.is_none() || uid == self.loaded {
+            self.set_playing(false);
+        }
+        self.forget_failed_stream(uid);
+        self.deps.ui.send(UiUpdate::Error(message));
+    }
+
+    fn on_idle(&mut self) {
+        if self.loading.is_some() || self.loaded.is_none() {
+            return;
+        }
+        self.preloaded = None;
+        self.set_playing(false);
+    }
+
+    fn started_track(&self, uid: Uid) -> StartedTrack {
+        match (self.loading == Some(uid), self.preloaded == Some(uid)) {
+            (true, _) => StartedTrack::Loading,
+            (false, true) => StartedTrack::Preloaded,
+            (false, false) => StartedTrack::Unrelated,
+        }
+    }
+
+    fn on_started(&mut self, uid: Uid) {
+        match self.started_track(uid) {
+            StartedTrack::Loading => self.loading = None,
+            StartedTrack::Preloaded => self.take_over_preloaded(uid),
+            StartedTrack::Unrelated => return,
+        }
+        self.begin_playing_current();
+    }
+
+    fn take_over_preloaded(&mut self, uid: Uid) {
+        self.preloaded = None;
+        if self.queue.next(Advance::Auto).map(|item| item.uid) != Some(uid) {
+            self.queue.play_uid(uid);
+        }
+        self.loaded = Some(uid);
+        self.position_ms = 0;
+        self.duration_ms = self.current_duration_ms();
+        self.publish_now_playing();
+        self.publish_queue_current();
+        self.schedule_queue_sync();
+    }
+
+    fn begin_playing_current(&mut self) {
+        self.is_playing = true;
+        self.youtube.reset_failures();
+        if let Some(track) = self.current_track() {
+            self.start_scrobbling(&track);
+            self.update_media_metadata(&track);
+        }
+        self.update_media_status();
+        self.publish_playback();
+        self.refresh_preload();
+    }
+}

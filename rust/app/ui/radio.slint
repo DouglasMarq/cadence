@@ -1,0 +1,308 @@
+import { LineEdit, ListView } from "std-widgets.slint";
+import { Theme } from "theme.slint";
+import { PillTab, Placeholder, SearchField } from "widgets.slint";
+import { DialogButtons, Modal } from "playlist_picker.slint";
+import { RadioIcons, TextButton } from "radio_widgets.slint";
+import { RadioRow, RadioRowView, RadioSource, RadioState, RadioTab } from "radio_rows.slint";
+
+export { RadioIcons, RadioRow, RadioSource, RadioState, RadioTab }
+
+component StationsPanel inherits VerticalLayout {
+    if !RadioState.has-server-radio: Text {
+        x: 20px;
+        width: parent.width - 40px;
+        text: @tr("This server has no internet radio. Stations you add are saved on this device.");
+        color: Theme.muted;
+        wrap: word-wrap;
+    }
+
+    Rectangle {
+        ListView {
+            for row in RadioState.stations: RadioRowView {
+                item: row;
+            }
+        }
+
+        if RadioState.stations.length == 0: Placeholder {
+            text: RadioState.is-stations-loading ? @tr("Loading stations...") : @tr("No stations yet. Add one or find one in the directory.");
+        }
+    }
+}
+
+component LabeledField inherits VerticalLayout {
+    in property <string> label;
+    in property <string> placeholder;
+    in-out property <string> text;
+    spacing: 4px;
+
+    Text {
+        text: root.label;
+        color: Theme.muted;
+        font-size: 12px;
+    }
+
+    LineEdit {
+        placeholder-text: root.placeholder;
+        text <=> root.text;
+    }
+}
+
+component DirectoryField inherits SearchField {
+    min-width: 120px;
+    accepted => {
+        RadioState.search();
+    }
+}
+
+component DirectoryPanel inherits VerticalLayout {
+    spacing: 8px;
+
+    HorizontalLayout {
+        padding-left: 20px;
+        padding-right: 20px;
+        spacing: 8px;
+
+        DirectoryField {
+            placeholder-text: @tr("Station name");
+            text <=> RadioState.search-name;
+        }
+
+        DirectoryField {
+            placeholder-text: @tr("Country");
+            text <=> RadioState.search-country;
+        }
+
+        DirectoryField {
+            placeholder-text: @tr("Tag, for example jazz");
+            text <=> RadioState.search-tag;
+        }
+
+        TextButton {
+            text: RadioState.is-searching ? @tr("Searching...") : @tr("Search");
+            is-primary: true;
+            is-enabled: !RadioState.is-searching;
+            tooltip: RadioState.is-searching ? @tr("Searching the radio-browser.info directory") : @tr("Search the radio-browser.info directory");
+            clicked => {
+                RadioState.search();
+            }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+
+        ListView {
+            for row in RadioState.results: RadioRowView {
+                item: row;
+            }
+        }
+
+        if RadioState.results.length == 0: Placeholder {
+            text: RadioState.is-searching ? @tr("Searching...") : RadioState.results-message;
+        }
+    }
+
+    HorizontalLayout {
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-bottom: 12px;
+        spacing: 8px;
+
+        Text {
+            horizontal-stretch: 1;
+            text: @tr("Station data from radio-browser.info");
+            color: Theme.muted;
+            font-size: 11px;
+            vertical-alignment: center;
+        }
+
+        if RadioState.has-more: TextButton {
+            text: RadioState.is-searching ? @tr("Loading...") : @tr("Load more");
+            is-enabled: !RadioState.is-searching;
+            tooltip: RadioState.is-searching ? @tr("Loading the next page of stations") : @tr("Show the next page of stations");
+            clicked => {
+                RadioState.load-more();
+            }
+        }
+    }
+}
+
+component StationEditor inherits Modal {
+    property <bool> is-new: RadioState.edit-id == "";
+    title: root.is-new ? @tr("Add station") : @tr("Edit station");
+    cancel => {
+        RadioState.is-editing = false;
+    }
+
+    LabeledField {
+        label: @tr("Name");
+        placeholder: @tr("Station name");
+        text <=> RadioState.edit-name;
+    }
+
+    LabeledField {
+        label: @tr("Stream URL");
+        placeholder: "https://example.com/stream";
+        text <=> RadioState.edit-url;
+    }
+
+    LabeledField {
+        label: @tr("Homepage (optional)");
+        placeholder: "https://example.com";
+        text <=> RadioState.edit-homepage;
+    }
+
+    if RadioState.edit-error != "": Text {
+        text: RadioState.edit-error;
+        color: Theme.danger;
+        wrap: word-wrap;
+    }
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: end;
+
+        TextButton {
+            text: @tr("Cancel");
+            tooltip: @tr("Close without saving");
+            clicked => {
+                RadioState.is-editing = false;
+            }
+        }
+
+        if root.is-new: TextButton {
+            text: @tr("Save on this device");
+            is-primary: !RadioState.can-manage;
+            is-enabled: !RadioState.is-busy;
+            tooltip: @tr("Keep this station in the favorites on this device");
+            clicked => {
+                RadioState.save-edit(RadioSource.favorite);
+            }
+        }
+
+        if root.is-new && RadioState.can-manage: TextButton {
+            text: @tr("Save to server");
+            is-primary: true;
+            is-enabled: !RadioState.is-busy;
+            tooltip: RadioState.is-busy ? @tr("Saving the station to the server...") : @tr("Add this station to the server for every client");
+            clicked => {
+                RadioState.save-edit(RadioSource.server);
+            }
+        }
+
+        if !root.is-new: TextButton {
+            text: RadioState.is-busy ? @tr("Saving...") : @tr("Save");
+            is-primary: true;
+            is-enabled: !RadioState.is-busy;
+            tooltip: RadioState.edit-source == RadioSource.server ? @tr("Save the changes on the server") : @tr("Save the changes on this device");
+            clicked => {
+                RadioState.save-edit(RadioState.edit-source);
+            }
+        }
+    }
+}
+
+component DeleteConfirmation inherits Modal {
+    title: @tr("Delete station");
+    init => {
+        self.focus();
+    }
+    cancel => {
+        RadioState.delete-id = "";
+    }
+
+    Text {
+        text: @tr("Delete \"{}\" from the server? This cannot be undone.", RadioState.delete-name);
+        color: Theme.foreground;
+        wrap: word-wrap;
+    }
+
+    DialogButtons {
+        confirm-text: RadioState.is-busy ? @tr("Deleting...") : @tr("Delete");
+        confirm-tooltip: @tr("Delete \"{}\"", RadioState.delete-name);
+        is-confirm-enabled: !RadioState.is-busy;
+        is-danger: true;
+        cancel => {
+            RadioState.delete-id = "";
+        }
+        confirm => {
+            RadioState.delete(RadioState.delete-id);
+        }
+    }
+}
+
+export component RadioView inherits Rectangle {
+    min-width: 320px;
+    background: Theme.panel;
+
+    init => {
+        RadioState.load();
+    }
+
+    VerticalLayout {
+        HorizontalLayout {
+            padding: 20px;
+            padding-bottom: 12px;
+            spacing: 12px;
+
+            Text {
+                text: @tr("Radio");
+                font-size: 24px;
+                font-weight: 700;
+                color: Theme.foreground;
+                vertical-alignment: center;
+            }
+
+            Rectangle {
+                horizontal-stretch: 1;
+            }
+
+            PillTab {
+                y: (parent.height - self.height) / 2;
+                text: @tr("Stations");
+                is-active: RadioState.tab == RadioTab.stations;
+                tooltip: self.is-active ? @tr("Showing the server and saved stations") : @tr("Show the server and saved stations");
+                clicked => {
+                    RadioState.tab = RadioTab.stations;
+                }
+            }
+
+            PillTab {
+                y: (parent.height - self.height) / 2;
+                text: @tr("Directory");
+                is-active: RadioState.tab == RadioTab.directory;
+                tooltip: self.is-active ? @tr("Showing the radio-browser.info directory") : @tr("Find stations in the radio-browser.info directory");
+                clicked => {
+                    RadioState.tab = RadioTab.directory;
+                }
+            }
+
+            TextButton {
+                y: (parent.height - self.height) / 2;
+                text: @tr("Add station");
+                tooltip: @tr("Add a station by its stream URL");
+                clicked => {
+                    RadioState.edit-id = "";
+                    RadioState.edit-source = RadioSource.favorite;
+                    RadioState.edit-name = "";
+                    RadioState.edit-url = "";
+                    RadioState.edit-homepage = "";
+                    RadioState.edit-error = "";
+                    RadioState.is-editing = true;
+                }
+            }
+        }
+
+        if RadioState.tab == RadioTab.stations: StationsPanel {
+            vertical-stretch: 1;
+        }
+
+        if RadioState.tab == RadioTab.directory: DirectoryPanel {
+            vertical-stretch: 1;
+        }
+    }
+
+    if RadioState.is-editing: StationEditor { }
+
+    if RadioState.delete-id != "": DeleteConfirmation { }
+}

@@ -1,0 +1,20 @@
+[package]
+name = "cadence-player"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+cadence-core.workspace = true
+libc = "0.2"
+libmpv2 = { version = "6.0.0", default-features = false }
+libmpv2-sys = "4.0.1"
+thiserror.workspace = true
+tracing.workspace = true
+
+[build-dependencies]
+pkg-config = "0.3"
+
+[lints]
+workspace = true

@@ -1,0 +1,128 @@
+import { Theme } from "theme.slint";
+import { AppState, Route } from "globals.slint";
+import { CardGrid, CardRow, TrackItem, TrackTable } from "genres.slint";
+import { PillTab } from "widgets.slint";
+
+export enum FavoritesTab { tracks, albums, artists }
+
+export global FavoritesState {
+    in property <[TrackItem]> tracks;
+    in property <bool> is-tracks-loading;
+    in property <[CardRow]> albums;
+    in property <bool> is-albums-loading;
+    in property <[CardRow]> artists;
+    in property <bool> is-artists-loading;
+    in-out property <FavoritesTab> tab;
+    callback load(string);
+    callback play-track(int);
+    callback toggle-track(int);
+    callback toggle-album(string);
+    callback toggle-artist(string);
+    callback album-columns(int);
+    callback artist-columns(int);
+}
+
+export component FavoritesView inherits Rectangle {
+    min-width: 320px;
+    background: Theme.panel;
+
+    init => {
+        FavoritesState.load(AppState.detail-id);
+    }
+
+    VerticalLayout {
+        HorizontalLayout {
+            padding: 20px;
+            padding-bottom: 12px;
+            spacing: 12px;
+
+            Text {
+                text: @tr("Favorites");
+                font-size: 24px;
+                font-weight: 700;
+                color: Theme.foreground;
+                vertical-alignment: center;
+            }
+
+            Rectangle {
+                horizontal-stretch: 1;
+            }
+
+            PillTab {
+                y: (parent.height - self.height) / 2;
+                text: @tr("Tracks");
+                count: FavoritesState.is-tracks-loading ? "" : FavoritesState.tracks.length;
+                is-active: FavoritesState.tab == FavoritesTab.tracks;
+                clicked => {
+                    FavoritesState.tab = FavoritesTab.tracks;
+                }
+            }
+
+            PillTab {
+                y: (parent.height - self.height) / 2;
+                text: @tr("Albums");
+                is-active: FavoritesState.tab == FavoritesTab.albums;
+                clicked => {
+                    FavoritesState.tab = FavoritesTab.albums;
+                }
+            }
+
+            PillTab {
+                y: (parent.height - self.height) / 2;
+                text: @tr("Artists");
+                is-active: FavoritesState.tab == FavoritesTab.artists;
+                clicked => {
+                    FavoritesState.tab = FavoritesTab.artists;
+                }
+            }
+        }
+
+        Rectangle {
+            if FavoritesState.tab == FavoritesTab.tracks: TrackTable {
+                rows: FavoritesState.tracks;
+                is-loading: FavoritesState.is-tracks-loading;
+                is-favorite-shown: true;
+                empty-text: @tr("No favorite tracks");
+                play(index) => {
+                    FavoritesState.play-track(index);
+                }
+                toggle-favorite(index) => {
+                    FavoritesState.toggle-track(index);
+                }
+            }
+
+            if FavoritesState.tab == FavoritesTab.albums: CardGrid {
+                rows: FavoritesState.albums;
+                is-loading: FavoritesState.is-albums-loading;
+                is-favorite-shown: true;
+                empty-text: @tr("No favorite albums");
+                columns-changed(columns) => {
+                    FavoritesState.album-columns(columns);
+                }
+                open(id) => {
+                    AppState.navigate(Route.album-detail, id);
+                }
+                toggle-favorite(id) => {
+                    FavoritesState.toggle-album(id);
+                }
+            }
+
+            if FavoritesState.tab == FavoritesTab.artists: CardGrid {
+                rows: FavoritesState.artists;
+                is-loading: FavoritesState.is-artists-loading;
+                is-round: true;
+                is-favorite-shown: true;
+                empty-text: @tr("No favorite artists");
+                columns-changed(columns) => {
+                    FavoritesState.artist-columns(columns);
+                }
+                open(id) => {
+                    AppState.navigate(Route.artist-detail, id);
+                }
+                toggle-favorite(id) => {
+                    FavoritesState.toggle-artist(id);
+                }
+            }
+        }
+    }
+}
