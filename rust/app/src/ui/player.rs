@@ -1,5 +1,6 @@
 use cadence_core::queue::{QueueTrack, RepeatMode};
 use cadence_storage::cover_cache::DecodedImage;
+use slint::winit_030::WinitWindowAccessor;
 use slint::{ComponentHandle, Image};
 
 use super::images::{CoverSource, tint_of, to_image};
@@ -127,9 +128,19 @@ fn repeat_state(repeat: RepeatMode) -> RepeatState {
 }
 
 fn raise(window: &AppWindow) {
-    if let Err(error) = window.show() {
+    if has_focus(window) {
+        return;
+    }
+    if let Err(error) = window.hide().and_then(|()| window.show()) {
         tracing::debug!("raise: {error}");
     }
+}
+
+fn has_focus(window: &AppWindow) -> bool {
+    window
+        .window()
+        .with_winit_window(|winit_window| winit_window.has_focus())
+        .unwrap_or(false)
 }
 
 fn quit() {
@@ -348,6 +359,32 @@ mod tests {
             view.app.global::<RadioState>().get_playing_id(),
             "station-1"
         );
+    }
+
+    #[test]
+    fn given_the_window_is_closed_to_the_tray_when_raised_then_it_is_shown_again() {
+        let Some(view) = open_player() else {
+            return;
+        };
+        view.app.hide().unwrap();
+
+        sink_of(&view).send(UiUpdate::Raise);
+
+        assert!(view.pump(|| view.app.window().is_visible()));
+    }
+
+    #[test]
+    fn given_the_window_is_shown_when_raised_then_it_stays_shown() {
+        let Some(view) = open_player() else {
+            return;
+        };
+        view.app.show().unwrap();
+
+        sink_of(&view).send(UiUpdate::Raise);
+        sink_of(&view).send(UiUpdate::Error("raised".into()));
+
+        assert!(view.pump(|| view.status() == "raised"));
+        assert!(view.app.window().is_visible());
     }
 
     #[test]
