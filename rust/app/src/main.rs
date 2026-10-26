@@ -21,6 +21,7 @@ mod radio_directory;
 mod remote;
 mod scrobble;
 mod session;
+mod single_instance;
 mod sleep_timer;
 mod store;
 mod termination;

@@ -4,6 +4,7 @@ use std::time::Duration;
 use anyhow::{Context as _, Result};
 use cadence_api::{Credential, MusicServer};
 use cadence_core::model::ServerConfig;
+use cadence_platform::MediaControlEvent;
 use cadence_storage::settings::Settings;
 use slint::ComponentHandle;
 use tokio::runtime::Runtime;
@@ -19,6 +20,7 @@ use crate::discover::{DemoDiscover, DiscoverSource, YouTubeMusicSource};
 use crate::media::{MediaSession, MediaSessions, Mpris, NoMediaSession, SleepInhibition};
 use crate::remote::{self, HostFeed, LocalGate, Remote, RemoteRequest, RemoteStart};
 use crate::session::Session;
+use crate::single_instance::{self, FirstInstance, Launch};
 use crate::sleep_timer::{self, SleepTimerUi};
 use crate::store::{JsonStore, Store, SystemStore};
 use crate::termination;
@@ -383,7 +385,31 @@ fn run_until_quit(window: &AppWindow) -> Result<()> {
     window.hide().context("hiding the window")
 }
 
+fn claim_instance(mode: Mode) -> Option<Launch> {
+    if let Mode::Demo(_) = mode {
+        return None;
+    }
+    single_instance::instance_directory()
+        .map_err(anyhow::Error::from)
+        .and_then(|directory| Ok(single_instance::claim(&directory)?))
+        .inspect_err(|error| tracing::warn!("single instance check unavailable: {error:#}"))
+        .ok()
+}
+
+fn raise_on_later_launch(first: FirstInstance, commands: &mpsc::UnboundedSender<Command>) {
+    let commands = commands.clone();
+    let raise = move || forward_command(&commands, Command::Media(MediaControlEvent::Raise));
+    if let Err(error) = first.on_later_launch(raise) {
+        tracing::warn!("listening for later launches failed: {error}");
+    }
+}
+
 pub fn run(mode: Mode) -> Result<()> {
+    let first = match claim_instance(mode) {
+        Some(Launch::AlreadyRunning) => return Ok(()),
+        Some(Launch::First(first)) => Some(first),
+        None => None,
+    };
     let runtime = build_runtime()?;
     let backends = backends(mode)?;
     let settings = load_settings_or_default(backends.store.as_ref());
@@ -401,6 +427,9 @@ pub fn run(mode: Mode) -> Result<()> {
         context: &context,
     };
     install_views(&app, discover);
+    if let Some(first) = first {
+        raise_on_later_launch(first, &context.commands);
+    }
 
     let deps = controller_deps(&app, host_state)?;
     let mut controller = Controller::new(deps, settings.clone(), None, None);
