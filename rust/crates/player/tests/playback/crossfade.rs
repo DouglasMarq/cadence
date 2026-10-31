@@ -231,10 +231,10 @@ fn preloading_from_the_callback_keeps_the_chain_going() {
 #[test]
 fn turning_crossfade_on_while_playing_fades_into_the_next_preload() {
     let (player, recorder) = player_with(PlayerConfig::default());
-    load_track(&player, 1, 3);
-    preload_track(&player, 2, 1);
+    load_track(&player, 1, 6);
+    preload_track(&player, 2, 3);
     player.set_crossfade(Duration::from_secs(1)).unwrap();
-    preload_track(&player, 2, 1);
+    preload_track(&player, 2, 3);
     recorder.wait_for_event(PlayerEvent::Idle);
 
     assert_eq!(
