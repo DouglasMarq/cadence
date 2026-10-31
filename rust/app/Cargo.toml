@@ -19,6 +19,7 @@ cadence-player.workspace = true
 cadence-radio-browser.workspace = true
 cadence-remote.workspace = true
 cadence-storage.workspace = true
+cadence-updater.workspace = true
 cadence-youtube.workspace = true
 lru.workspace = true
 rand.workspace = true

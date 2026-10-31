@@ -728,6 +728,7 @@ dependencies = [
  "cadence-radio-browser",
  "cadence-remote",
  "cadence-storage",
+ "cadence-updater",
  "cadence-youtube",
  "i-slint-backend-testing",
  "lru",
@@ -941,6 +942,23 @@ dependencies = [
  "tracing",
  "wiremock",
  "zbus-secret-service-keyring-store",
+]
+
+[[package]]
+name = "cadence-updater"
+version = "0.1.0"
+dependencies = [
+ "cadence-core",
+ "reqwest",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "wiremock",
 ]
 
 [[package]]

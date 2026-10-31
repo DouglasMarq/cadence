@@ -57,6 +57,7 @@ pub mod search;
 pub mod settings;
 pub mod sharing;
 pub mod tracks;
+pub mod updates;
 
 #[cfg(test)]
 mod detail_navigation_tests;
@@ -72,6 +73,8 @@ mod nav_tests;
 mod sharing_view_tests;
 #[cfg(test)]
 pub mod test_window;
+#[cfg(test)]
+mod updates_view_tests;
 
 pub const MAX_RATING: u8 = 5;
 
