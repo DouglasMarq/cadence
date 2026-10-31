@@ -5,6 +5,7 @@ mod library;
 mod paging;
 mod play_queue;
 mod playlists;
+mod search;
 mod sharing;
 mod song_years;
 mod songs;

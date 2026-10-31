@@ -107,7 +107,7 @@ impl MusicServer for NavidromeServer {
     }
 
     async fn search(&self, query: &str, limit: usize) -> Result<SearchResults> {
-        self.subsonic_server.search(query, limit).await
+        self.search_library(query, limit).await
     }
 
     async fn set_favorite(&self, kind: ItemKind, ids: &[String], is_favorite: bool) -> Result<()> {

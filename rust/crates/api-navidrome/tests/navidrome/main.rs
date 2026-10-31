@@ -21,6 +21,8 @@ mod radio;
 #[cfg(test)]
 mod scanning;
 #[cfg(test)]
+mod search;
+#[cfg(test)]
 mod session;
 #[cfg(test)]
 mod sharing;
