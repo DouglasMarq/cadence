@@ -6,7 +6,7 @@ use super::binding::{Binding, with_grid, with_table};
 use crate::controller::Command;
 use crate::demo::FakeServer;
 use crate::list_stream::{ListRow, SongSource};
-use crate::tests::offline_server::OFFLINE;
+use crate::tests::offline_server::{OFFLINE, OfflineServer};
 use crate::tests::session_window::SessionWindow;
 use crate::ui::{AppState, AppWindow, CardRow, GenresState, Route, TrackItem};
 
@@ -180,13 +180,18 @@ fn given_an_open_genre_when_a_track_is_played_then_it_plays_from_the_genre_list(
 
 #[test]
 fn given_an_offline_server_when_the_genres_page_opens_then_the_status_shows_the_failure() {
-    let view = open();
-    view.go_offline();
+    let view = SessionWindow::open(Arc::new(OfflineServer::default()));
+    assert!(view.wait_until_idle());
+    view.clear_status();
 
     navigate(&view, "");
 
-    assert!(view.pump_until_status(&format!("Could not load genres: {OFFLINE}")));
-    assert!(!genres(&view).get_is_genres_loading());
+    let failure = format!("Could not load genres: {OFFLINE}");
+    assert!(
+        view.pump(|| {
+            view.status().contains(&failure) && !genres(&view).get_is_genres_loading()
+        })
+    );
 }
 
 #[test]
