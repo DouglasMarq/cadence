@@ -1,13 +1,17 @@
 use std::future::pending;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use async_trait::async_trait;
 use cadence_api::MusicServer;
-use cadence_core::model::{ItemKind, ServerConfig, Song};
+use cadence_core::model::{Album, Artist, ArtistDetail, ArtistPart, ItemKind, ServerConfig, Song};
+use cadence_storage::cover_cache::DecodedImage;
 use tempfile::TempDir;
 use tokio::sync::oneshot;
 
-use super::{View, ViewSlot, ViewStore, Views};
+use super::{FocusedCovers, View, ViewSlot, ViewStore, Views};
+use crate::covers::{CoverProvider, DemoCovers};
 use crate::demo::{DemoLibrary, FakeServer, test_song};
 use crate::session::Session;
 use crate::tests::refusing_server::RefusingServer;
@@ -435,4 +439,216 @@ async fn given_a_removed_server_when_forgotten_then_its_views_go_and_others_stay
 
     assert_eq!(store.stored::<usize>(FIRST_SERVER, &slot()).await, None);
     assert_eq!(store.stored::<usize>(SECOND_SERVER, &slot()).await, Some(8));
+}
+
+const COVER_KEY: &str = "cover-key";
+const COVER_URL: &str = "https://covers.example/one.jpg";
+const COVER_FILE: &str = "/covers/one.jpg";
+const COVER_SIZE: u32 = 8;
+
+fn favorite_artist() -> Artist {
+    Artist {
+        id: "artist-1".to_owned(),
+        server_id: FIRST_SERVER.to_owned(),
+        name: "Artist".to_owned(),
+        album_count: None,
+        song_count: None,
+        cover_art_id: None,
+        is_favorite: true,
+        user_rating: None,
+        biography: None,
+    }
+}
+
+fn favorite_album() -> Album {
+    Album {
+        id: "album-1".to_owned(),
+        server_id: FIRST_SERVER.to_owned(),
+        name: "Album".to_owned(),
+        album_artists: Vec::new(),
+        artists: Vec::new(),
+        year: None,
+        genres: Vec::new(),
+        song_count: 1,
+        duration_ms: 1_000,
+        cover_art_id: None,
+        play_count: 0,
+        user_rating: None,
+        is_favorite: true,
+        created_at: None,
+        last_played_at: None,
+    }
+}
+
+async fn clear_favorites(views: &Views) {
+    for (kind, id) in [
+        (ItemKind::Artist, "artist-1"),
+        (ItemKind::Album, "album-1"),
+        (ItemKind::Song, "song-1"),
+    ] {
+        views
+            .set_favorite(kind, &[id.to_owned()], false)
+            .await
+            .unwrap();
+    }
+}
+
+#[tokio::test]
+async fn given_unfavorites_when_a_stale_artist_page_is_shown_then_none_is_undone() {
+    let dir = scratch_dir();
+    let store = store_in(&dir);
+    let server = demo_on(FIRST_SERVER);
+    let artist_view = View::Artist("artist-1".to_owned()).slot("detail");
+    let stale = ArtistDetail {
+        artist: favorite_artist(),
+        albums: vec![favorite_album()],
+        top_songs: vec![favorite_song()],
+    };
+    store
+        .seed(server.config().id.as_str(), &artist_view, stale)
+        .await;
+    let session = Session::default();
+    let views = views_on(server, &store, &session);
+    clear_favorites(&views).await;
+
+    let delivered = recorder::<ArtistDetail>();
+    views.load(
+        Some(artist_view),
+        async { Err::<ArtistDetail, String>("offline".to_owned()) },
+        recording(&delivered),
+    );
+    settle_until(|| count_of(&delivered) == 1).await;
+
+    let results = delivered.lock().unwrap();
+    let shown = results.first().unwrap().as_ref().unwrap();
+    assert!(!shown.artist.is_favorite);
+    assert!(!shown.albums.first().unwrap().is_favorite);
+    assert!(!shown.top_songs.first().unwrap().is_favorite);
+}
+
+#[tokio::test]
+async fn given_unfavorites_when_stale_artist_parts_arrive_then_none_is_undone() {
+    let dir = scratch_dir();
+    let store = store_in(&dir);
+    let session = Session::default();
+    let views = views_on(demo_on(FIRST_SERVER), &store, &session);
+    let taken_at_ms = Views::taken_now();
+    clear_favorites(&views).await;
+
+    let mut profile = ArtistPart::Profile(favorite_artist());
+    let mut albums = ArtistPart::Albums(vec![favorite_album()]);
+    let mut top_songs = ArtistPart::TopSongs(vec![favorite_song()]);
+    let mut biography = ArtistPart::Biography(Some("Biography".to_owned()));
+    views.overlay(taken_at_ms, &mut profile);
+    views.overlay(taken_at_ms, &mut albums);
+    views.overlay(taken_at_ms, &mut top_songs);
+    views.overlay(taken_at_ms, &mut biography);
+
+    let unfavorited_artist = Artist {
+        is_favorite: false,
+        ..favorite_artist()
+    };
+    let unfavorited_album = Album {
+        is_favorite: false,
+        ..favorite_album()
+    };
+    let unfavorited_song = Song {
+        is_favorite: false,
+        ..favorite_song()
+    };
+    assert_eq!(profile, ArtistPart::Profile(unfavorited_artist));
+    assert_eq!(albums, ArtistPart::Albums(vec![unfavorited_album]));
+    assert_eq!(top_songs, ArtistPart::TopSongs(vec![unfavorited_song]));
+    assert_eq!(
+        biography,
+        ArtistPart::Biography(Some("Biography".to_owned()))
+    );
+}
+
+#[tokio::test]
+async fn given_unfavorites_when_a_stale_pair_is_shown_then_both_sides_keep_them() {
+    let dir = scratch_dir();
+    let store = store_in(&dir);
+    let session = Session::default();
+    let views = views_on(demo_on(FIRST_SERVER), &store, &session);
+    let taken_at_ms = Views::taken_now();
+    clear_favorites(&views).await;
+
+    let mut stale = (vec![favorite_song()], Some(favorite_album()));
+    views.overlay(taken_at_ms, &mut stale);
+
+    let (songs, album) = stale;
+    assert!(!songs.first().unwrap().is_favorite);
+    assert!(!album.unwrap().is_favorite);
+}
+
+struct HangingCovers;
+
+#[async_trait]
+impl CoverProvider for HangingCovers {
+    async fn cover(
+        &self,
+        _server: &dyn MusicServer,
+        _cover_art_id: &str,
+        _size: u32,
+    ) -> anyhow::Result<Arc<DecodedImage>> {
+        pending().await
+    }
+
+    async fn cover_from_url(
+        &self,
+        _cache_key: &str,
+        _url: &str,
+        _size: u32,
+    ) -> anyhow::Result<Arc<DecodedImage>> {
+        pending().await
+    }
+
+    fn cover_file(
+        &self,
+        _server: &dyn MusicServer,
+        _cover_art_id: &str,
+        _size: u32,
+    ) -> Option<PathBuf> {
+        Some(PathBuf::from(COVER_FILE))
+    }
+}
+
+#[tokio::test]
+async fn given_a_view_was_left_when_its_url_cover_is_pending_then_it_stops_waiting() {
+    let session = Session::default();
+    let covers = FocusedCovers::new(Arc::new(HangingCovers), session.clone());
+    let leave_view = async {
+        tokio::task::yield_now().await;
+        session.open_view();
+    };
+
+    let (cover, ()) = tokio::join!(
+        covers.cover_from_url(COVER_KEY, COVER_URL, COVER_SIZE),
+        leave_view
+    );
+
+    assert!(cover.is_err());
+}
+
+#[tokio::test]
+async fn given_an_open_view_when_a_url_cover_is_asked_then_it_arrives() {
+    let covers = FocusedCovers::new(Arc::new(DemoCovers), Session::default());
+
+    let cover = covers
+        .cover_from_url(COVER_KEY, COVER_URL, COVER_SIZE)
+        .await
+        .unwrap();
+
+    assert_eq!(cover.width, COVER_SIZE);
+}
+
+#[test]
+fn given_a_cover_file_when_asked_then_it_comes_from_the_wrapped_provider() {
+    let covers = FocusedCovers::new(Arc::new(HangingCovers), Session::default());
+    let server = demo_on(FIRST_SERVER);
+
+    let file = covers.cover_file(server.as_ref(), "cover-1", COVER_SIZE);
+
+    assert_eq!(file, Some(PathBuf::from(COVER_FILE)));
 }
