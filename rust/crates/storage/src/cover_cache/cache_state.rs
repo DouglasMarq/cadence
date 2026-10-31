@@ -7,6 +7,7 @@ use lru::LruCache;
 use tokio::sync::OnceCell;
 
 use super::disk_index::DiskIndex;
+use super::download_gate::DownloadGate;
 use super::image_file::{cache_file_name, decode, mark_recently_used};
 use super::locking::{lock, run_blocking};
 use super::{CoverCacheConfig, DecodedImage};
@@ -42,6 +43,7 @@ pub(super) struct CacheState {
     pub(super) memory: Mutex<Option<LruCache<ImageKey, Arc<DecodedImage>>>>,
     pub(super) disk: Mutex<DiskIndex>,
     pub(super) inflight: Mutex<HashMap<ImageKey, Arc<OnceCell<SharedLoad>>>>,
+    pub(super) downloads: Arc<DownloadGate>,
 }
 
 impl CacheState {
@@ -80,6 +82,7 @@ impl CacheState {
         file_name: String,
         edge_pixels: u32,
     ) -> Result<DecodedImage> {
+        let slot = self.downloads.enter().await;
         let response = self
             .client
             .get(url)
@@ -89,6 +92,7 @@ impl CacheState {
             .and_then(reqwest::Response::error_for_status)
             .map_err(network_error)?;
         let bytes = capped_body(response).await?;
+        drop(slot);
         let state = Arc::clone(self);
         run_blocking(move || state.decode_and_store(&file_name, &bytes, edge_pixels)).await
     }

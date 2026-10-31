@@ -41,7 +41,7 @@ pub(super) fn cache_file_name(key: &str, edge_pixels: u32) -> String {
         .collect()
 }
 
-pub(super) fn mark_recently_used(path: &Path) {
+pub(crate) fn mark_recently_used(path: &Path) {
     let refreshed = std::fs::File::options()
         .append(true)
         .open(path)

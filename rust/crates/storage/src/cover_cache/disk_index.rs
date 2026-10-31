@@ -7,7 +7,7 @@ use lru::LruCache;
 
 use crate::{Result, TEMPORARY_FILE_PREFIX};
 
-pub(super) struct DiskIndex {
+pub(crate) struct DiskIndex {
     files: LruCache<String, u64>,
     total_bytes: u64,
 }
@@ -20,7 +20,7 @@ struct CachedFile {
 }
 
 impl DiskIndex {
-    pub(super) fn scan(directory: &Path) -> Result<Self> {
+    pub(crate) fn scan(directory: &Path) -> Result<Self> {
         let mut found = Vec::new();
         for entry in std::fs::read_dir(directory)? {
             if let Some(cached_file) = cached_file_from(&entry?)? {
@@ -38,33 +38,42 @@ impl DiskIndex {
         Ok(index)
     }
 
-    pub(super) fn total_bytes(&self) -> u64 {
+    pub(crate) fn total_bytes(&self) -> u64 {
         self.total_bytes
     }
 
-    pub(super) fn contains(&self, name: &str) -> bool {
+    pub(crate) fn contains(&self, name: &str) -> bool {
         self.files.contains(name)
     }
 
-    pub(super) fn promote(&mut self, name: &str) {
+    pub(crate) fn promote(&mut self, name: &str) {
         self.files.promote(name);
     }
 
-    pub(super) fn insert(&mut self, name: String, length_bytes: u64) {
+    pub(crate) fn insert(&mut self, name: String, length_bytes: u64) {
         if let Some(previous_length_bytes) = self.files.put(name, length_bytes) {
             self.total_bytes = self.total_bytes.saturating_sub(previous_length_bytes);
         }
         self.total_bytes = self.total_bytes.saturating_add(length_bytes);
     }
 
-    pub(super) fn remove(&mut self, directory: &Path, name: &str) {
+    pub(crate) fn remove(&mut self, directory: &Path, name: &str) {
         if let Some(length_bytes) = self.files.pop(name) {
             self.total_bytes = self.total_bytes.saturating_sub(length_bytes);
         }
         remove_ignoring_errors(&directory.join(name));
     }
 
-    pub(super) fn evict(&mut self, directory: &Path, max_bytes: u64) {
+    pub(crate) fn names_starting_with(&self, prefix: &str) -> Vec<String> {
+        self.files
+            .iter()
+            .map(|(name, _length_bytes)| name)
+            .filter(|name| name.starts_with(prefix))
+            .cloned()
+            .collect()
+    }
+
+    pub(crate) fn evict(&mut self, directory: &Path, max_bytes: u64) {
         while self.total_bytes > max_bytes {
             let Some((name, length_bytes)) = self.files.pop_lru() else {
                 break;
@@ -97,7 +106,7 @@ fn cached_file_from(entry: &DirEntry) -> Result<Option<CachedFile>> {
 fn remove_evicted_file(directory: &Path, name: &str) {
     match std::fs::remove_file(directory.join(name)) {
         Err(error) if error.kind() != ErrorKind::NotFound => {
-            tracing::warn!("cover cache eviction failed for {name}: {error}");
+            tracing::warn!("cache eviction failed for {name}: {error}");
         }
         _ => {}
     }
@@ -105,6 +114,6 @@ fn remove_evicted_file(directory: &Path, name: &str) {
 
 fn remove_ignoring_errors(path: &Path) {
     if let Err(error) = std::fs::remove_file(path) {
-        tracing::debug!("could not remove cover cache file {path:?}: {error}");
+        tracing::debug!("could not remove cache file {path:?}: {error}");
     }
 }
