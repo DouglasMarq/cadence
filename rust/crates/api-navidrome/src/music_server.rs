@@ -106,6 +106,10 @@ impl MusicServer for NavidromeServer {
         self.remove_playlist(id).await
     }
 
+    async fn session_lost(&self) {
+        self.wait_until_session_lost().await;
+    }
+
     async fn search(&self, query: &str, limit: usize) -> Result<SearchResults> {
         self.search_library(query, limit).await
     }

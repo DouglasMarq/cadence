@@ -37,6 +37,17 @@ impl NavidromeServer {
         self.current_session_token().is_some() || self.saved_password().is_some()
     }
 
+    pub(crate) fn report_session_state(&self) {
+        self.session_lost.send_replace(!self.can_use_native_api());
+    }
+
+    pub(crate) async fn wait_until_session_lost(&self) {
+        let mut is_lost = self.session_lost.subscribe();
+        if is_lost.wait_for(|is_lost| *is_lost).await.is_err() {
+            tracing::debug!("the server is gone, it can no longer lose its session");
+        }
+    }
+
     pub(crate) fn replace_session_token(&self, token: Option<String>) {
         *self
             .session_token
