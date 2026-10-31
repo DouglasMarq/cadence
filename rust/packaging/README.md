@@ -9,8 +9,10 @@ Everything needed to ship Cadence on Linux and macOS.
 | `install-desktop-integration.sh` | Installs the desktop entry, metainfo and hicolor icons under a prefix |
 | `arch/PKGBUILD` | `cadence-git` package for Arch Linux |
 | `appimage/build-appimage.sh` | Builds a portable AppImage with libmpv bundled |
+| `appimage/build-libmpv.sh` | Builds libmpv from a pinned source for bases whose mpv is older than 0.38 |
 | `macos/build-app.sh` | Builds `Cadence.app` (and a zip of it) with libmpv bundled |
 | `macos/Info.plist` | Bundle metadata, including the local network and Bonjour declarations |
+| `../../.github/workflows/release.yml` | Builds, verifies and publishes a release when a `v*` tag is pushed |
 
 The app id is `io.github.douglasmarq.cadence`. The binary sets it as the Wayland app id and X11
 `WM_CLASS`, and reports it as the MPRIS `DesktopEntry`, so the window, the media controls and
@@ -116,6 +118,12 @@ git config --global --add safe.directory '*'
 git clone /src /build && bash /build/rust/packaging/appimage/build-appimage.sh /out
 ```
 
+Ubuntu 24.04's `libmpv-dev` is mpv 0.37, which has no `volume-gain` property, so an AppImage built
+as above, like any install from source against mpv older than 0.38, stops playing at the first
+crossfade. Release builds run `appimage/build-libmpv.sh` first: it installs mpv 0.41 from a
+checksummed source into `/usr/local`, and fails if an audio output, Lua or libavdevice is missing
+rather than leaving it out. `.github/workflows/release.yml` lists the packages it needs.
+
 The result is about 106 MB. Run it with `chmod +x Cadence-*.AppImage && ./Cadence-*.AppImage`;
 on systems without FUSE use `./Cadence-*.AppImage --appimage-extract-and-run`. A headless smoke
 test that expects exit status 0 (the app saves its state and quits on `SIGTERM`):
@@ -145,3 +153,85 @@ Homebrew library it links into `Contents/Frameworks` with `dylibbundler`, drops 
 The bundle is not notarized: on another Mac, open it once from Finder with right-click > Open,
 or allow it in System Settings > Privacy & Security. yt-dlp is not bundled; the app finds it in
 `/opt/homebrew/bin` or `/usr/local/bin` even when started from Finder.
+
+## Cutting a release
+
+A release is made by pushing a tag. The tag must be `v` plus the version in `rust/Cargo.toml`:
+
+```sh
+# 1. Set version = "1.2.3" under [workspace.package] in rust/Cargo.toml
+cargo update --manifest-path rust/Cargo.toml --workspace
+git commit -am "chore: release 1.2.3"
+git push origin main
+
+# 2. Tag that commit
+git tag v1.2.3
+git push origin v1.2.3
+```
+
+`.github/workflows/release.yml` then runs these jobs:
+
+1. `tag` fails at once if the tag is not the workspace version.
+2. `linux` (`ubuntu-24.04`) and `macos` (`macos-15`) each run clippy and the tests, then build
+   `Cadence-<version>-x86_64.AppImage` and `Cadence-<version>-macos-arm64.zip`. The test step is
+   limited to 30 minutes, so a test that hangs fails the job instead of using up all of it.
+3. `publish` runs only if both succeeded. It checks that both assets exist, writes `SHA256SUMS`,
+   creates a draft release with every asset and generated notes, and only then makes it visible.
+   Drafts are invisible to `/releases/latest`, so clients never see a partial release.
+
+If `publish` fails after creating the draft, delete the draft with
+`gh release delete v1.2.3 --yes` (this keeps the tag) and re-run the failed job.
+
+Runner choices:
+
+- `ubuntu-24.04` (glibc 2.39) keeps the AppImage running on Ubuntu 24.04 and newer; `ubuntu-26.04`
+  (glibc 2.43) would not, and `ubuntu-latest` is moving there, so the label is pinned. It is also
+  the oldest base that can work: `libmpv2` needs libmpv API 2, which is mpv 0.35 or newer, and
+  `ubuntu-22.04` ships mpv 0.34 (it is also deprecated and will be removed in April 2027). Its own
+  mpv 0.37 is too old for crossfade, so the job builds libmpv with `appimage/build-libmpv.sh`.
+- `macos-15` is the oldest arm64 macOS runner still supported. Homebrew's libraries are built for
+  the runner's macOS, so releases are only tested on macOS 15 and newer, even though `Info.plist`
+  declares 11.0.
+
+## How updates work
+
+About five seconds after launch the app asks the GitHub API for the latest release, once per
+launch and off the UI thread. No release, an older or equal version, no asset for this platform, a
+rate limit or a network error all end there: they are logged at debug level and nothing is
+shown. Demo mode does not check.
+
+When a newer version has an asset for this platform and a `SHA256SUMS`, a small prompt offers it.
+The app never restarts on its own, and "Later" hides the prompt until the next launch. What the
+prompt offers depends on how the app was installed:
+
+| Install | Detected by | Update |
+| --- | --- | --- |
+| macOS `.app` | The running executable is `*.app/Contents/MacOS/*` and the folder holding the bundle is writable | Replaces the bundle and relaunches |
+| AppImage | `$APPIMAGE` is set, the running executable is inside `$APPDIR` and the folder holding the file is writable | Replaces the file and relaunches |
+| Anything else (`install.sh`, the Arch package, `cargo run`, a read-only location) | | "Open release page" in the browser |
+
+`$APPDIR` is checked because `$APPIMAGE` is inherited by child processes: a source build started
+from a terminal inside another AppImage must not overwrite that AppImage.
+
+"Update and restart" works in a hidden `.cadence-update` folder next to the installed app, so
+that the final renames stay on one volume:
+
+1. Download over HTTPS only, also across redirects, and verify the SHA-256 against `SHA256SUMS`.
+2. On macOS, extract the zip with `ditto -x -k`, which keeps symlinks and the signature, and check
+   that the executable exists and that `Info.plist` has the release's version.
+3. Move the new version into place. On macOS the old bundle is moved aside first and moved back if
+   the new one cannot be placed. An AppImage is replaced by a single rename, keeping its mode.
+4. Quit the normal way, which saves the queue, then relaunch.
+
+A failure at any step removes the staging folder, leaves the installed app untouched and shows the
+reason in the status message. If putting the old bundle back fails too, the staging folder is
+kept and the message says where the old bundle is.
+
+The relaunch is a small detached `sh` that waits for the old process to exit, because the
+single-instance lock is only released then: started any earlier, the new version would just raise
+the old window and exit. It gives up waiting after about ten seconds and starts anyway.
+
+Known limits of an ad hoc signature on macOS: each build has a new code identity, so after an update
+the system may ask again for access to the saved passwords in the keychain and to the local
+network, and an update of an app in `/Applications` can be refused by the App Management privacy
+setting. A refusal is reported in the status message and the installed app keeps working.

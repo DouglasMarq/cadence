@@ -66,6 +66,13 @@ Privacy & Security. Discover needs `brew install yt-dlp`.
 Settings live in `~/Library/Application Support/cadence`, the cache in
 `~/Library/Caches/cadence` and passwords in the login keychain.
 
+### Updates
+
+Cadence checks GitHub for a new release once per launch and offers it in a small prompt; it never
+restarts on its own. The macOS app and the AppImage update themselves after you accept, verifying
+the download's SHA-256 first. Other installs get a link to the release page. See
+[rust/packaging/README.md](rust/packaging/README.md#how-updates-work).
+
 ## Development
 
 The Cargo workspace is in [`rust/`](rust). It needs a Rust toolchain, `libmpv`, `fontconfig`,
