@@ -1781,6 +1781,9 @@ msgstr "Вие сте тук: {}"
 msgid "Your mixes"
 msgstr "Твоите миксове"
 
+msgid "Your session expired. Log in again."
+msgstr "Сесията ви изтече. Влезте отново."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Потребителят ви няма право да споделя в този сървър"
 

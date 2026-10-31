@@ -1769,6 +1769,9 @@ msgstr "当前位置：{}"
 msgid "Your mixes"
 msgstr "你的合辑"
 
+msgid "Your session expired. Log in again."
+msgstr "您的会话已过期。请重新登录。"
+
 msgid "Your user is not allowed to share on this server"
 msgstr "你的用户无权在此服务器上分享"
 

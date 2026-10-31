@@ -1793,6 +1793,9 @@ msgstr "Ви тут: {}"
 msgid "Your mixes"
 msgstr "Ваші мікси"
 
+msgid "Your session expired. Log in again."
+msgstr "Термін дії сеансу закінчився. Увійдіть знову."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Вашому користувачу заборонено поширювати на цьому сервері"
 

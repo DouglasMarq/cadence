@@ -1793,6 +1793,9 @@ msgstr "Ovde ste: {}"
 msgid "Your mixes"
 msgstr "Tvoji miksevi"
 
+msgid "Your session expired. Log in again."
+msgstr "Ваша сесија је истекла. Пријавите се поново."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Vaš korisnik nema dozvolu za deljenje na ovom serveru"
 

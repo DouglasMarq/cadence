@@ -1781,6 +1781,9 @@ msgstr "Du er her: {}"
 msgid "Your mixes"
 msgstr "Dine mikser"
 
+msgid "Your session expired. Log in again."
+msgstr "Økten din er utløpt. Logg inn på nytt."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Brukeren din har ikke lov til å dele på denne serveren"
 

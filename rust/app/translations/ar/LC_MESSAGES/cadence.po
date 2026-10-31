@@ -1829,6 +1829,9 @@ msgstr "أنت هنا: {}"
 msgid "Your mixes"
 msgstr "مزيجاتك"
 
+msgid "Your session expired. Log in again."
+msgstr "انتهت جلستك. سجّل الدخول مرة أخرى."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "لا يُسمح لمستخدمك بالمشاركة على هذا الخادم"
 

@@ -1781,6 +1781,9 @@ msgstr "اینجا هستید: {}"
 msgid "Your mixes"
 msgstr "میکس‌های شما"
 
+msgid "Your session expired. Log in again."
+msgstr "نشست شما منقضی شد. دوباره وارد شوید."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "کاربر شما اجازه‌ی اشتراک‌گذاری در این سرور را ندارد"
 

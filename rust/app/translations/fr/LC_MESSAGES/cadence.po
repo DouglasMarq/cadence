@@ -1781,6 +1781,9 @@ msgstr "Vous êtes ici : {}"
 msgid "Your mixes"
 msgstr "Vos mix"
 
+msgid "Your session expired. Log in again."
+msgstr "Votre session a expiré. Reconnectez-vous."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Votre utilisateur n'est pas autorisé à partager sur ce serveur"
 

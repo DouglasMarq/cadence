@@ -1781,6 +1781,9 @@ msgstr "Nandito ka: {}"
 msgid "Your mixes"
 msgstr "Ang mga mix mo"
 
+msgid "Your session expired. Log in again."
+msgstr "Nag-expire ang iyong session. Mag-log in muli."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Hindi pinapayagang magbahagi ang iyong user sa server na ito"
 

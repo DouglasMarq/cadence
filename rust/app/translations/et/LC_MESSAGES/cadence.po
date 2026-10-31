@@ -1781,6 +1781,9 @@ msgstr "Oled siin: {}"
 msgid "Your mixes"
 msgstr "Sinu miksid"
 
+msgid "Your session expired. Log in again."
+msgstr "Teie seanss aegus. Logige uuesti sisse."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Sinu kasutajal pole selles serveris lubatud jagada"
 

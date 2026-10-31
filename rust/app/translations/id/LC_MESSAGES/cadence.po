@@ -1769,6 +1769,9 @@ msgstr "Anda di sini: {}"
 msgid "Your mixes"
 msgstr "Mix kamu"
 
+msgid "Your session expired. Log in again."
+msgstr "Sesi Anda telah berakhir. Masuk lagi."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Pengguna Anda tidak diizinkan berbagi di server ini"
 

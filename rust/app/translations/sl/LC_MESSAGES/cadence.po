@@ -1805,6 +1805,9 @@ msgstr "Tu ste: {}"
 msgid "Your mixes"
 msgstr "Vaši miksi"
 
+msgid "Your session expired. Log in again."
+msgstr "Vaša seja je potekla. Znova se prijavite."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Vaš uporabnik na tem strežniku nima dovoljenja za deljenje"
 
