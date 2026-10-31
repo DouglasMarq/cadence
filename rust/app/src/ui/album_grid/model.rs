@@ -7,6 +7,7 @@ use slint::{Image, Model, ModelNotify, ModelRc, ModelTracker, VecModel};
 use super::super::cover_lru::CoverLru;
 use super::super::grid_pages::{GridPages, WantedPage};
 use super::super::page_cache::{PageShape, changed_total};
+use super::super::rows::notify_row_count;
 use super::super::{AlbumGridCard, AlbumGridRow};
 use super::card::CardData;
 
@@ -163,14 +164,19 @@ impl AlbumGridModel {
     }
 
     pub fn apply_count(&self, generation: u64, total: usize) {
-        {
+        let (before, after) = {
             let mut state = self.state.borrow_mut();
             if !state.grid.is_current(generation) {
                 return;
             }
+            let before = state.grid.row_count();
             state.grid.set_total(total);
+            (before, state.grid.row_count())
+        };
+        notify_row_count(&self.notify, before, after);
+        if let Some(last_kept_row) = before.min(after).checked_sub(1) {
+            self.notify.row_changed(last_kept_row);
         }
-        self.notify.reset();
     }
 
     fn notify_rows_changed(&self, rows: BTreeSet<usize>) {
@@ -358,6 +364,33 @@ mod tests {
         assert!(!model.is_current(1));
         model.apply_count(1, 5);
         assert_eq!(model.row_count(), 0);
+    }
+
+    fn requested_covers(log: &RequestLog) -> usize {
+        drain(log)
+            .iter()
+            .filter(|request| matches!(request, GridRequest::Cover { .. }))
+            .count()
+    }
+
+    #[test]
+    fn given_covers_dropped_by_leaving_the_view_when_it_loads_again_then_they_are_requested() {
+        let (log, model) = counted_model_with_four_columns();
+        model.apply_page(1, 0, album_page(0));
+        model.row_data(0);
+        let dropped = requested_covers(&log);
+        assert_eq!(dropped, 4);
+        for index in 0..dropped {
+            let card = CardData::from_album(&album(index));
+            model.apply_cover(card.cover_art_id.as_deref().expect("a cover id"), None);
+        }
+
+        model.row_data(0);
+        assert_eq!(requested_covers(&log), 0);
+
+        model.clear_covers();
+        model.row_data(0);
+        assert_eq!(requested_covers(&log), dropped);
     }
 
     fn requested_pages(log: &RequestLog) -> Vec<usize> {

@@ -30,6 +30,7 @@ pub fn search(window: &AppWindow, context: &Context, request: SearchRequest) {
     let (Some(generation), Some(query)) = (started, query) else {
         return;
     };
+    context.session.open_view();
     let sent = fetch(
         window,
         context,

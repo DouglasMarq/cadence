@@ -23,8 +23,9 @@ pub fn toggle_favorite(window: &AppWindow, context: &Context) {
     let is_favorite = !state.get_is_favorite();
     state.set_is_favorite(is_favorite);
     let weak_window = window.as_weak();
+    let views = context.views(&server);
     context.runtime.spawn(async move {
-        let result = server
+        let result = views
             .set_favorite(ItemKind::Album, &[album_id.to_string()], is_favorite)
             .await;
         if let Err(error) = result {
@@ -48,8 +49,9 @@ pub fn set_rating(window: &AppWindow, context: &Context, rating: i32) {
     let stars = rating_stars(rating);
     state.set_rating(i32::from(stars));
     let weak_window = window.as_weak();
+    let views = context.views(&server);
     context.runtime.spawn(async move {
-        let result = server.set_rating(ItemKind::Album, &album_id, stars).await;
+        let result = views.set_rating(ItemKind::Album, &album_id, stars).await;
         if let Err(error) = result {
             on_ui(&weak_window, move |window| {
                 let state = window.global::<AlbumDetailState>();

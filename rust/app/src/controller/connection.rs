@@ -55,6 +55,9 @@ impl Controller {
                 format!("{error:#}")
             )));
         }
+        let views = self.deps.store.views();
+        let removed_server = server_id.to_owned();
+        tokio::spawn(async move { views.forget_server(&removed_server).await });
         self.settings
             .servers
             .retain(|server| server.id != server_id);

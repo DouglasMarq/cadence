@@ -22,8 +22,9 @@ impl Binding<CardRow> {
         };
         let weak = window.as_weak();
         let id = id.to_owned();
+        let views = context.views(&server);
         context.runtime.spawn(async move {
-            if let Err(error) = server
+            if let Err(error) = views
                 .set_favorite(kind, std::slice::from_ref(&id), !favorite)
                 .await
             {
@@ -51,8 +52,9 @@ impl Binding<TrackItem> {
             return;
         };
         let weak = window.as_weak();
+        let views = context.views(&server);
         context.runtime.spawn(async move {
-            if let Err(error) = server
+            if let Err(error) = views
                 .set_favorite(ItemKind::Song, std::slice::from_ref(&song_id), !favorite)
                 .await
             {

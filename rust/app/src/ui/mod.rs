@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use cadence_api::MusicServer;
 use cadence_core::model::SortOrder;
 use cadence_core::unix_time::since_unix_epoch;
 use cadence_remote::ServerKey;
@@ -13,6 +14,7 @@ use crate::covers::CoverProvider;
 use crate::remote::{Remote, Routed};
 use crate::session::Session;
 use crate::store::Store;
+use crate::views::{FocusedCovers, Views};
 
 #[allow(clippy::all, clippy::pedantic, clippy::restriction, clippy::nursery)]
 mod generated {
@@ -50,6 +52,7 @@ pub mod playlist_picker;
 pub mod playlists;
 pub mod queue;
 pub mod radio;
+pub mod rows;
 pub mod search;
 pub mod settings;
 pub mod sharing;
@@ -95,6 +98,22 @@ impl Context {
         if self.commands.send(command).is_err() {
             tracing::warn!("controller is gone; command dropped");
         }
+    }
+
+    pub fn views(&self, server: &Arc<dyn MusicServer>) -> Views {
+        Views::new(
+            Arc::clone(server),
+            self.store.views(),
+            self.session.clone(),
+            self.runtime.clone(),
+        )
+    }
+
+    pub fn view_covers(&self) -> Arc<dyn CoverProvider> {
+        Arc::new(FocusedCovers::new(
+            Arc::clone(&self.covers),
+            self.session.clone(),
+        ))
     }
 }
 

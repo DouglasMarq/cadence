@@ -57,16 +57,18 @@ pub fn install(window: &AppWindow, context: &Context) {
     state.set_tracks(TRACKS.track_table(window, context, true));
     state.set_albums(card_grid(window, context, ALBUMS));
     state.set_artists(card_grid(window, context, ARTISTS));
-    install_load(window);
+    install_load(window, context);
     install_play_track(window, context);
     install_toggles(window, context);
     install_columns(window);
 }
 
-fn install_load(window: &AppWindow) {
+fn install_load(window: &AppWindow, context: &Context) {
     let weak = window.as_weak();
+    let session = context.session.clone();
     window.global::<FavoritesState>().on_load(move |_| {
         if let Some(window) = weak.upgrade() {
+            session.open_view();
             load_favorites(&window);
         }
     });

@@ -1,6 +1,3 @@
-use std::sync::Arc;
-
-use cadence_api::MusicServer;
 use cadence_core::model::{ItemKind, Song};
 use slint::ComponentHandle;
 
@@ -10,6 +7,7 @@ use super::with_model;
 use crate::controller::Command;
 use crate::list_stream::Placement;
 use crate::ui::{AppWindow, Context, on_ui, show_status};
+use crate::views::Views;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ListedEdit {
@@ -18,14 +16,10 @@ enum ListedEdit {
 }
 
 impl ListedEdit {
-    async fn apply(
-        self,
-        server: Arc<dyn MusicServer>,
-        song_ids: Vec<String>,
-    ) -> (Vec<String>, Option<String>) {
+    async fn apply(self, views: &Views, song_ids: Vec<String>) -> (Vec<String>, Option<String>) {
         match self {
             Self::Favorite(favorite) => {
-                match server
+                match views
                     .set_favorite(ItemKind::Song, &song_ids, favorite)
                     .await
                 {
@@ -37,7 +31,7 @@ impl ListedEdit {
                 }
             }
             Self::Rate(rating) => {
-                let (rated, failure) = rate_until_failure(server, song_ids, rating).await;
+                let (rated, failure) = rate_until_failure(views, song_ids, rating).await;
                 let message = failure.map(|error| tr!("Could not set the rating: {}", error));
                 (rated, message)
             }
@@ -53,18 +47,18 @@ impl ListedEdit {
 
     async fn edit_listed(
         self,
-        server: Arc<dyn MusicServer>,
+        views: Views,
         weak: &slint::Weak<AppWindow>,
         listed: ListedSongs,
     ) -> Option<String> {
         let mut chunks = listed.into_chunks(LISTED_CHUNK_SIZE);
         loop {
-            let song_ids = match chunks.next_ids(server.as_ref()).await {
+            let song_ids = match chunks.next_ids(views.server()).await {
                 Ok(Some(song_ids)) => song_ids,
                 Ok(None) => return None,
                 Err(error) => return Some(tr!("Could not load the selection: {}", error)),
             };
-            let (edited, failure) = self.apply(Arc::clone(&server), song_ids).await;
+            let (edited, failure) = self.apply(&views, song_ids).await;
             show_edited(weak, self, edited);
             if failure.is_some() {
                 return failure;
@@ -98,8 +92,9 @@ impl SongActions {
         };
         let weak = window.as_weak();
         let work = self.context.session.background_work();
+        let views = self.context.views(&server);
         self.context.runtime.spawn(async move {
-            let edited = work.run(edit.edit_listed(server, &weak, listed)).await;
+            let edited = work.run(edit.edit_listed(views, &weak, listed)).await;
             if let Some(Some(message)) = edited {
                 on_ui(&weak, move |window| show_status(window, &message));
             }

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::cards::CardKind;
 use super::covers::CoverKey;
 use super::fetch::{ServerCall, fetch};
@@ -23,7 +21,7 @@ pub fn load_cover(window: &AppWindow, context: &Context, slot: CoverSlot) {
     let Some((id, cover_id)) = claimed else {
         return;
     };
-    let covers = Arc::clone(&context.covers);
+    let covers = context.view_covers();
     let key = CoverKey::new(kind, id);
     let shown_key = key.clone();
     let sent = fetch(

@@ -2,9 +2,12 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use cadence_core::model::{AlbumListQuery, Genre, SongListQuery};
-use slint::{ComponentHandle, ModelRc, VecModel};
+use slint::ComponentHandle;
+use tokio::sync::mpsc::unbounded_channel;
 
+use crate::ui::rows::show_rows;
 use crate::ui::{AppState, AppWindow, Context, GenreRow, GenresState, show_status};
+use crate::views::{View, ViewSlot};
 
 pub fn genre_song_query(genre_id: &str) -> SongListQuery {
     SongListQuery {
@@ -66,9 +69,8 @@ impl GenreList {
 
 pub fn show_filtered_genres(window: &AppWindow, list: &GenreList) {
     let rows = filter_genres(&list.genres, &list.filter);
-    window
-        .global::<GenresState>()
-        .set_genres(ModelRc::new(VecModel::from(rows)));
+    let state = window.global::<GenresState>();
+    show_rows(&state.get_genres(), rows, |model| state.set_genres(model));
 }
 
 pub fn show_genre(window: &AppWindow, list: &GenreList) {
@@ -94,26 +96,34 @@ pub fn fetch_genres(window: &AppWindow, context: &Context, list: &Rc<RefCell<Gen
     };
     let generation = list.borrow_mut().next_generation();
     window.global::<GenresState>().set_is_genres_loading(true);
-    let (sender, receiver) = tokio::sync::oneshot::channel();
-    context.runtime.spawn(async move {
-        if sender.send(server.genre_list().await).is_err() {
+    let (sender, mut receiver) = unbounded_channel();
+    let views = context.views(&server);
+    let genres = async move { server.genre_list().await };
+    views.load(Some(genre_slot()), genres, move |result| {
+        if sender.send(result).is_err() {
             tracing::debug!("genre list receiver is gone");
         }
     });
     let weak = window.as_weak();
     let list = Rc::clone(list);
     let delivery = slint::spawn_local(async move {
-        let (Ok(result), Some(window)) = (receiver.await, weak.upgrade()) else {
-            return;
-        };
-        let mut list = list.borrow_mut();
-        if list.is_current(generation) {
-            apply_genres(&window, &mut list, result);
+        while let Some(result) = receiver.recv().await {
+            let Some(window) = weak.upgrade() else {
+                return;
+            };
+            let mut list = list.borrow_mut();
+            if list.is_current(generation) {
+                apply_genres(&window, &mut list, result);
+            }
         }
     });
     if let Err(error) = delivery {
         tracing::debug!("UI event loop is gone: {error}");
     }
+}
+
+pub fn genre_slot() -> ViewSlot {
+    View::Genres.slot("list")
 }
 
 fn apply_genres(window: &AppWindow, list: &mut GenreList, result: cadence_api::Result<Vec<Genre>>) {

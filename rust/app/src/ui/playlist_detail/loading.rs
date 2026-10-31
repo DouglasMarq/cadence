@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use cadence_api::MusicServer;
-use cadence_core::model::{Page, Playlist, Song};
+use cadence_core::model::{Playlist, Song};
 use cadence_storage::cover_cache::DecodedImage;
 use slint::ComponentHandle;
 
@@ -10,23 +10,35 @@ use super::deps::DetailDeps;
 use super::detail::{SharedDetail, lock};
 use super::pages::paging_for_page;
 use super::rows::{HeaderSummary, header_info};
-use crate::ui::images::{CoverSource, tint_of, to_image};
-use crate::ui::{AppState, AppWindow, Context, PlaylistDetailState, Route, on_ui, show_status};
+use crate::ui::images::{CoverClaim, CoverSource, tint_of, to_image};
+use crate::ui::{
+    AppState, AppWindow, Context, PlaylistDetailState, Route, clamp_i32, on_ui, show_status,
+};
+use crate::views::{View, ViewSlot};
 
 const COVER_SIZE: u32 = 300;
+const METADATA_ITEM: &str = "metadata";
+const FIRST_PAGE_ITEM: &str = "first-page";
 
-struct LoadRequest {
-    window: slint::Weak<AppWindow>,
+type FirstPage = (Option<usize>, Vec<Song>);
+
+fn playlist_slot(playlist_id: &str, item: &str) -> ViewSlot {
+    View::Playlist(playlist_id.to_owned()).slot(item)
+}
+
+#[derive(Clone)]
+struct ShownDetail {
     shared: SharedDetail,
-    context: Context,
-    playlist_id: String,
     generation: u64,
 }
 
-struct Loaded {
-    generation: u64,
-    first_page: cadence_api::Result<Page<Song>>,
-    metadata: Option<Playlist>,
+#[derive(Clone)]
+struct OpenedPlaylist {
+    window: slint::Weak<AppWindow>,
+    shown: ShownDetail,
+    context: Context,
+    server: Arc<dyn MusicServer>,
+    playlist_id: String,
 }
 
 fn reset_view(window: &AppWindow, generation: u64, playlist_id: &str) {
@@ -46,6 +58,7 @@ pub fn load(window: &AppWindow, deps: &DetailDeps, playlist_id: &str) {
     let DetailDeps {
         context, shared, ..
     } = deps;
+    context.session.open_view();
     let generation = lock(shared).restart(playlist_id);
     reset_view(window, generation, playlist_id);
     let state = window.global::<PlaylistDetailState>();
@@ -54,57 +67,82 @@ pub fn load(window: &AppWindow, deps: &DetailDeps, playlist_id: &str) {
         return;
     };
     state.set_is_loading(true);
-    let request = LoadRequest {
+    let opened = OpenedPlaylist {
         window: window.as_weak(),
-        shared: Arc::clone(shared),
+        shown: ShownDetail {
+            shared: Arc::clone(shared),
+            generation,
+        },
         context: context.clone(),
+        server,
         playlist_id: playlist_id.to_owned(),
-        generation,
     };
-    context.runtime.spawn(fetch_playlist(server, request));
+    opened.clone().load_metadata();
+    opened.load_first_page();
 }
 
-async fn fetch_playlist(server: Arc<dyn MusicServer>, request: LoadRequest) {
-    let (metadata, first_page) = tokio::join!(
-        server.playlist(&request.playlist_id),
-        server.playlist_song_page(&request.playlist_id, paging_for_page(0))
-    );
-    let metadata = metadata
-        .inspect_err(|error| tracing::debug!("playlist metadata: {error}"))
-        .ok();
-    if let Some(cover_id) = metadata
-        .as_ref()
-        .and_then(|playlist| playlist.cover_art_id.clone())
-    {
-        spawn_cover_load(&request, Arc::clone(&server), cover_id);
-    }
-    let loaded = Loaded {
-        generation: request.generation,
-        first_page,
-        metadata,
-    };
-    let shared = request.shared;
-    on_ui(&request.window, move |window| {
-        apply_loaded(window, &shared, loaded);
-    });
-}
-
-fn spawn_cover_load(request: &LoadRequest, server: Arc<dyn MusicServer>, cover_id: String) {
-    let covers = request.context.covers.clone();
-    let window = request.window.clone();
-    let shared = Arc::clone(&request.shared);
-    let generation = request.generation;
-    request.context.runtime.spawn(async move {
-        let source = CoverSource::Server { server, cover_id };
-        let Some(cover) = source.fetch(covers.as_ref(), COVER_SIZE).await else {
-            return;
-        };
-        on_ui(&window, move |window| {
-            if lock(&shared).is_current(generation) {
-                show_cover(window, &cover);
-            }
+impl OpenedPlaylist {
+    fn load_metadata(self) {
+        let (server, playlist_id) = (Arc::clone(&self.server), self.playlist_id.clone());
+        let slot = playlist_slot(&playlist_id, METADATA_ITEM);
+        let metadata = async move { server.playlist(&playlist_id).await };
+        let claim = CoverClaim::default();
+        let views = self.context.views(&self.server);
+        views.load(Some(slot), metadata, move |result| {
+            self.deliver_metadata(&claim, result);
         });
-    });
+    }
+
+    fn deliver_metadata(&self, claim: &CoverClaim, result: cadence_api::Result<Playlist>) {
+        let metadata = result
+            .inspect_err(|error| tracing::debug!("playlist metadata: {error}"))
+            .ok();
+        let cover_id = metadata
+            .as_ref()
+            .and_then(|playlist| playlist.cover_art_id.as_deref());
+        if let Some(cover_id) = claim.claim(cover_id) {
+            self.load_cover(cover_id);
+        }
+        let shown = self.shown.clone();
+        on_ui(&self.window, move |window| {
+            shown.apply_metadata(window, metadata);
+        });
+    }
+
+    fn load_first_page(self) {
+        let (server, playlist_id) = (Arc::clone(&self.server), self.playlist_id.clone());
+        let slot = playlist_slot(&playlist_id, FIRST_PAGE_ITEM);
+        let first_page = async move {
+            let page = server
+                .playlist_song_page(&playlist_id, paging_for_page(0))
+                .await?;
+            cadence_api::Result::Ok((page.total_count, page.items))
+        };
+        let views = self.context.views(&self.server);
+        views.load(Some(slot), first_page, move |result| {
+            let shown = self.shown.clone();
+            on_ui(&self.window, move |window| {
+                shown.apply_first_page(window, result);
+            });
+        });
+    }
+
+    fn load_cover(&self, cover_id: String) {
+        let covers = self.context.view_covers();
+        let (window, shown) = (self.window.clone(), self.shown.clone());
+        let server = Arc::clone(&self.server);
+        self.context.runtime.spawn(async move {
+            let source = CoverSource::Server { server, cover_id };
+            let Some(cover) = source.fetch(covers.as_ref(), COVER_SIZE).await else {
+                return;
+            };
+            on_ui(&window, move |window| {
+                if lock(&shown.shared).is_current(shown.generation) {
+                    show_cover(window, &cover);
+                }
+            });
+        });
+    }
 }
 
 fn show_cover(window: &AppWindow, cover: &DecodedImage) {
@@ -120,39 +158,64 @@ fn show_cover(window: &AppWindow, cover: &DecodedImage) {
     }
 }
 
-fn apply_loaded(window: &AppWindow, shared: &SharedDetail, loaded: Loaded) {
-    let mut detail = lock(shared);
-    if !detail.is_current(loaded.generation) {
-        return;
-    }
-    window.global::<PlaylistDetailState>().set_is_loading(false);
-    let page = match loaded.first_page {
-        Ok(page) => page,
-        Err(error) => {
-            drop(detail);
-            show_status(window, &tr!("Could not load the playlist: {}", error));
+impl ShownDetail {
+    fn apply_metadata(&self, window: &AppWindow, metadata: Option<Playlist>) {
+        let mut detail = lock(&self.shared);
+        if !detail.is_current(self.generation) {
             return;
         }
-    };
-    let metadata = loaded.metadata.as_ref();
-    detail.name = metadata.map_or_else(|| tr!("Playlist"), |playlist| playlist.name.clone());
-    let name = detail.name.clone();
-    drop(detail);
-    let total = page
-        .total_count
-        .or_else(|| metadata.map(|playlist| playlist.song_count as usize))
-        .unwrap_or(page.items.len());
-    show_header(window, &name, &HeaderSummary::new(metadata, total));
-    show_comment(window, metadata);
-    with_model(window, |model| {
-        model.apply_first_page(loaded.generation, total, page.items)
-    });
+        detail.adopt_metadata(metadata);
+        let awaited_total = detail.total_without_a_page_report();
+        let name = detail.name.clone();
+        let shown = detail.metadata.clone();
+        let is_settled = detail.is_settled();
+        drop(detail);
+        window
+            .global::<PlaylistDetailState>()
+            .set_is_loading(!is_settled);
+        if let Some(total) = awaited_total {
+            with_model(window, |model| model.grow_to(self.generation, total));
+        }
+        show_header(window, &name, shown.as_ref());
+        show_comment(window, shown.as_ref());
+    }
+
+    fn apply_first_page(&self, window: &AppWindow, result: cadence_api::Result<FirstPage>) {
+        let mut detail = lock(&self.shared);
+        if !detail.is_current(self.generation) {
+            return;
+        }
+        let state = window.global::<PlaylistDetailState>();
+        let (reported_total, songs) = match result {
+            Ok(first_page) => first_page,
+            Err(error) => {
+                detail.first_page_failed();
+                state.set_is_loading(false);
+                drop(detail);
+                show_status(window, &tr!("Could not load the playlist: {}", error));
+                return;
+            }
+        };
+        let total = detail.adopt_first_page(reported_total, songs.len());
+        let name = detail.name.clone();
+        let shown = detail.metadata.clone();
+        state.set_is_loading(!detail.is_settled());
+        drop(detail);
+        with_model(window, |model| {
+            model.apply_first_page(self.generation, total, songs);
+        });
+        if let Some(selected) = with_model(window, |model| model.selected_count()) {
+            state.set_selected_count(clamp_i32(selected as u64));
+        }
+        show_header(window, &name, shown.as_ref());
+    }
 }
 
-fn show_header(window: &AppWindow, name: &str, summary: &HeaderSummary) {
+fn show_header(window: &AppWindow, name: &str, metadata: Option<&Playlist>) {
+    let loaded_total = with_model(window, |model| model.total()).unwrap_or_default();
     let state = window.global::<PlaylistDetailState>();
     state.set_name(name.into());
-    state.set_info(header_info(summary).into());
+    state.set_info(header_info(&HeaderSummary::new(metadata, loaded_total)).into());
 }
 
 fn show_comment(window: &AppWindow, metadata: Option<&Playlist>) {

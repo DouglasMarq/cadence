@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use cadence_api::{ApiError, MusicServer};
+use cadence_api::ApiError;
 use cadence_core::model::{ItemKind, Song};
 use slint::{ComponentHandle, SharedString};
 
@@ -10,6 +8,7 @@ use super::{string_model, with_model};
 use crate::controller::Command;
 use crate::ui::playlist_picker::PlaylistPicker;
 use crate::ui::{Actions, AppState, AppWindow, Context, Route, on_ui, show_status};
+use crate::views::Views;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum SongAction {
@@ -39,13 +38,13 @@ fn ids_of(songs: &[Song]) -> Vec<String> {
 }
 
 pub(super) async fn rate_until_failure(
-    server: Arc<dyn MusicServer>,
+    views: &Views,
     ids: Vec<String>,
     rating: u8,
 ) -> (Vec<String>, Option<ApiError>) {
     let mut rated = Vec::new();
     for id in ids {
-        if let Err(error) = server.set_rating(ItemKind::Song, &id, rating).await {
+        if let Err(error) = views.set_rating(ItemKind::Song, &id, rating).await {
             return (rated, Some(error));
         }
         rated.push(id);
@@ -85,8 +84,9 @@ impl SongActions {
             return;
         };
         let weak = window.as_weak();
+        let views = self.context.views(&server);
         self.context.runtime.spawn(async move {
-            let result = server.set_favorite(ItemKind::Song, &ids, is_favorite).await;
+            let result = views.set_favorite(ItemKind::Song, &ids, is_favorite).await;
             on_ui(&weak, move |window| match result {
                 Ok(()) => {
                     with_model(window, |model| {
@@ -104,8 +104,9 @@ impl SongActions {
         };
         let weak = window.as_weak();
         let work = self.context.session.background_work();
+        let views = self.context.views(&server);
         self.context.runtime.spawn(async move {
-            let Some((rated, failure)) = work.run(rate_until_failure(server, ids, rating)).await
+            let Some((rated, failure)) = work.run(rate_until_failure(&views, ids, rating)).await
             else {
                 return;
             };

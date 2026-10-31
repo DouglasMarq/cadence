@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use cadence_api::MusicServer;
-use cadence_core::model::{AlbumListQuery, Page};
+use cadence_core::model::{Album, Page};
 use slint::{Model, ModelRc, Weak};
 
 use super::super::images::{CoverSource, to_image};
@@ -10,6 +10,7 @@ use super::super::{AlbumGridRow, AppWindow, Context, on_ui, show_status};
 use super::card::CardData;
 use super::model::{AlbumGridModel, GridRequest, PAGE_SIZE};
 use crate::covers::CoverProvider;
+use crate::views::{count_slot, page_slot};
 
 pub const COVER_SIZE: u32 = 256;
 
@@ -32,20 +33,16 @@ pub struct GridTarget {
     pub on_count: OnCount,
 }
 
-struct GridFetch {
-    server: Arc<dyn MusicServer>,
-    target: GridTarget,
+struct AlbumPage {
+    generation: u64,
+    page: usize,
+    result: cadence_api::Result<Page<Album>>,
 }
 
-impl GridFetch {
-    async fn count(self, generation: u64, query: AlbumListQuery) {
-        let result = self.server.album_count(&query).await;
-        let GridTarget {
-            window,
-            locate,
-            on_count,
-        } = self.target;
-        on_ui(&window, move |window| {
+impl GridTarget {
+    fn show_count(&self, generation: u64, result: cadence_api::Result<usize>) {
+        let (locate, on_count) = (self.locate, self.on_count);
+        on_ui(&self.window, move |window| {
             let total = result.as_ref().map_or(0, |total| *total);
             let is_current = with_model(window, locate, |model| model.is_current(generation));
             if is_current != Some(true) {
@@ -56,23 +53,19 @@ impl GridFetch {
         });
     }
 
-    async fn page(self, generation: u64, query: AlbumListQuery, page: usize) {
-        let paging = page_paging(page, PAGE_SIZE);
-        let result = self
-            .server
-            .album_list(&query, paging)
-            .await
-            .map(|albums| Page {
-                items: albums.items.iter().map(CardData::from_album).collect(),
-                start_index: albums.start_index,
-                total_count: albums.total_count,
-            });
-        let GridTarget {
-            window,
-            locate,
-            on_count,
-        } = self.target;
-        on_ui(&window, move |window| match result {
+    fn show_page(&self, answer: AlbumPage) {
+        let AlbumPage {
+            generation,
+            page,
+            result,
+        } = answer;
+        let (locate, on_count) = (self.locate, self.on_count);
+        let result = result.map(|albums| Page {
+            items: albums.items.iter().map(CardData::from_album).collect(),
+            start_index: albums.start_index,
+            total_count: albums.total_count,
+        });
+        on_ui(&self.window, move |window| match result {
             Ok(listed) => {
                 let changed = with_model(window, locate, |model| {
                     model.reported_total_change(generation, listed.total_count)
@@ -91,14 +84,19 @@ impl GridFetch {
         });
     }
 
-    async fn cover(self, covers: Arc<dyn CoverProvider>, cover_art_id: String) {
+    async fn fetch_cover(
+        self,
+        server: Arc<dyn MusicServer>,
+        covers: Arc<dyn CoverProvider>,
+        cover_art_id: String,
+    ) {
         let source = CoverSource::Server {
-            server: self.server,
+            server,
             cover_id: cover_art_id.clone(),
         };
         let cover = source.fetch(covers.as_ref(), COVER_SIZE).await;
-        let locate = self.target.locate;
-        on_ui(&self.target.window, move |window| {
+        let locate = self.locate;
+        on_ui(&self.window, move |window| {
             let image = cover.and_then(|cover| to_image(&cover));
             with_model(window, locate, |model| {
                 model.apply_cover(&cover_art_id, image)
@@ -111,17 +109,37 @@ pub fn spawn_request(target: GridTarget, context: &Context, request: GridRequest
     let Some(server) = context.session.get() else {
         return;
     };
-    let covers = context.covers.clone();
-    let fetch = GridFetch { server, target };
-    context.runtime.spawn(async move {
-        match request {
-            GridRequest::Count { generation, query } => fetch.count(generation, query).await,
-            GridRequest::Page {
-                generation,
-                query,
-                page,
-            } => fetch.page(generation, query, page).await,
-            GridRequest::Cover { cover_art_id } => fetch.cover(covers, cover_art_id).await,
+    match request {
+        GridRequest::Count { generation, query } => {
+            let slot = count_slot(&query);
+            let views = context.views(&server);
+            let count = async move { server.album_count(&query).await };
+            views.load(slot, count, move |result| {
+                target.show_count(generation, result);
+            });
         }
-    });
+        GridRequest::Page {
+            generation,
+            query,
+            page,
+        } => {
+            let slot = page_slot(&query, page);
+            let views = context.views(&server);
+            let paging = page_paging(page, PAGE_SIZE);
+            let albums = async move { server.album_list(&query, paging).await };
+            views.load(slot, albums, move |result| {
+                target.show_page(AlbumPage {
+                    generation,
+                    page,
+                    result,
+                });
+            });
+        }
+        GridRequest::Cover { cover_art_id } => {
+            let covers = context.view_covers();
+            context
+                .runtime
+                .spawn(target.fetch_cover(server, covers, cover_art_id));
+        }
+    }
 }

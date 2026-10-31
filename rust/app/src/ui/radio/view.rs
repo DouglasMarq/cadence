@@ -1,9 +1,10 @@
 use std::sync::{Arc, Mutex, PoisonError};
 
-use slint::{ComponentHandle, ModelRc, VecModel};
+use slint::ComponentHandle;
 
 use super::model::RadioModel;
 use crate::radio_directory::StationDirectory;
+use crate::ui::rows::show_rows;
 use crate::ui::{AppWindow, Context, RadioSource, RadioState};
 
 #[derive(Clone)]
@@ -33,8 +34,12 @@ impl RadioView {
                 model.has_more,
             )
         });
-        state.set_stations(ModelRc::new(VecModel::from(stations)));
-        state.set_results(ModelRc::new(VecModel::from(results)));
+        show_rows(&state.get_stations(), stations, |rows| {
+            state.set_stations(rows);
+        });
+        show_rows(&state.get_results(), results, |rows| {
+            state.set_results(rows);
+        });
         state.set_can_manage(can_manage);
         state.set_has_more(has_more);
     }

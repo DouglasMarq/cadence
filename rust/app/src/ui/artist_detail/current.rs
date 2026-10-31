@@ -1,21 +1,22 @@
 use std::cell::RefCell;
+use std::rc::Rc;
 
-use cadence_core::model::Song;
-
-use slint::Image;
+use cadence_core::model::{ArtistDetail, Song};
+use slint::{Image, VecModel};
 
 use super::super::cover_lru::CoverLru;
+use super::super::{ArtistAlbumCard, TrackRow};
 
 const ALBUM_COVER_CAPACITY: usize = 48;
 
 pub struct CurrentArtist {
     pub generation: u64,
     pub id: String,
-    pub is_loaded: bool,
-    pub is_favorite: bool,
-    pub top_songs: Vec<Song>,
-    pub album_covers: Vec<Option<String>>,
+    pub detail: Option<ArtistDetail>,
+    pub image_cover_id: Option<String>,
     pub covers: CoverLru<usize, Image>,
+    pub top_rows: Rc<VecModel<TrackRow>>,
+    pub album_cards: Rc<VecModel<ArtistAlbumCard>>,
 }
 
 impl Default for CurrentArtist {
@@ -23,12 +24,30 @@ impl Default for CurrentArtist {
         Self {
             generation: 0,
             id: String::new(),
-            is_loaded: false,
-            is_favorite: false,
-            top_songs: Vec::new(),
-            album_covers: Vec::new(),
+            detail: None,
+            image_cover_id: None,
             covers: CoverLru::new(ALBUM_COVER_CAPACITY),
+            top_rows: Rc::default(),
+            album_cards: Rc::default(),
         }
+    }
+}
+
+impl CurrentArtist {
+    pub fn top_songs(&self) -> Vec<Song> {
+        self.detail
+            .as_ref()
+            .map(|detail| detail.top_songs.clone())
+            .unwrap_or_default()
+    }
+
+    pub fn album_cover_id(&self, index: usize) -> Option<String> {
+        self.detail
+            .as_ref()?
+            .albums
+            .get(index)?
+            .cover_art_id
+            .clone()
     }
 }
 

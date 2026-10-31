@@ -19,6 +19,9 @@ export global ArtistDetailState {
     in property <color> tint;
     in property <bool> has-tint;
     in property <bool> is-loading;
+    in property <bool> is-loading-biography;
+    in property <bool> is-loading-top-songs;
+    in property <bool> is-loading-albums;
     in property <string> error;
     in property <string> name;
     in property <string> info;
@@ -233,6 +236,16 @@ export component ArtistDetailView inherits Rectangle {
                 }
             }
 
+            if ArtistDetailState.is-loading-biography && ArtistDetailState.biography == "": VerticalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+
+                Skeleton {
+                    height: root.bio-collapsed;
+                    border-radius: Theme.radius;
+                }
+            }
+
             if ArtistDetailState.biography != "": VerticalLayout {
                 padding-left: 24px;
                 padding-right: 24px;
@@ -263,6 +276,16 @@ export component ArtistDetailView inherits Rectangle {
                     clicked => {
                         ArtistDetailState.is-bio-expanded = !ArtistDetailState.is-bio-expanded;
                     }
+                }
+            }
+
+            if ArtistDetailState.is-loading-top-songs && ArtistDetailState.top-songs.length == 0: VerticalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+
+                Skeleton {
+                    height: Behaviour.collapsed-top-songs * 36px;
+                    border-radius: Theme.radius;
                 }
             }
 
@@ -335,6 +358,16 @@ export component ArtistDetailView inherits Rectangle {
                     color: Theme.muted;
                     vertical-alignment: center;
                     horizontal-stretch: 1;
+                }
+            }
+
+            if ArtistDetailState.is-loading-albums && ArtistDetailState.albums.length == 0: VerticalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+
+                Skeleton {
+                    height: root.tile-height;
+                    border-radius: Theme.radius;
                 }
             }
 

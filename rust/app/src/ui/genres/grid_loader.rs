@@ -1,12 +1,14 @@
+use cadence_core::model::Page;
 use slint::{ComponentHandle, ModelRc};
 
 use super::binding::{Binding, with_grid};
-use super::card::{CardPage, CardSource};
+use super::card::{CardData, CardPage, CardSource, album_card, artist_card, card_page};
 use super::card_grid::CardGrid;
 use super::grid_state::{GRID_PAGE, GridRequest};
 use crate::ui::images::{CoverSource, to_image};
 use crate::ui::page_cache::page_paging;
 use crate::ui::{AppWindow, CardRow, Context, on_ui, show_status};
+use crate::views::page_slot;
 
 const GRID_COVER_SIZE: u32 = 200;
 
@@ -35,6 +37,28 @@ struct FetchedCards {
     result: cadence_api::Result<CardPage>,
 }
 
+#[derive(Clone)]
+struct PageTarget {
+    window: slint::Weak<AppWindow>,
+    binding: Binding<CardRow>,
+    generation: u64,
+    page: usize,
+}
+
+impl PageTarget {
+    fn show<Item>(&self, result: cadence_api::Result<Page<Item>>, to_card: fn(&Item) -> CardData) {
+        let fetched = FetchedCards {
+            generation: self.generation,
+            page: self.page,
+            result: result.map(|listed| card_page(&listed, to_card)),
+        };
+        let binding = self.binding;
+        on_ui(&self.window, move |window| {
+            apply_grid_page(window, binding, fetched);
+        });
+    }
+}
+
 impl GridLoader {
     fn spawn(&self, request: GridRequest) {
         match request {
@@ -51,20 +75,28 @@ impl GridLoader {
         let Some(server) = self.context.session.get() else {
             return;
         };
-        let (window, binding) = (self.window.clone(), self.binding);
-        self.context.runtime.spawn(async move {
-            let result = source
-                .fetch(server.as_ref(), page_paging(page, GRID_PAGE))
-                .await;
-            let fetched = FetchedCards {
-                generation,
-                page,
-                result,
-            };
-            on_ui(&window, move |window| {
-                apply_grid_page(window, binding, fetched);
-            });
-        });
+        let views = self.context.views(&server);
+        let paging = page_paging(page, GRID_PAGE);
+        let target = PageTarget {
+            window: self.window.clone(),
+            binding: self.binding,
+            generation,
+            page,
+        };
+        match source {
+            CardSource::Albums(query) => {
+                let slot = page_slot(&query, page);
+                let albums = async move { server.album_list(&query, paging).await };
+                views.load(slot, albums, move |result| target.show(result, album_card));
+            }
+            CardSource::Artists(query) => {
+                let slot = page_slot(&query, page);
+                let artists = async move { server.artist_list(&query, paging).await };
+                views.load(slot, artists, move |result| {
+                    target.show(result, artist_card)
+                });
+            }
+        }
     }
 
     fn spawn_cover(&self, cover_id: String) {
@@ -72,7 +104,7 @@ impl GridLoader {
             return;
         };
         let (window, binding) = (self.window.clone(), self.binding);
-        let covers = self.context.covers.clone();
+        let covers = self.context.view_covers();
         self.context.runtime.spawn(async move {
             let source = CoverSource::Server {
                 server,

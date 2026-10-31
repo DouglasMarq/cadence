@@ -8,6 +8,7 @@ use slint::ComponentHandle;
 use super::streamed::{ListedAdd, ListedWrite, add_listed_songs, add_listed_to_existing};
 use crate::ui::tracks::ListedSongs;
 use crate::ui::{AppWindow, Context, on_ui, playlist_detail, playlists, show_status};
+use crate::views::View;
 
 pub struct PickedPlaylist {
     pub id: String,
@@ -52,6 +53,7 @@ pub fn add_listed(
     report(0);
     let weak = window.as_weak();
     let work = context.session.background_work();
+    let views = context.views(&server);
     context.runtime.spawn(async move {
         let listed_write = ListedWrite {
             server: server.as_ref(),
@@ -60,6 +62,7 @@ pub fn add_listed(
         };
         let adding = add_listed_to_existing(&listed_write, listed);
         if let Some(outcome) = work.run(adding).await {
+            views.invalidate_playlist(&picked.id).await;
             on_ui(&weak, move |window| finish_add(window, &picked, outcome));
         }
     });
@@ -100,11 +103,13 @@ pub fn create_listed(
     report(0);
     let weak = window.as_weak();
     let work = context.session.background_work();
+    let views = context.views(&write.server);
     context.runtime.spawn(async move {
         let creating = create_and_fill(write, report);
         let Some((created, outcome)) = work.run(creating).await else {
             return;
         };
+        views.invalidate(View::Playlists).await;
         on_ui(&weak, move |window| {
             finish_create(window, created.map(|playlist| playlist.name), outcome);
         });

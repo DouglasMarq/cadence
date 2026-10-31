@@ -6,6 +6,7 @@ use slint::{ComponentHandle, Model, ModelRc};
 use super::model::{PageRequest, PlaylistSongsModel};
 use super::pages::paging_for_page;
 use crate::ui::{AppWindow, Context, PlaylistDetailState, on_ui, show_status};
+use crate::views::View;
 
 pub fn with_model<Output>(
     window: &AppWindow,
@@ -32,11 +33,13 @@ fn spawn_page_load(window: slint::Weak<AppWindow>, context: &Context, request: P
     let Some(server) = context.session.get() else {
         return;
     };
-    context.runtime.spawn(async move {
-        let paging = paging_for_page(request.page);
-        let result = server
-            .playlist_song_page(&request.playlist_id, paging)
-            .await;
+    let views = context.views(&server);
+    let playlist_id = request.playlist_id.clone();
+    let slot = View::Playlist(playlist_id.clone()).slot(format!("page/{}", request.page));
+    let paging = paging_for_page(request.page);
+    let songs = async move { server.playlist_song_page(&playlist_id, paging).await };
+    views.load(Some(slot), songs, move |result| {
+        let request = request.clone();
         on_ui(&window, move |window| show_page(window, &request, result));
     });
 }

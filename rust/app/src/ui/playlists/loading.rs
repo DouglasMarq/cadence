@@ -5,8 +5,10 @@ use super::catalog::fetch_all;
 use super::model::PlaylistsModel;
 use crate::ui::images::{CoverSource, to_image};
 use crate::ui::{AppState, AppWindow, Context, PlaylistsState, Route, on_ui, show_status};
+use crate::views::{View, ViewSlot};
 
 const PLAYLIST_COVER_SIZE: u32 = 96;
+const CATALOG_ITEM: &str = "catalog";
 
 fn with_model<Output>(
     window: &AppWindow,
@@ -16,6 +18,10 @@ fn with_model<Output>(
     rows.as_any().downcast_ref::<PlaylistsModel>().map(action)
 }
 
+fn catalog_slot() -> ViewSlot {
+    View::Playlists.slot(CATALOG_ITEM)
+}
+
 pub fn load(window: &AppWindow, context: &Context) {
     let Some(server) = context.session.get() else {
         return;
@@ -23,10 +29,12 @@ pub fn load(window: &AppWindow, context: &Context) {
     let Some(generation) = with_model(window, PlaylistsModel::begin) else {
         return;
     };
+    context.session.open_view();
     window.global::<PlaylistsState>().set_is_loading(true);
     let weak = window.as_weak();
-    context.runtime.spawn(async move {
-        let result = fetch_all(server.as_ref()).await;
+    let views = context.views(&server);
+    let catalog = async move { fetch_all(server.as_ref()).await };
+    views.load(Some(catalog_slot()), catalog, move |result| {
         on_ui(&weak, move |window| {
             apply_loaded(window, generation, result);
         });
@@ -54,17 +62,15 @@ pub fn fetch_cover(weak: slint::Weak<AppWindow>, context: &Context, cover_id: St
     let Some(server) = context.session.get() else {
         return;
     };
-    let covers = context.covers.clone();
+    let covers = context.view_covers();
     context.runtime.spawn(async move {
         let source = CoverSource::Server {
             server,
             cover_id: cover_id.clone(),
         };
-        let Some(cover) = source.fetch(covers.as_ref(), PLAYLIST_COVER_SIZE).await else {
-            return;
-        };
+        let cover = source.fetch(covers.as_ref(), PLAYLIST_COVER_SIZE).await;
         on_ui(&weak, move |window| {
-            let image = to_image(&cover);
+            let image = cover.and_then(|cover| to_image(&cover));
             with_model(window, |model| model.apply_cover(cover_id, image));
         });
     });

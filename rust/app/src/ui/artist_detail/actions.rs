@@ -42,16 +42,23 @@ struct FavoriteFlip {
 
 fn flip_loaded_favorite() -> Option<FavoriteFlip> {
     update_current(|current| {
-        if !current.is_loaded {
-            return None;
-        }
-        current.is_favorite = !current.is_favorite;
+        let artist = &mut current.detail.as_mut()?.artist;
+        artist.is_favorite = !artist.is_favorite;
+        let is_favorite = artist.is_favorite;
         Some(FavoriteFlip {
             generation: current.generation,
             artist_id: current.id.clone(),
-            is_favorite: current.is_favorite,
+            is_favorite,
         })
     })
+}
+
+fn remember_favorite(is_favorite: bool) {
+    update_current(|current| {
+        if let Some(detail) = current.detail.as_mut() {
+            detail.artist.is_favorite = is_favorite;
+        }
+    });
 }
 
 fn revert_favorite(window: &AppWindow, flip: &FavoriteFlip) {
@@ -62,7 +69,7 @@ fn revert_favorite(window: &AppWindow, flip: &FavoriteFlip) {
     } = *flip;
     artists::set_favorite(window, artist_id, !is_favorite);
     if is_current(generation) {
-        update_current(|current| current.is_favorite = !is_favorite);
+        remember_favorite(!is_favorite);
         window
             .global::<ArtistDetailState>()
             .set_is_favorite(!is_favorite);
@@ -81,9 +88,10 @@ pub fn toggle_favorite(window: &AppWindow, context: &Context) {
         .set_is_favorite(flip.is_favorite);
     artists::set_favorite(window, &flip.artist_id, flip.is_favorite);
     let weak_window = window.as_weak();
+    let views = context.views(&server);
     context.runtime.spawn(async move {
         let artist_ids = [flip.artist_id.clone()];
-        let result = server
+        let result = views
             .set_favorite(ItemKind::Artist, &artist_ids, flip.is_favorite)
             .await;
         if let Err(error) = result {

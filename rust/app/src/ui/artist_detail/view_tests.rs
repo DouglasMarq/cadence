@@ -90,7 +90,7 @@ fn given_an_artist_when_opened_then_its_header_image_and_albums_are_shown() {
     let state = view.app.global::<ArtistDetailState>();
 
     assert!(!state.get_name().is_empty());
-    assert!(state.get_has_image());
+    assert!(view.pump(|| state.get_has_image()));
     assert!(state.get_albums().row_count() > 0);
 
     state.invoke_album_shown(0);

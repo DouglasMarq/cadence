@@ -86,14 +86,14 @@ fn select_mood(view: DiscoverView, index: usize) {
     show_sections(view);
 }
 
-fn install_navigation(view: DiscoverView) {
+fn install_open(view: DiscoverView) {
     let DiscoverView { window, deps } = view;
-    let state = window.global::<DiscoverState>();
     let (weak_window, open_deps) = (window.as_weak(), deps.clone());
-    state.on_open(move |detail_id| {
+    window.global::<DiscoverState>().on_open(move |detail_id| {
         let Some(window) = weak_window.upgrade() else {
             return;
         };
+        open_deps.context.session.open_view();
         let view = DiscoverView {
             window: &window,
             deps: &open_deps,
@@ -103,6 +103,12 @@ fn install_navigation(view: DiscoverView) {
             false => open_page(view, &detail_id),
         }
     });
+}
+
+fn install_navigation(view: DiscoverView) {
+    install_open(view);
+    let DiscoverView { window, deps } = view;
+    let state = window.global::<DiscoverState>();
     let (weak_window, section_deps) = (window.as_weak(), deps.clone());
     state.on_select_section(move |section| {
         let Some(window) = weak_window.upgrade() else {

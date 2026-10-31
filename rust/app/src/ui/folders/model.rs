@@ -1,9 +1,11 @@
 use std::cell::RefCell;
+use std::ops::Range;
 
 use cadence_core::model::{Folder, FolderId, Song};
 use slint::{Model, ModelNotify, ModelTracker};
 
 use crate::ui::page_cache::{PageCache, PageShape};
+use crate::ui::rows::notify_row_count;
 use crate::ui::tracks::{placeholder_track, track_row};
 use crate::ui::{FolderListRow, TrackRow};
 
@@ -20,10 +22,9 @@ pub struct SongPageRequest {
     pub page: usize,
 }
 
-pub struct FolderContents {
-    pub folders: Vec<Folder>,
+pub struct FirstSongs {
     pub song_total: usize,
-    pub first_songs: Vec<Song>,
+    pub songs: Vec<Song>,
 }
 
 struct Listing {
@@ -32,6 +33,8 @@ struct Listing {
     folders: Vec<Folder>,
     song_total: usize,
     songs: PageCache<Song>,
+    has_folders: bool,
+    has_songs: bool,
 }
 
 impl Listing {
@@ -42,7 +45,27 @@ impl Listing {
             folders: Vec::new(),
             song_total: 0,
             songs: PageCache::new(SONG_PAGES),
+            has_folders: false,
+            has_songs: false,
         }
+    }
+
+    fn row_count(&self) -> usize {
+        self.folders.len() + self.song_total
+    }
+
+    fn adopt_first_songs(&mut self, listed: FirstSongs) -> Range<usize> {
+        let FirstSongs { song_total, songs } = listed;
+        let song_total = song_total.max(songs.len());
+        if self.song_total != song_total {
+            self.songs.invalidate();
+        }
+        self.song_total = song_total;
+        self.has_songs = true;
+        let first_row = self.folders.len();
+        let shown_rows = first_row..first_row + songs.len();
+        self.songs.insert(0, songs);
+        shown_rows
     }
 
     fn song_position(&self, row: usize) -> Option<usize> {
@@ -115,22 +138,46 @@ impl FolderRowsModel {
         self.state.borrow().generation == generation
     }
 
-    pub fn show(&self, generation: u64, contents: FolderContents) {
+    pub fn show_folders(&self, generation: u64, folders: Vec<Folder>) {
         if !self.is_current(generation) {
             return;
         }
-        {
-            let FolderContents {
-                folders,
-                song_total,
-                first_songs,
-            } = contents;
+        let is_same = {
             let mut state = self.state.borrow_mut();
+            state.has_folders = true;
+            let is_same = state.folders == folders;
             state.folders = folders;
-            state.song_total = song_total.max(first_songs.len());
-            state.songs.insert(0, first_songs);
+            is_same
+        };
+        if !is_same {
+            self.notify.reset();
         }
-        self.notify.reset();
+    }
+
+    pub fn show_first_songs(&self, generation: u64, listed: FirstSongs) {
+        if !self.is_current(generation) {
+            return;
+        }
+        let (before, shown_rows, after) = {
+            let mut state = self.state.borrow_mut();
+            let before = state.row_count();
+            let shown_rows = state.adopt_first_songs(listed);
+            (before, shown_rows, state.row_count())
+        };
+        notify_row_count(&self.notify, before, after);
+        for row in shown_rows {
+            self.notify.row_changed(row);
+        }
+    }
+
+    pub fn is_settled(&self) -> bool {
+        let state = self.state.borrow();
+        state.has_folders && state.has_songs
+    }
+
+    pub fn counts(&self) -> (usize, usize) {
+        let state = self.state.borrow();
+        (state.folders.len(), state.song_total)
     }
 
     pub fn apply_song_page(&self, request: &SongPageRequest, songs: Vec<Song>) {
@@ -182,8 +229,7 @@ impl Model for FolderRowsModel {
     type Data = FolderListRow;
 
     fn row_count(&self) -> usize {
-        let state = self.state.borrow();
-        state.folders.len() + state.song_total
+        self.state.borrow().row_count()
     }
 
     fn row_data(&self, row: usize) -> Option<FolderListRow> {

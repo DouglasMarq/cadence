@@ -4,6 +4,7 @@ use cadence_core::model::Playlist;
 use slint::{Image, Model, ModelNotify, ModelTracker};
 
 use crate::ui::cover_lru::CoverLru;
+use crate::ui::rows::notify_row_count;
 use crate::ui::{PlaylistRow, format_duration};
 
 const COVER_CAPACITY: usize = 48;
@@ -20,7 +21,7 @@ fn playlist_row(playlist: &Playlist) -> PlaylistRow {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 struct PlaylistEntry {
     row: PlaylistRow,
     cover_id: Option<String>,
@@ -58,18 +59,31 @@ impl PlaylistsModel {
         if !self.is_current(generation) {
             return;
         }
-        *self.entries.borrow_mut() = playlists
+        let entries: Vec<PlaylistEntry> = playlists
             .iter()
             .map(|playlist| PlaylistEntry {
                 row: playlist_row(playlist),
                 cover_id: playlist.cover_art_id.clone(),
             })
             .collect();
-        self.notify.reset();
+        let changed: Vec<usize> = entries
+            .iter()
+            .zip(self.entries.borrow().iter())
+            .enumerate()
+            .filter(|(_, (entry, shown))| entry != shown)
+            .map(|(row, _)| row)
+            .collect();
+        let after = entries.len();
+        let before = self.entries.replace(entries).len();
+        notify_row_count(&self.notify, before, after);
+        for row in changed {
+            self.notify.row_changed(row);
+        }
     }
 
     pub fn apply_cover(&self, cover_id: String, image: Option<Image>) {
         let Some(image) = image else {
+            self.covers.borrow_mut().retry_later(cover_id.as_str());
             return;
         };
         let changed: Vec<usize> = self
@@ -158,6 +172,34 @@ mod tests {
         assert_eq!(row.songs, "3");
         assert_eq!(row.duration, "3:05");
         assert_eq!(row.owner, "me");
+    }
+
+    #[test]
+    fn given_a_cover_that_never_arrived_when_the_row_is_read_again_then_it_is_requested_again() {
+        let requested = Rc::new(RefCell::new(Vec::new()));
+        let sink = Rc::clone(&requested);
+        let model = PlaylistsModel::new(move |cover_id| sink.borrow_mut().push(cover_id));
+        let generation = model.begin();
+        model.set_playlists(generation, &[playlist("a", Some("c1"))]);
+        model.row_data(0);
+
+        model.apply_cover("c1".into(), None);
+        model.row_data(0);
+
+        assert_eq!(*requested.borrow(), ["c1", "c1"]);
+    }
+
+    #[test]
+    fn given_a_refresh_when_it_differs_then_rows_change_in_place() {
+        let model = PlaylistsModel::new(|_cover_id| {});
+        let generation = model.begin();
+        model.set_playlists(generation, &[playlist("a", None), playlist("b", None)]);
+
+        model.set_playlists(generation, &[playlist("a", None), playlist("c", None)]);
+        assert_eq!(model.row_data(1).map(|row| row.name), Some("c".into()));
+
+        model.set_playlists(generation, &[playlist("a", None)]);
+        assert_eq!(model.row_count(), 1);
     }
 
     #[test]

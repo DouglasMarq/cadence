@@ -6,6 +6,7 @@ use slint::{ComponentHandle, Model, ModelRc};
 use super::model::{FolderRowsModel, SONG_PAGE_SIZE, SongPageRequest};
 use crate::ui::page_cache::page_paging;
 use crate::ui::{AppWindow, Context, FoldersState, on_ui, show_status};
+use crate::views::View;
 
 pub fn with_model<Output>(
     window: &AppWindow,
@@ -38,9 +39,13 @@ fn spawn_song_page_load(
     let Some(server) = context.session.get() else {
         return;
     };
-    context.runtime.spawn(async move {
-        let paging = page_paging(request.page, SONG_PAGE_SIZE);
-        let result = server.folder_song_page(&request.folder, paging).await;
+    let views = context.views(&server);
+    let folder = request.folder.clone();
+    let slot = View::Folders.slot(format!("songs/{}/{}", folder.detail_id(), request.page));
+    let paging = page_paging(request.page, SONG_PAGE_SIZE);
+    let songs = async move { server.folder_song_page(&folder, paging).await };
+    views.load(Some(slot), songs, move |result| {
+        let request = request.clone();
         on_ui(&window, move |window| {
             show_song_page(window, &request, result)
         });

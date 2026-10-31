@@ -23,6 +23,7 @@ fn install_load(window: &AppWindow, context: &Context) {
         let (Some(window), Some(server)) = (weak_window.upgrade(), context.session.get()) else {
             return;
         };
+        context.session.open_view();
         let shelves = with_home_model(&window, |model| model.visit(&server.config().id));
         for shelf in shelves.unwrap_or_default() {
             load_shelf(&window, &context, shelf);

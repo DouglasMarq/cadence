@@ -113,11 +113,13 @@ fn install_grid_model(window: &AppWindow, context: &Context) {
     window.global::<AlbumsState>().set_rows(ModelRc::new(model));
 }
 
-fn install_reload_triggers(window: &AppWindow) {
+fn install_reload_triggers(window: &AppWindow, context: &Context) {
     let state = window.global::<AlbumsState>();
     let weak_window = window.as_weak();
+    let session = context.session.clone();
     state.on_load(move |_| {
         if let Some(window) = weak_window.upgrade() {
+            session.open_view();
             with_model(&window, locate, AlbumGridModel::clear_covers);
             reload(&window);
         }
@@ -182,7 +184,7 @@ fn install_album_actions(window: &AppWindow, context: &Context) {
 pub fn install(window: &AppWindow, context: &Context) {
     show_sort_options(window);
     install_grid_model(window, context);
-    install_reload_triggers(window);
+    install_reload_triggers(window, context);
     install_columns_changed(window);
     install_album_actions(window, context);
 }

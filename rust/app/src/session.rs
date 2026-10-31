@@ -10,6 +10,7 @@ pub struct Session {
     server: Arc<RwLock<Option<Arc<dyn MusicServer>>>>,
     settings: Arc<RwLock<Arc<Settings>>>,
     work_epoch: Arc<watch::Sender<u64>>,
+    view_epoch: Arc<watch::Sender<u64>>,
 }
 
 impl Default for Session {
@@ -18,8 +19,13 @@ impl Default for Session {
             server: Arc::default(),
             settings: Arc::default(),
             work_epoch: Arc::new(watch::Sender::new(0)),
+            view_epoch: Arc::new(watch::Sender::new(0)),
         }
     }
+}
+
+fn advance(epoch: &watch::Sender<u64>) {
+    epoch.send_modify(|epoch| *epoch = epoch.wrapping_add(1));
 }
 
 impl Session {
@@ -33,6 +39,7 @@ impl Session {
     pub fn set(&self, server: Option<Arc<dyn MusicServer>>) {
         *self.server.write().unwrap_or_else(PoisonError::into_inner) = server;
         self.end_background_work();
+        self.open_view();
     }
 
     pub fn settings(&self) -> Arc<Settings> {
@@ -47,13 +54,22 @@ impl Session {
     }
 
     pub fn end_background_work(&self) {
-        self.work_epoch
-            .send_modify(|epoch| *epoch = epoch.wrapping_add(1));
+        advance(&self.work_epoch);
     }
 
     pub fn background_work(&self) -> BackgroundWork {
         BackgroundWork {
             epoch: self.work_epoch.subscribe(),
+        }
+    }
+
+    pub fn open_view(&self) {
+        advance(&self.view_epoch);
+    }
+
+    pub fn view_work(&self) -> BackgroundWork {
+        BackgroundWork {
+            epoch: self.view_epoch.subscribe(),
         }
     }
 }
@@ -67,7 +83,7 @@ impl BackgroundWork {
         tokio::select! {
             output = work => Some(output),
             () = self.ended() => {
-                tracing::info!("stopped background work because the session ended");
+                tracing::debug!("stopped work because its session or view ended");
                 None
             }
         }
@@ -125,6 +141,30 @@ mod tests {
         session.set(Some(Arc::new(FakeServer::new(10))));
         stops_when(&session, Session::end_background_work).await;
         assert!(session.get().is_some());
+    }
+
+    #[tokio::test]
+    async fn given_work_for_a_view_when_another_view_opens_then_it_stops() {
+        let session = Session::default();
+        let work = session.view_work();
+        session.open_view();
+        assert_eq!(work.run(std::future::pending::<u8>()).await, None);
+    }
+
+    #[tokio::test]
+    async fn given_work_for_a_view_when_the_server_changes_then_it_stops() {
+        let session = Session::default();
+        let work = session.view_work();
+        session.set(None);
+        assert_eq!(work.run(std::future::pending::<u8>()).await, None);
+    }
+
+    #[tokio::test]
+    async fn given_a_view_opening_then_background_work_goes_on() {
+        let session = Session::default();
+        let work = session.background_work();
+        session.open_view();
+        assert_eq!(work.run(async { 7 }).await, Some(7));
     }
 
     #[tokio::test]

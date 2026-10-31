@@ -22,6 +22,7 @@ use crate::ui::test_window::{
 use crate::ui::{AppState, AppWindow, Context, login};
 
 const PUMP_TIMEOUT: Duration = Duration::from_secs(10);
+const VIEW_CACHE_DIRECTORY: &str = "views";
 
 struct GlobalProxy;
 
@@ -81,28 +82,51 @@ fn install_platform(window: &Rc<MinimalSoftwareWindow>) -> Option<Jobs> {
     Some(jobs)
 }
 
+struct Host {
+    window: Rc<MinimalSoftwareWindow>,
+    jobs: Jobs,
+    runtime: Runtime,
+    dir: tempfile::TempDir,
+}
+
+impl Host {
+    fn open() -> Self {
+        let window = MinimalSoftwareWindow::new(RepaintBufferType::NewBuffer);
+        let jobs = install_platform(&window).expect("a Slint platform for this test thread");
+        Self {
+            window,
+            jobs,
+            runtime: routed_runtime(2),
+            dir: tempfile::tempdir().expect("a temporary store directory"),
+        }
+    }
+}
+
 pub struct SessionWindow {
     pub app: AppWindow,
     pub context: Context,
     commands: RefCell<UnboundedReceiver<Command>>,
-    window: Rc<MinimalSoftwareWindow>,
-    jobs: Jobs,
-    _runtime: Runtime,
-    _dir: tempfile::TempDir,
+    host: Host,
 }
 
 impl SessionWindow {
     pub fn open(server: Arc<dyn MusicServer>) -> Self {
-        let window = MinimalSoftwareWindow::new(RepaintBufferType::NewBuffer);
-        let jobs = install_platform(&window).expect("a Slint platform for this test thread");
-        let runtime = routed_runtime(2);
-        let dir = tempfile::tempdir().expect("a temporary store directory");
+        Self::start(Host::open(), server)
+    }
+
+    pub fn restart(self, server: Arc<dyn MusicServer>) -> Self {
+        let Self { app, host, .. } = self;
+        drop(app);
+        Self::start(host, server)
+    }
+
+    fn start(host: Host, server: Arc<dyn MusicServer>) -> Self {
         let (sender, commands) = mpsc::unbounded_channel();
         let context = Context {
-            runtime: runtime.handle().clone(),
+            runtime: host.runtime.handle().clone(),
             commands: sender,
             session: Session::default(),
-            store: Arc::new(JsonStore::new(dir.path())),
+            store: Arc::new(JsonStore::new(host.dir.path())),
             connector: Arc::new(DemoConnector::default()),
             covers: Arc::new(DemoCovers),
             remote: crate::remote::Remote::default(),
@@ -111,25 +135,34 @@ impl SessionWindow {
         let app = AppWindow::new().expect("the app window");
         crate::ui::install(&app, &context, &Default::default());
         app.show().expect("a shown app window");
-        window.set_size(SIZE);
+        host.window.set_size(SIZE);
         login::enter_main(&app, &server);
         Self {
             app,
             context,
             commands: RefCell::new(commands),
-            window,
-            jobs,
-            _runtime: runtime,
-            _dir: dir,
+            host,
         }
     }
 
     pub fn pump(&self, done: impl Fn() -> bool) -> bool {
         let routed = RoutedWindow {
-            window: &self.window,
-            jobs: &self.jobs,
+            window: &self.host.window,
+            jobs: &self.host.jobs,
         };
         pump_until(routed, PUMP_TIMEOUT, done)
+    }
+
+    pub fn wait_until_idle(&self) -> bool {
+        let metrics = self.context.runtime.metrics();
+        self.pump(|| {
+            self.drain_commands();
+            metrics.num_alive_tasks() == 0
+        })
+    }
+
+    pub fn cache_directory(&self) -> std::path::PathBuf {
+        self.host.dir.path().join(VIEW_CACHE_DIRECTORY)
     }
 
     pub fn status(&self) -> String {

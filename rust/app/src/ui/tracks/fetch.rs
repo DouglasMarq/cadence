@@ -1,12 +1,10 @@
-use std::sync::Arc;
-
-use cadence_api::MusicServer;
 use cadence_core::model::{Page, Song};
 use slint::ComponentHandle;
 
 use super::model::{Request, paging_for_page};
 use super::with_model;
 use crate::ui::{AppWindow, Context, TracksState, clamp_i32, on_ui, show_status};
+use crate::views::{count_slot, page_slot};
 
 pub struct FetchedCount {
     pub generation: u64,
@@ -27,31 +25,35 @@ pub enum Fetched {
 pub fn spawn_fetch(
     context: &Context,
     request: Request,
-    done: impl FnOnce(Fetched) + Send + 'static,
+    done: impl Fn(Fetched) + Send + Sync + 'static,
 ) {
     let Some(server) = context.session.get() else {
         return;
     };
-    context.runtime.spawn(async move {
-        done(fetch(server, request).await);
-    });
-}
-
-async fn fetch(server: Arc<dyn MusicServer>, request: Request) -> Fetched {
+    let views = context.views(&server);
     match request {
-        Request::Count { generation, query } => Fetched::Count(FetchedCount {
-            generation,
-            result: server.song_count(&query).await,
-        }),
+        Request::Count { generation, query } => {
+            let slot = count_slot(&query);
+            let count = async move { server.song_count(&query).await };
+            views.keep_loading(slot, count, move |result| {
+                done(Fetched::Count(FetchedCount { generation, result }));
+            });
+        }
         Request::Page {
             generation,
             query,
             page,
-        } => Fetched::Page(FetchedPage {
-            generation,
-            page,
-            result: server.song_list(&query, paging_for_page(page)).await,
-        }),
+        } => {
+            let slot = page_slot(&query, page);
+            let songs = async move { server.song_list(&query, paging_for_page(page)).await };
+            views.keep_loading(slot, songs, move |result| {
+                done(Fetched::Page(FetchedPage {
+                    generation,
+                    page,
+                    result,
+                }));
+            });
+        }
     }
 }
 
@@ -74,6 +76,9 @@ fn show_count(window: &AppWindow, count: FetchedCount) {
     let state = window.global::<TracksState>();
     state.set_total(clamp_i32(total as u64));
     state.set_is_loading(false);
+    if let Some(selected) = with_model(window, |model| model.selected_count()) {
+        state.set_selected_count(clamp_i32(selected as u64));
+    }
     if let Err(error) = count.result {
         show_status(window, &tr!("Could not load tracks: {}", error));
     }

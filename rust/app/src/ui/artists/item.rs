@@ -28,6 +28,20 @@ impl From<Artist> for ArtistItem {
 }
 
 impl ArtistItem {
+    pub fn into_profile(self) -> Artist {
+        Artist {
+            id: self.id,
+            server_id: String::new(),
+            name: self.name,
+            album_count: self.album_count,
+            song_count: self.song_count,
+            cover_art_id: self.cover_art_id,
+            is_favorite: self.is_favorite,
+            user_rating: None,
+            biography: None,
+        }
+    }
+
     pub fn into_card(self, image: Option<Image>) -> ArtistCard {
         ArtistCard {
             albums: album_count_label(self.album_count).into(),

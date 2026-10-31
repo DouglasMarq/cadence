@@ -65,6 +65,9 @@ impl Store for FullDisk {
     fn write_state(&self, file: StateFile, bytes: &[u8]) -> Result<()> {
         self.0.write_state(file, bytes)
     }
+    fn views(&self) -> Arc<crate::views::ViewStore> {
+        self.0.views()
+    }
 }
 
 fn controller_on_a_full_disk(directory: &tempfile::TempDir) -> (Controller, Arc<RecordingUi>) {

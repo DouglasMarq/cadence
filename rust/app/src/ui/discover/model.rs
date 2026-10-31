@@ -48,6 +48,7 @@ impl DiscoverModel {
         let mix_revision = self.mixes.borrow().revision();
         if self.shown_request.borrow().as_ref() == request
             && self.shown_mix_revision.get() == mix_revision
+            && self.shows_same_shelves(shelves)
         {
             return;
         }
@@ -57,6 +58,15 @@ impl DiscoverModel {
         self.card_covers.borrow_mut().clear();
         *self.slots.borrow_mut() = shelves.iter().map(slot_of).collect();
         self.notify.reset();
+    }
+
+    fn shows_same_shelves(&self, shelves: &[MusicShelf]) -> bool {
+        let slots = self.slots.borrow();
+        slots.len() == shelves.len()
+            && slots
+                .iter()
+                .zip(shelves)
+                .all(|(slot, shelf)| slot.title == shelf.title && slot.items == shelf.items)
     }
 
     pub fn forget_shown_shelves(&self) {

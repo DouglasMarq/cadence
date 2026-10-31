@@ -7,7 +7,6 @@ use slint::{ComponentHandle, Model};
 use tokio::runtime::Runtime;
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use super::loading::{FetchedStations, ServerStations};
 use super::model::RadioModel;
 use super::now_playing::show_now_playing;
 use super::view::{RadioView, install_with};
@@ -82,16 +81,12 @@ impl RadioPage {
     }
 
     fn finish_loading_with(&self, stations: cadence_api::Result<Vec<RadioStation>>) {
-        let server_stations = ServerStations {
-            stations,
-            can_manage: true,
-        };
         let ticket = self.view.with_model(RadioModel::begin_load);
-        let fetched = FetchedStations {
-            favorites: vec![favorite()],
-            server_stations,
-        };
-        self.view.apply_loaded(&self.window, ticket, fetched);
+        self.view
+            .apply_favorites(&self.window, ticket, vec![favorite()]);
+        self.view.apply_can_manage(&self.window, ticket, Ok(true));
+        self.view
+            .apply_server_stations(&self.window, ticket, stations);
     }
 
     fn finish_search(&self, query: &StationQuery) {
@@ -302,16 +297,10 @@ fn a_slow_load_keeps_a_favorite_saved_meanwhile() {
     let page = open_radio_page();
     let ticket = page.view.with_model(RadioModel::begin_load);
     page.view.keep_favorite(favorite());
-    let server_stations = ServerStations {
-        stations: Ok(Vec::new()),
-        can_manage: false,
-    };
 
-    let fetched = FetchedStations {
-        favorites: Vec::new(),
-        server_stations,
-    };
-    page.view.apply_loaded(&page.window, ticket, fetched);
+    page.view.apply_favorites(&page.window, ticket, Vec::new());
+    page.view
+        .apply_server_stations(&page.window, ticket, Ok(Vec::new()));
 
     assert!(page.stations().iter().any(|row| row.name == "My Station"));
 }

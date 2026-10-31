@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use cadence_core::model::{Album, AlbumListQuery, Page};
 use slint::{ComponentHandle, Model, SharedString};
 
 use crate::controller::Command;
@@ -7,6 +8,7 @@ use crate::demo::FakeServer;
 use crate::tests::offline_server::OFFLINE;
 use crate::tests::session_window::SessionWindow;
 use crate::ui::{AlbumGridCard, AlbumsState, AppState, PlaylistPickerState, Route};
+use crate::views::{count_slot, page_slot};
 
 const ALBUM_ID: &str = "album-1";
 const SONGS_PER_ALBUM: usize = 12;
@@ -28,6 +30,25 @@ fn open_albums() -> SessionWindow {
         !albums(&view).get_is_loading() && first_card(&view).is_some_and(|card| card.is_loaded)
     }));
     view
+}
+
+fn cached_page_is_saved(view: &SessionWindow) -> bool {
+    let Some(server) = view.context.session.get() else {
+        return false;
+    };
+    let server_id = server.config().id.clone();
+    let query = AlbumListQuery::default();
+    let (Some(count), Some(page)) = (count_slot(&query), page_slot(&query, 0)) else {
+        return false;
+    };
+    let views = view.context.store.views();
+    view.context.runtime.block_on(async {
+        views.stored::<usize>(&server_id, &count).await.is_some()
+            && views
+                .stored::<Page<Album>>(&server_id, &page)
+                .await
+                .is_some()
+    })
 }
 
 #[test]
@@ -94,15 +115,34 @@ fn given_an_offline_server_when_an_album_is_played_then_the_status_shows_the_fai
 }
 
 #[test]
-fn given_an_offline_server_when_the_albums_reload_then_the_count_fails_with_an_error() {
+fn given_an_offline_server_when_an_uncached_sort_loads_then_the_count_fails_with_an_error() {
     let view = open_albums();
     view.go_offline();
 
+    albums(&view).set_is_sort_descending(true);
     albums(&view).invoke_query_changed();
 
     assert!(view.pump_until_status(&format!("Could not load albums: {OFFLINE}")));
     assert!(view.pump(|| !albums(&view).get_is_loading()));
     assert_eq!(albums(&view).get_total(), 0);
+}
+
+#[test]
+fn given_an_offline_server_when_cached_albums_reload_then_they_stay_shown_without_an_error() {
+    let view = open_albums();
+    let shown_total = albums(&view).get_total();
+    let shown_id = first_card(&view).map(|card| card.id);
+    assert!(view.pump(|| cached_page_is_saved(&view)));
+    view.go_offline();
+
+    albums(&view).invoke_query_changed();
+
+    assert!(view.pump(|| {
+        !albums(&view).get_is_loading() && first_card(&view).is_some_and(|card| card.is_loaded)
+    }));
+    assert_eq!(albums(&view).get_total(), shown_total);
+    assert_eq!(first_card(&view).map(|card| card.id), shown_id);
+    assert_eq!(view.status(), "");
 }
 
 #[test]
