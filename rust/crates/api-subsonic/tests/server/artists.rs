@@ -1,11 +1,16 @@
+use std::time::Duration;
+
 use cadence_api::MusicServer;
 use cadence_api_subsonic::SubsonicServer;
-use cadence_core::model::{ArtistListQuery, ArtistSort, SortOrder};
+use cadence_core::model::{ArtistListQuery, ArtistPart, ArtistSort, SortOrder};
 use serde_json::json;
+use tokio::sync::mpsc;
 use wiremock::matchers::{path, query_param};
 use wiremock::{Mock, MockServer};
 
 use crate::support::{album, artist, mount_plain_ping, ok, paging, server, song};
+
+const NEVER_IN_THIS_TEST: Duration = Duration::from_secs(120);
 
 async fn mount_artist_index(mock: &MockServer) {
     let mut starred = artist("ar-3", "Charlie", 7);
@@ -110,4 +115,76 @@ async fn artist_detail_fetches_top_songs_and_biography() {
     assert_eq!(detail.artist.biography.as_deref(), Some("Bio"));
     assert_eq!(detail.albums.len(), 1);
     assert_eq!(detail.top_songs[0].title, "Hit");
+}
+
+#[tokio::test]
+async fn given_a_slow_biography_and_top_songs_when_delivered_in_parts_then_the_profile_does_not_wait()
+ {
+    let mock = MockServer::start().await;
+    mount_plain_ping(&mock).await;
+    Mock::given(path("/rest/getArtist.view"))
+        .respond_with(ok(json!({
+            "artist": { "id": "ar-1", "name": "The Artist", "albumCount": 1, "album": [album("a1", "One")] }
+        })))
+        .mount(&mock)
+        .await;
+    for slow in ["/rest/getTopSongs.view", "/rest/getArtistInfo2.view"] {
+        Mock::given(path(slow))
+            .respond_with(ok(json!({})).set_delay(NEVER_IN_THIS_TEST))
+            .mount(&mock)
+            .await;
+    }
+    let server = server(&mock);
+    let (sender, mut parts) = mpsc::unbounded_channel();
+    let deliver = move |part: ArtistPart| {
+        sender.send(part).expect("the test is listening");
+    };
+
+    let early_parts = async { (parts.recv().await, parts.recv().await) };
+    let (profile, albums) = tokio::select! {
+        early_parts = early_parts => early_parts,
+        _finished = server.artist_in_parts("ar-1", &deliver) => panic!("slow calls cannot finish"),
+    };
+
+    assert!(matches!(profile, Some(ArtistPart::Profile(artist)) if artist.name == "The Artist"));
+    assert!(matches!(albums, Some(ArtistPart::Albums(albums)) if albums.len() == 1));
+}
+
+#[tokio::test]
+async fn given_a_full_answer_when_delivered_in_parts_then_every_section_arrives() {
+    let mock = MockServer::start().await;
+    mount_plain_ping(&mock).await;
+    Mock::given(path("/rest/getArtist.view"))
+        .respond_with(ok(json!({
+            "artist": { "id": "ar-1", "name": "The Artist", "albumCount": 1, "album": [album("a1", "One")] }
+        })))
+        .mount(&mock)
+        .await;
+    Mock::given(path("/rest/getTopSongs.view"))
+        .respond_with(ok(json!({ "topSongs": { "song": [song("s1", "Hit")] } })))
+        .mount(&mock)
+        .await;
+    Mock::given(path("/rest/getArtistInfo2.view"))
+        .respond_with(ok(json!({ "artistInfo2": { "biography": "Life story" } })))
+        .mount(&mock)
+        .await;
+    let server = server(&mock);
+    let (sender, mut parts) = mpsc::unbounded_channel();
+    let deliver = move |part: ArtistPart| {
+        sender.send(part).expect("the test is listening");
+    };
+
+    server
+        .artist_in_parts("ar-1", &deliver)
+        .await
+        .expect("the artist answers");
+
+    let mut detail = None;
+    while let Ok(part) = parts.try_recv() {
+        part.merge_into(&mut detail);
+    }
+    let detail = detail.expect("the profile arrived");
+    assert_eq!(detail.albums.len(), 1);
+    assert_eq!(detail.top_songs.len(), 1);
+    assert_eq!(detail.artist.biography.as_deref(), Some("Life story"));
 }

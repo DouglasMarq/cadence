@@ -1,6 +1,7 @@
-use cadence_api::{MusicServer, Result};
+use cadence_api::{ArtistPartSink, MusicServer, Result};
 use cadence_core::model::{
-    AlbumListQuery, AlbumSort, Artist, ArtistDetail, ArtistListQuery, Page, Paging, SortOrder,
+    Album, AlbumListQuery, AlbumSort, Artist, ArtistDetail, ArtistListQuery, ArtistPart, Page,
+    Paging, SortOrder,
 };
 
 use crate::NavidromeServer;
@@ -31,6 +32,19 @@ impl NavidromeServer {
         .await
     }
 
+    pub(crate) async fn deliver_artist_parts(
+        &self,
+        id: &str,
+        deliver: ArtistPartSink<'_>,
+    ) -> Result<()> {
+        let features = self.features().await;
+        self.native_or_subsonic(
+            self.native_artist_parts(id, &features, deliver),
+            self.subsonic_server.artist_in_parts(id, deliver),
+        )
+        .await
+    }
+
     async fn native_artist_page(
         &self,
         query: &ArtistListQuery,
@@ -50,9 +64,13 @@ impl NavidromeServer {
         })
     }
 
-    async fn native_artist(&self, id: &str, features: &Features) -> Result<ArtistDetail> {
+    async fn native_artist_profile(&self, id: &str) -> Result<Artist> {
         let (artist, _): (NativeArtist, _) = self.native_get(&["artist", id], &[]).await?;
-        let albums = self
+        Ok(normalize_artist(artist, self.server_id()))
+    }
+
+    async fn native_artist_albums(&self, id: &str, features: &Features) -> Result<Vec<Album>> {
+        let page = self
             .native_album_page(
                 &artist_albums_query(id),
                 PageRange {
@@ -61,15 +79,42 @@ impl NavidromeServer {
                 },
                 features,
             )
-            .await?
-            .items;
-        let artist = normalize_artist(artist, self.server_id());
+            .await?;
+        Ok(page.items)
+    }
+
+    async fn native_artist(&self, id: &str, features: &Features) -> Result<ArtistDetail> {
+        let artist = self.native_artist_profile(id).await?;
+        let albums = self.native_artist_albums(id, features).await?;
         let top_songs = self.subsonic_server.top_songs(id, &artist.name).await;
         Ok(ArtistDetail {
             artist,
             albums,
             top_songs,
         })
+    }
+
+    async fn native_artist_parts(
+        &self,
+        id: &str,
+        features: &Features,
+        deliver: ArtistPartSink<'_>,
+    ) -> Result<()> {
+        let artist = self.native_artist_profile(id).await?;
+        let (artist_name, biography) = (artist.name.clone(), artist.biography.clone());
+        deliver(ArtistPart::Profile(artist));
+        deliver(ArtistPart::Biography(biography));
+        let albums = async {
+            let albums = self.native_artist_albums(id, features).await?;
+            deliver(ArtistPart::Albums(albums));
+            Ok(())
+        };
+        let top_songs = async {
+            let top_songs = self.subsonic_server.top_songs(id, &artist_name).await;
+            deliver(ArtistPart::TopSongs(top_songs));
+        };
+        let (albums_outcome, ()) = tokio::join!(albums, top_songs);
+        albums_outcome
     }
 }
 

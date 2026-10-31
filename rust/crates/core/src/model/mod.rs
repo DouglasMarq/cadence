@@ -13,7 +13,7 @@ mod song;
 mod song_id;
 
 pub use album::{Album, AlbumDetail};
-pub use artist::{Artist, ArtistDetail, ArtistRef, joined_artist_names};
+pub use artist::{Artist, ArtistDetail, ArtistPart, ArtistRef, joined_artist_names};
 pub use collection::{Genre, MusicFolder, Playlist};
 pub use folder::{Folder, FolderId};
 pub use library_scan::LibraryScan;

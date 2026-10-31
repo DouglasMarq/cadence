@@ -1,5 +1,9 @@
+use std::time::Duration;
+
 use cadence_api::MusicServer;
+use cadence_core::model::ArtistPart;
 use serde_json::json;
+use tokio::sync::mpsc;
 use wiremock::matchers::{method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -138,4 +142,36 @@ async fn given_unreadable_top_songs_when_opening_an_artist_then_the_artist_has_n
 
     assert_eq!(detail.artist.name, "Artist One");
     assert!(detail.top_songs.is_empty());
+}
+
+#[tokio::test]
+async fn given_slow_top_songs_when_delivered_in_parts_then_the_profile_and_albums_do_not_wait() {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.58.0", &["topSongsByArtistId"]).await;
+    mount_native_artist(&mock).await;
+    mount_artist_albums(&mock).await;
+    Mock::given(method("GET"))
+        .and(path("/rest/getTopSongs.view"))
+        .respond_with(subsonic_ok(json!({})).set_delay(Duration::from_secs(120)))
+        .mount(&mock)
+        .await;
+    let server = server(&mock, Some("jwt-1"));
+    let (sender, mut parts) = mpsc::unbounded_channel();
+    let deliver = move |part: ArtistPart| {
+        sender.send(part).expect("the test is listening");
+    };
+
+    let early_parts = async {
+        let profile = parts.recv().await;
+        let biography = parts.recv().await;
+        (profile, biography, parts.recv().await)
+    };
+    let (profile, biography, albums) = tokio::select! {
+        early_parts = early_parts => early_parts,
+        _finished = server.artist_in_parts("ar1", &deliver) => panic!("slow calls cannot finish"),
+    };
+
+    assert!(matches!(profile, Some(ArtistPart::Profile(artist)) if artist.name == "Artist One"));
+    assert_eq!(biography, Some(ArtistPart::Biography(Some("Bio".into()))));
+    assert!(matches!(albums, Some(ArtistPart::Albums(albums)) if albums.len() == 2));
 }
