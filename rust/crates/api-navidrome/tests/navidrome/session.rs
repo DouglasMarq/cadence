@@ -1,11 +1,12 @@
 use cadence_api::{ApiError, Credential, MusicServer};
 use cadence_api_navidrome::NavidromeServer;
+use cadence_core::model::{Paging, SongListQuery};
 use serde_json::{Value, json};
 use wiremock::matchers::{body_json, header, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 use crate::support::{
-    SUBSONIC_AUTH, config, native_song_json, server, subsonic_failed, subsonic_ok,
+    SUBSONIC_AUTH, config, mount_ping, native_song_json, server, subsonic_failed, subsonic_ok,
 };
 
 async fn mount_login(mock: &MockServer) {
@@ -42,6 +43,7 @@ async fn login_builds_navidrome_credential() {
         Credential::Navidrome {
             subsonic: SUBSONIC_AUTH.into(),
             nd_token: Some("jwt-1".into()),
+            password: Some("secret".into()),
         }
     );
     assert_eq!(server.credential(), credential);
@@ -101,6 +103,7 @@ async fn native_calls_pick_up_refreshed_token() {
         Credential::Navidrome {
             subsonic: SUBSONIC_AUTH.into(),
             nd_token: Some("jwt-2".into()),
+            password: None,
         }
     );
     assert_eq!(server.song("s2").await.expect("s2").title, "Second");
@@ -169,6 +172,7 @@ async fn rejected_token_falls_back_to_subsonic() {
         Credential::Navidrome {
             subsonic: SUBSONIC_AUTH.into(),
             nd_token: None,
+            password: None,
         }
     );
     server
@@ -209,6 +213,7 @@ async fn given_a_network_failure_the_error_has_no_credentials() {
         &Credential::Navidrome {
             subsonic: SUBSONIC_AUTH.into(),
             nd_token: None,
+            password: None,
         },
     )
     .expect("server");
@@ -223,4 +228,192 @@ async fn given_a_network_failure_the_error_has_no_credentials() {
     );
     let source = std::error::Error::source(&error).expect("the transport error");
     assert!(source.downcast_ref::<reqwest::Error>().is_some());
+}
+
+fn saved_login(token: Option<&str>) -> Credential {
+    Credential::Navidrome {
+        subsonic: SUBSONIC_AUTH.into(),
+        nd_token: token.map(str::to_owned),
+        password: Some("secret".into()),
+    }
+}
+
+fn server_with_saved_password(mock: &MockServer, token: Option<&str>) -> NavidromeServer {
+    NavidromeServer::with_credential(config(&mock.uri()), &saved_login(token)).expect("server")
+}
+
+fn renewed_login() -> ResponseTemplate {
+    ResponseTemplate::new(200).set_body_json(json!({
+        "subsonicSalt": "salt2",
+        "subsonicToken": "tok2",
+        "token": "jwt-renewed",
+    }))
+}
+
+async fn mount_renewal(mock: &MockServer, response: ResponseTemplate, logins: u64) {
+    Mock::given(method("POST"))
+        .and(path("/auth/login"))
+        .and(body_json(
+            json!({ "username": "alice", "password": "secret" }),
+        ))
+        .respond_with(response)
+        .expect(logins)
+        .mount(mock)
+        .await;
+}
+
+async fn mount_sorted_songs_for_renewed_session(mock: &MockServer) {
+    Mock::given(method("GET"))
+        .and(path("/api/song"))
+        .and(query_param("_sort", "title"))
+        .and(query_param("_order", "ASC"))
+        .and(header("x-nd-authorization", "Bearer jwt-renewed"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .insert_header("x-total-count", "1")
+                .set_body_json(json!([native_song_json("s1", "Black Out Days")])),
+        )
+        .mount(mock)
+        .await;
+}
+
+async fn mount_expired_song_list(mock: &MockServer) {
+    Mock::given(method("GET"))
+        .and(path("/api/song"))
+        .and(header("x-nd-authorization", "Bearer expired"))
+        .respond_with(ResponseTemplate::new(401))
+        .mount(mock)
+        .await;
+}
+
+async fn mount_subsonic_song_search(mock: &MockServer, searches: u64) {
+    Mock::given(method("GET"))
+        .and(path("/rest/search3.view"))
+        .respond_with(subsonic_ok(json!({ "searchResult3": {} })))
+        .expect(searches)
+        .mount(mock)
+        .await;
+}
+
+fn first_songs() -> Paging {
+    Paging {
+        start_index: 0,
+        limit: 50,
+    }
+}
+
+#[tokio::test]
+async fn given_an_expired_session_and_a_saved_password_when_listing_songs_then_it_logs_in_again() {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_expired_song_list(&mock).await;
+    mount_renewal(&mock, renewed_login(), 1).await;
+    mount_sorted_songs_for_renewed_session(&mock).await;
+    mount_subsonic_song_search(&mock, 0).await;
+    let server = server_with_saved_password(&mock, Some("expired"));
+
+    let page = server
+        .song_list(&SongListQuery::default(), first_songs())
+        .await
+        .expect("sorted songs");
+
+    assert_eq!(page.items[0].title, "Black Out Days");
+    assert_eq!(server.credential(), saved_login(Some("jwt-renewed")));
+}
+
+#[tokio::test]
+async fn given_a_saved_password_without_a_session_when_listing_songs_then_it_logs_in_first() {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_renewal(&mock, renewed_login(), 1).await;
+    mount_sorted_songs_for_renewed_session(&mock).await;
+    mount_subsonic_song_search(&mock, 0).await;
+    let server = server_with_saved_password(&mock, None);
+
+    let page = server
+        .song_list(&SongListQuery::default(), first_songs())
+        .await
+        .expect("sorted songs");
+
+    assert_eq!(page.items[0].title, "Black Out Days");
+}
+
+#[tokio::test]
+async fn given_many_requests_with_an_expired_session_when_they_fail_together_then_it_logs_in_once()
+{
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_expired_song_list(&mock).await;
+    mount_renewal(&mock, renewed_login(), 1).await;
+    mount_sorted_songs_for_renewed_session(&mock).await;
+    let server = server_with_saved_password(&mock, Some("expired"));
+    let query = SongListQuery::default();
+
+    let (first, second, third) = tokio::join!(
+        server.song_list(&query, first_songs()),
+        server.song_count(&query),
+        server.song_list(&query, first_songs()),
+    );
+
+    assert_eq!(first.expect("first list").items.len(), 1);
+    assert_eq!(second.expect("count"), 1);
+    assert_eq!(third.expect("second list").items.len(), 1);
+}
+
+#[tokio::test]
+async fn given_a_changed_password_when_renewing_then_it_stops_trying_and_uses_subsonic() {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_expired_song_list(&mock).await;
+    mount_renewal(&mock, ResponseTemplate::new(401), 1).await;
+    mount_subsonic_song_search(&mock, 2).await;
+    let server = server_with_saved_password(&mock, Some("expired"));
+
+    for _ in 0..2 {
+        server
+            .song_list(&SongListQuery::default(), first_songs())
+            .await
+            .expect("songs from subsonic");
+    }
+
+    assert_eq!(
+        server.credential(),
+        Credential::Navidrome {
+            subsonic: SUBSONIC_AUTH.into(),
+            nd_token: None,
+            password: None,
+        }
+    );
+}
+
+#[tokio::test]
+async fn given_a_server_failure_when_renewing_then_the_password_is_kept_for_the_next_request() {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_renewal(&mock, ResponseTemplate::new(500), 1).await;
+    mount_subsonic_song_search(&mock, 1).await;
+    let server = server_with_saved_password(&mock, None);
+
+    server
+        .song_list(&SongListQuery::default(), first_songs())
+        .await
+        .expect("songs from subsonic");
+
+    assert_eq!(server.credential(), saved_login(None));
+}
+
+#[tokio::test]
+async fn given_a_login_saved_by_an_older_version_when_it_is_read_then_it_has_no_password() {
+    let saved = r#"{"type":"navidrome","subsonic":"u=alice","nd_token":"jwt-1"}"#;
+
+    let credential = Credential::from_json(saved).expect("older login");
+
+    assert_eq!(
+        credential,
+        Credential::Navidrome {
+            subsonic: "u=alice".into(),
+            nd_token: Some("jwt-1".into()),
+            password: None,
+        }
+    );
 }

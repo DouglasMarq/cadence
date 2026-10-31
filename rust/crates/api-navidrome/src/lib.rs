@@ -12,6 +12,7 @@ use std::sync::RwLock;
 
 use cadence_api_subsonic::SubsonicServer;
 use cadence_core::model::ServerConfig;
+use tokio::sync::Mutex;
 
 pub struct NavidromeServer {
     config: ServerConfig,
@@ -19,5 +20,7 @@ pub struct NavidromeServer {
     http_client: reqwest::Client,
     subsonic_auth: String,
     session_token: RwLock<Option<String>>,
+    password: RwLock<Option<String>>,
+    session_renewal: Mutex<()>,
     subsonic_server: SubsonicServer,
 }

@@ -1,5 +1,6 @@
 use std::sync::PoisonError;
 
+use cadence_api::ApiError;
 use reqwest::StatusCode;
 use reqwest::header::HeaderMap;
 
@@ -15,8 +16,25 @@ impl NavidromeServer {
             .clone()
     }
 
-    pub(crate) fn has_session_token(&self) -> bool {
-        self.current_session_token().is_some()
+    pub(crate) fn saved_password(&self) -> Option<String> {
+        self.password
+            .read()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone()
+    }
+
+    pub(crate) fn forget_password_if_rejected(&self, error: &ApiError) {
+        if !matches!(error, ApiError::Auth(_)) {
+            return;
+        }
+        *self
+            .password
+            .write()
+            .unwrap_or_else(PoisonError::into_inner) = None;
+    }
+
+    pub(crate) fn can_use_native_api(&self) -> bool {
+        self.current_session_token().is_some() || self.saved_password().is_some()
     }
 
     pub(crate) fn replace_session_token(&self, token: Option<String>) {
@@ -26,11 +44,17 @@ impl NavidromeServer {
             .unwrap_or_else(PoisonError::into_inner) = token;
     }
 
-    pub(crate) fn forget_rejected_session_token(&self, status: StatusCode) {
+    pub(crate) fn forget_rejected_session_token(&self, status: StatusCode, rejected_token: &str) {
         if status != StatusCode::UNAUTHORIZED {
             return;
         }
-        self.replace_session_token(None);
+        let mut session_token = self
+            .session_token
+            .write()
+            .unwrap_or_else(PoisonError::into_inner);
+        if session_token.as_deref() == Some(rejected_token) {
+            *session_token = None;
+        }
     }
 
     pub(crate) fn capture_refreshed_token(&self, headers: &HeaderMap) {

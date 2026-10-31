@@ -32,6 +32,7 @@ fn without_session(credential: &Credential) -> Credential {
         Credential::Navidrome { subsonic, .. } => Credential::Navidrome {
             subsonic: subsonic.clone(),
             nd_token: None,
+            password: None,
         },
         other => other.clone(),
     }
