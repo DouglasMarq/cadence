@@ -209,6 +209,9 @@ msgstr "已封鎖的裝置"
 msgid "by {}"
 msgstr "建立者：{}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} 已可使用"
+
 msgid "Cancel"
 msgstr "取消"
 
@@ -394,6 +397,9 @@ msgstr "無法轉移音樂：{}"
 
 msgid "Could not open the folder: {}"
 msgstr "無法開啟資料夾：{}"
+
+msgid "Could not open the release page: {}"
+msgstr "無法開啟發行頁面：{}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "無法開啟 YouTube Music：{}"
@@ -601,6 +607,12 @@ msgstr "按兩下即可播放"
 msgid "Double-click to play, drag to reorder"
 msgstr "按兩下即可播放，拖曳即可重新排序"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "下載版本 {} 並重新啟動 Cadence；播放佇列會保留"
+
+msgid "Downloading update: {}%"
+msgstr "正在下載更新：{}%"
+
 msgid "Duration"
 msgstr "時長"
 
@@ -685,6 +697,9 @@ msgstr "移除 {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "伺服器轉碼的目標格式。從下一首歌曲開始生效。"
 
+msgid "Forward"
+msgstr "前進"
+
 msgid "Gapless playback"
 msgstr "無縫播放"
 
@@ -736,6 +751,9 @@ msgstr "靛藍"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "安裝 yt-dlp 以播放 YouTube 曲目"
 
+msgid "Installing update..."
+msgstr "正在安裝更新..."
+
 msgid "Integrations"
 msgstr "整合"
 
@@ -778,11 +796,17 @@ msgstr "在選單列或系統匣中顯示含播放控制的 Cadence 圖示。"
 msgid "Keep this station in the favorites on this device"
 msgstr "在此裝置的收藏中保留此電台"
 
+msgid "Keep this version until the next launch"
+msgstr "在下次啟動前保留此版本"
+
 msgid "Keep {}"
 msgstr "保留 {}"
 
 msgid "Language"
 msgstr "語言"
+
+msgid "Later"
+msgstr "稍後"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "允許 \"{}\" 再次要求控制此播放器"
@@ -1007,6 +1031,9 @@ msgstr "目前沒有可加入的內容"
 msgid "Nothing to go back to"
 msgstr "沒有可返回的位置"
 
+msgid "Nothing to go forward to"
+msgstr "沒有可前進的位置"
+
 msgid "Nothing to play here"
 msgstr "這裡沒有可播放的內容"
 
@@ -1045,6 +1072,9 @@ msgstr "開啟正在播放"
 
 msgid "Open radio"
 msgstr "開啟電台"
+
+msgid "Open release page"
+msgstr "開啟發行頁面"
 
 msgid "Open the album \"{}\""
 msgstr "開啟專輯「{}」"
@@ -1646,6 +1676,9 @@ msgstr "此「探索」頁面不存在"
 msgid "This folder is empty"
 msgstr "此資料夾是空的"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "此安裝無法自行更新；請在瀏覽器中開啟發行頁面"
+
 msgid "This mix is no longer available"
 msgstr "此合輯已無法使用"
 
@@ -1687,6 +1720,12 @@ msgstr "取消靜音"
 
 msgid "Up next"
 msgstr "即將播放"
+
+msgid "Update and restart"
+msgstr "更新並重新啟動"
+
+msgid "Update failed: {}"
+msgstr "更新失敗：{}"
 
 msgid "URL"
 msgstr "URL"

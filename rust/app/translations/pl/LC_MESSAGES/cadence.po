@@ -221,6 +221,9 @@ msgstr "Zablokowane urządzenia"
 msgid "by {}"
 msgstr "autor: {}"
 
+msgid "Cadence {} is available"
+msgstr "Dostępna jest wersja Cadence {}"
+
 msgid "Cancel"
 msgstr "Anuluj"
 
@@ -406,6 +409,9 @@ msgstr "Nie udało się przenieść muzyki: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Nie udało się otworzyć katalogu: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Nie można otworzyć strony wydania: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Nie udało się otworzyć YouTube Music: {}"
@@ -617,6 +623,12 @@ msgstr "Kliknij dwukrotnie, aby odtworzyć"
 msgid "Double-click to play, drag to reorder"
 msgstr "Kliknij dwukrotnie, aby odtworzyć, przeciągnij, aby zmienić kolejność"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Pobierz wersję {} i uruchom ponownie Cadence; kolejka zostanie zapisana"
+
+msgid "Downloading update: {}%"
+msgstr "Pobieranie aktualizacji: {}%"
+
 msgid "Duration"
 msgstr "Czas trwania"
 
@@ -701,6 +713,9 @@ msgstr "Zapomnij {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format, do którego serwer ma transkodować. Obowiązuje od następnego utworu."
 
+msgid "Forward"
+msgstr "Dalej"
+
 msgid "Gapless playback"
 msgstr "Odtwarzanie bez przerw"
 
@@ -752,6 +767,9 @@ msgstr "Indygo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Zainstaluj yt-dlp, aby odtwarzać utwory z YouTube"
 
+msgid "Installing update..."
+msgstr "Instalowanie aktualizacji..."
+
 msgid "Integrations"
 msgstr "Integracje"
 
@@ -794,11 +812,17 @@ msgstr "Ikona Cadence z przyciskami odtwarzania na pasku menu lub w zasobniku sy
 msgid "Keep this station in the favorites on this device"
 msgstr "Zachowaj tę stację w ulubionych na tym urządzeniu"
 
+msgid "Keep this version until the next launch"
+msgstr "Zachowaj tę wersję do następnego uruchomienia"
+
 msgid "Keep {}"
 msgstr "Zachowaj {}"
 
 msgid "Language"
 msgstr "Język"
+
+msgid "Later"
+msgstr "Później"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Pozwól \"{}\" ponownie poprosić o sterowanie tym odtwarzaczem"
@@ -1025,6 +1049,9 @@ msgstr "Nie ma jeszcze nic do dodania"
 msgid "Nothing to go back to"
 msgstr "Nie ma dokąd wrócić"
 
+msgid "Nothing to go forward to"
+msgstr "Nie ma dokąd przejść dalej"
+
 msgid "Nothing to play here"
 msgstr "Nie ma tu nic do odtworzenia"
 
@@ -1063,6 +1090,9 @@ msgstr "Otwórz widok odtwarzania"
 
 msgid "Open radio"
 msgstr "Otwórz radio"
+
+msgid "Open release page"
+msgstr "Otwórz stronę wydania"
 
 msgid "Open the album \"{}\""
 msgstr "Otwórz album „{}”"
@@ -1670,6 +1700,9 @@ msgstr "Ta strona sekcji Odkrywaj nie istnieje"
 msgid "This folder is empty"
 msgstr "Ten katalog jest pusty"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Ta instalacja nie może zaktualizować się sama; otwórz stronę wydania w przeglądarce"
+
 msgid "This mix is no longer available"
 msgstr "Ten mix nie jest już dostępny"
 
@@ -1711,6 +1744,12 @@ msgstr "Wyłącz wyciszenie"
 
 msgid "Up next"
 msgstr "Następne"
+
+msgid "Update and restart"
+msgstr "Zaktualizuj i uruchom ponownie"
+
+msgid "Update failed: {}"
+msgstr "Aktualizacja nie powiodła się: {}"
 
 msgid "URL"
 msgstr "URL"

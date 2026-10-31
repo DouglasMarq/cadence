@@ -209,6 +209,9 @@ msgstr "อุปกรณ์ที่ถูกแบน"
 msgid "by {}"
 msgstr "โดย {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} พร้อมใช้งานแล้ว"
+
 msgid "Cancel"
 msgstr "ยกเลิก"
 
@@ -394,6 +397,9 @@ msgstr "ย้ายเพลงไม่ได้: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "เปิดโฟลเดอร์ไม่ได้: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "ไม่สามารถเปิดหน้ารุ่นที่เผยแพร่: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "เปิด YouTube Music ไม่ได้: {}"
@@ -601,6 +607,12 @@ msgstr "ดับเบิลคลิกเพื่อเล่น"
 msgid "Double-click to play, drag to reorder"
 msgstr "ดับเบิลคลิกเพื่อเล่น ลากเพื่อจัดลำดับใหม่"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "ดาวน์โหลดเวอร์ชัน {} แล้วรีสตาร์ต Cadence คิวของคุณจะถูกบันทึกไว้"
+
+msgid "Downloading update: {}%"
+msgstr "กำลังดาวน์โหลดอัปเดต: {}%"
+
 msgid "Duration"
 msgstr "ความยาว"
 
@@ -685,6 +697,9 @@ msgstr "ลบ {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "รูปแบบที่ให้เซิร์ฟเวอร์แปลงไฟล์ มีผลตั้งแต่เพลงถัดไป"
 
+msgid "Forward"
+msgstr "ไปข้างหน้า"
+
 msgid "Gapless playback"
 msgstr "เล่นต่อเนื่องไร้ช่องว่าง"
 
@@ -736,6 +751,9 @@ msgstr "คราม"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "ติดตั้ง yt-dlp เพื่อเล่นแทร็กจาก YouTube"
 
+msgid "Installing update..."
+msgstr "กำลังติดตั้งอัปเดต..."
+
 msgid "Integrations"
 msgstr "การเชื่อมต่อ"
 
@@ -778,11 +796,17 @@ msgstr "แสดงไอคอน Cadence พร้อมปุ่มควบ
 msgid "Keep this station in the favorites on this device"
 msgstr "เก็บสถานีนี้ไว้ในรายการโปรดบนอุปกรณ์นี้"
 
+msgid "Keep this version until the next launch"
+msgstr "ใช้เวอร์ชันนี้ต่อจนถึงการเปิดครั้งถัดไป"
+
 msgid "Keep {}"
 msgstr "เก็บ {} ไว้"
 
 msgid "Language"
 msgstr "ภาษา"
+
+msgid "Later"
+msgstr "ภายหลัง"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "ให้ \"{}\" ขอควบคุมเครื่องเล่นนี้ได้อีกครั้ง"
@@ -1007,6 +1031,9 @@ msgstr "ยังไม่มีอะไรให้เพิ่ม"
 msgid "Nothing to go back to"
 msgstr "ไม่มีหน้าให้ย้อนกลับ"
 
+msgid "Nothing to go forward to"
+msgstr "ไม่มีหน้าให้ไปข้างหน้า"
+
 msgid "Nothing to play here"
 msgstr "ไม่มีอะไรให้เล่นที่นี่"
 
@@ -1045,6 +1072,9 @@ msgstr "เปิดหน้ากำลังเล่น"
 
 msgid "Open radio"
 msgstr "เปิดวิทยุ"
+
+msgid "Open release page"
+msgstr "เปิดหน้ารุ่นที่เผยแพร่"
 
 msgid "Open the album \"{}\""
 msgstr "เปิดอัลบั้ม \"{}\""
@@ -1646,6 +1676,9 @@ msgstr "ไม่มีหน้าสำรวจนี้"
 msgid "This folder is empty"
 msgstr "โฟลเดอร์นี้ว่างเปล่า"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "การติดตั้งนี้อัปเดตตัวเองไม่ได้ เปิดหน้ารุ่นที่เผยแพร่ในเบราว์เซอร์"
+
 msgid "This mix is no longer available"
 msgstr "มิกซ์นี้ไม่มีให้ใช้งานแล้ว"
 
@@ -1687,6 +1720,12 @@ msgstr "เปิดเสียง"
 
 msgid "Up next"
 msgstr "ถัดไป"
+
+msgid "Update and restart"
+msgstr "อัปเดตและรีสตาร์ต"
+
+msgid "Update failed: {}"
+msgstr "อัปเดตไม่สำเร็จ: {}"
 
 msgid "URL"
 msgstr "URL"

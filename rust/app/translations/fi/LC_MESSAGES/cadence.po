@@ -215,6 +215,9 @@ msgstr "Estetyt laitteet"
 msgid "by {}"
 msgstr "tekijä: {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} on saatavilla"
+
 msgid "Cancel"
 msgstr "Peruuta"
 
@@ -400,6 +403,9 @@ msgstr "Musiikkia ei voitu siirtää: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Kansion avaaminen epäonnistui: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Julkaisusivua ei voitu avata: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Musicin avaaminen epäonnistui: {}"
@@ -609,6 +615,12 @@ msgstr "Toista kaksoisnapsauttamalla"
 msgid "Double-click to play, drag to reorder"
 msgstr "Toista kaksoisnapsauttamalla, järjestä vetämällä"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Lataa versio {} ja käynnistä Cadence uudelleen; jono tallennetaan"
+
+msgid "Downloading update: {}%"
+msgstr "Ladataan päivitystä: {} %"
+
 msgid "Duration"
 msgstr "Kesto"
 
@@ -693,6 +705,9 @@ msgstr "Unohda {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Muoto, johon palvelin muuntaa. Koskee seuraavasta kappaleesta alkaen."
 
+msgid "Forward"
+msgstr "Eteenpäin"
+
 msgid "Gapless playback"
 msgstr "Katkoton toisto"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Asenna yt-dlp toistaaksesi YouTube-raitoja"
 
+msgid "Installing update..."
+msgstr "Asennetaan päivitystä..."
+
 msgid "Integrations"
 msgstr "Integraatiot"
 
@@ -786,11 +804,17 @@ msgstr "Pidä Cadence-kuvake toistosäätimineen valikkorivillä tai ilmoitusalu
 msgid "Keep this station in the favorites on this device"
 msgstr "Säilytä tämä asema suosikeissa tällä laitteella"
 
+msgid "Keep this version until the next launch"
+msgstr "Säilytä tämä versio seuraavaan käynnistykseen asti"
+
 msgid "Keep {}"
 msgstr "Säilytä {}"
 
 msgid "Language"
 msgstr "Kieli"
+
+msgid "Later"
+msgstr "Myöhemmin"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Anna laitteen \"{}\" pyytää taas tämän soittimen ohjausta"
@@ -1016,6 +1040,9 @@ msgstr "Ei vielä mitään lisättävää"
 msgid "Nothing to go back to"
 msgstr "Ei mitään, mihin palata"
 
+msgid "Nothing to go forward to"
+msgstr "Ei mitään, mihin siirtyä eteenpäin"
+
 msgid "Nothing to play here"
 msgstr "Täällä ei ole mitään toistettavaa"
 
@@ -1054,6 +1081,9 @@ msgstr "Avaa Nyt soi -näkymä"
 
 msgid "Open radio"
 msgstr "Avaa radio"
+
+msgid "Open release page"
+msgstr "Avaa julkaisusivu"
 
 msgid "Open the album \"{}\""
 msgstr "Avaa albumi \"{}\""
@@ -1658,6 +1688,9 @@ msgstr "Tätä Löydä-sivua ei ole olemassa"
 msgid "This folder is empty"
 msgstr "Tämä kansio on tyhjä"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Tämä asennus ei voi päivittää itseään; avaa julkaisusivu selaimessa"
+
 msgid "This mix is no longer available"
 msgstr "Tämä miksaus ei ole enää saatavilla"
 
@@ -1699,6 +1732,12 @@ msgstr "Poista mykistys"
 
 msgid "Up next"
 msgstr "Seuraavaksi"
+
+msgid "Update and restart"
+msgstr "Päivitä ja käynnistä uudelleen"
+
+msgid "Update failed: {}"
+msgstr "Päivitys epäonnistui: {}"
 
 msgid "URL"
 msgstr "URL"

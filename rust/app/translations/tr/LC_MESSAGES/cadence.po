@@ -215,6 +215,9 @@ msgstr "Yasaklı cihazlar"
 msgid "by {}"
 msgstr "Sahibi: {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} kullanılabilir"
+
 msgid "Cancel"
 msgstr "İptal"
 
@@ -400,6 +403,9 @@ msgstr "Müzik taşınamadı: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Klasör açılamadı: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Sürüm sayfası açılamadı: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Music açılamadı: {}"
@@ -609,6 +615,12 @@ msgstr "Çalmak için çift tıkla"
 msgid "Double-click to play, drag to reorder"
 msgstr "Çalmak için çift tıkla, yeniden sıralamak için sürükle"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "{} sürümünü indir ve Cadence'ı yeniden başlat; kuyruğunuz kaydedilir"
+
+msgid "Downloading update: {}%"
+msgstr "Güncelleme indiriliyor: %{}"
+
 msgid "Duration"
 msgstr "Süre"
 
@@ -693,6 +705,9 @@ msgstr "Unut: {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Sunucunun dönüştüreceği biçim. Sonraki şarkıdan itibaren geçerlidir."
 
+msgid "Forward"
+msgstr "İleri"
+
 msgid "Gapless playback"
 msgstr "Boşluksuz çalma"
 
@@ -744,6 +759,9 @@ msgstr "Çivit"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "YouTube parçalarını çalmak için yt-dlp'yi yükleyin"
 
+msgid "Installing update..."
+msgstr "Güncelleme yükleniyor..."
+
 msgid "Integrations"
 msgstr "Entegrasyonlar"
 
@@ -786,11 +804,17 @@ msgstr "Menü çubuğunda veya sistem tepsisinde oynatma denetimli bir Cadence s
 msgid "Keep this station in the favorites on this device"
 msgstr "Bu istasyonu bu cihazda favorilerde tut"
 
+msgid "Keep this version until the next launch"
+msgstr "Bir sonraki açılışa kadar bu sürümü koru"
+
 msgid "Keep {}"
 msgstr "Koru: {}"
 
 msgid "Language"
 msgstr "Dil"
+
+msgid "Later"
+msgstr "Sonra"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "\"{}\" yeniden bu oynatıcıyı kontrol etmeyi isteyebilsin"
@@ -1016,6 +1040,9 @@ msgstr "Henüz eklenecek bir şey yok"
 msgid "Nothing to go back to"
 msgstr "Geri dönülecek bir yer yok"
 
+msgid "Nothing to go forward to"
+msgstr "İleri gidilecek bir yer yok"
+
 msgid "Nothing to play here"
 msgstr "Burada çalınacak bir şey yok"
 
@@ -1054,6 +1081,9 @@ msgstr "Şimdi çalınanı aç"
 
 msgid "Open radio"
 msgstr "Radyoyu aç"
+
+msgid "Open release page"
+msgstr "Sürüm sayfasını aç"
 
 msgid "Open the album \"{}\""
 msgstr "\"{}\" albümünü aç"
@@ -1658,6 +1688,9 @@ msgstr "Bu Keşfet sayfası mevcut değil"
 msgid "This folder is empty"
 msgstr "Bu klasör boş"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Bu kurulum kendini güncelleyemez; sürüm sayfasını tarayıcıda açın"
+
 msgid "This mix is no longer available"
 msgstr "Bu mix artık kullanılamıyor"
 
@@ -1699,6 +1732,12 @@ msgstr "Sesi aç"
 
 msgid "Up next"
 msgstr "Sıradaki"
+
+msgid "Update and restart"
+msgstr "Güncelle ve yeniden başlat"
+
+msgid "Update failed: {}"
+msgstr "Güncelleme başarısız: {}"
 
 msgid "URL"
 msgstr "URL"

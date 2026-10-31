@@ -215,6 +215,9 @@ msgstr "Gesperrte Geräte"
 msgid "by {}"
 msgstr "von {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} ist verfügbar"
+
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -400,6 +403,9 @@ msgstr "Musik konnte nicht verschoben werden: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Verzeichnis konnte nicht geöffnet werden: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Die Release-Seite konnte nicht geöffnet werden: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Music konnte nicht geöffnet werden: {}"
@@ -609,6 +615,12 @@ msgstr "Doppelklick zum Abspielen"
 msgid "Double-click to play, drag to reorder"
 msgstr "Doppelklick zum Abspielen, ziehen zum Umsortieren"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Version {} herunterladen und Cadence neu starten; die Warteschlange wird gespeichert"
+
+msgid "Downloading update: {}%"
+msgstr "Update wird heruntergeladen: {} %"
+
 msgid "Duration"
 msgstr "Dauer"
 
@@ -693,6 +705,9 @@ msgstr "{} vergessen"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format, in das der Server umwandeln soll. Gilt ab dem nächsten Song."
 
+msgid "Forward"
+msgstr "Vorwärts"
+
 msgid "Gapless playback"
 msgstr "Lückenlose Wiedergabe"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Installiere yt-dlp, um YouTube-Titel abzuspielen"
 
+msgid "Installing update..."
+msgstr "Update wird installiert..."
+
 msgid "Integrations"
 msgstr "Integrationen"
 
@@ -786,11 +804,17 @@ msgstr "Ein Cadence-Symbol mit Wiedergabesteuerung in der Menüleiste oder im In
 msgid "Keep this station in the favorites on this device"
 msgstr "Diesen Sender auf diesem Gerät in den Favoriten behalten"
 
+msgid "Keep this version until the next launch"
+msgstr "Diese Version bis zum nächsten Start behalten"
+
 msgid "Keep {}"
 msgstr "{} behalten"
 
 msgid "Language"
 msgstr "Sprache"
+
+msgid "Later"
+msgstr "Später"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "\"{}\" wieder um die Steuerung dieses Players bitten lassen"
@@ -1016,6 +1040,9 @@ msgstr "Noch nichts zum Hinzufügen"
 msgid "Nothing to go back to"
 msgstr "Zurück ist nicht möglich"
 
+msgid "Nothing to go forward to"
+msgstr "Vorwärts ist nicht möglich"
+
 msgid "Nothing to play here"
 msgstr "Hier gibt es nichts abzuspielen"
 
@@ -1054,6 +1081,9 @@ msgstr "Wiedergabeansicht öffnen"
 
 msgid "Open radio"
 msgstr "Radio öffnen"
+
+msgid "Open release page"
+msgstr "Release-Seite öffnen"
 
 msgid "Open the album \"{}\""
 msgstr "Album \"{}\" öffnen"
@@ -1658,6 +1688,9 @@ msgstr "Diese Entdecken-Seite existiert nicht"
 msgid "This folder is empty"
 msgstr "Dieses Verzeichnis ist leer"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Diese Installation kann sich nicht selbst aktualisieren; Release-Seite im Browser öffnen"
+
 msgid "This mix is no longer available"
 msgstr "Dieser Mix ist nicht mehr verfügbar"
 
@@ -1699,6 +1732,12 @@ msgstr "Stummschaltung aufheben"
 
 msgid "Up next"
 msgstr "Als Nächstes"
+
+msgid "Update and restart"
+msgstr "Aktualisieren und neu starten"
+
+msgid "Update failed: {}"
+msgstr "Update fehlgeschlagen: {}"
 
 msgid "URL"
 msgstr "URL"

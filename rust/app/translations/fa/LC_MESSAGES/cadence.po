@@ -215,6 +215,9 @@ msgstr "دستگاه‌های مسدودشده"
 msgid "by {}"
 msgstr "توسط {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} در دسترس است"
+
 msgid "Cancel"
 msgstr "لغو"
 
@@ -400,6 +403,9 @@ msgstr "انتقال موسیقی ممکن نشد: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "باز کردن پوشه ممکن نشد: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "صفحهٔ انتشار باز نشد: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "باز کردن YouTube Music ممکن نشد: {}"
@@ -609,6 +615,12 @@ msgstr "برای پخش دوبار کلیک کنید"
 msgid "Double-click to play, drag to reorder"
 msgstr "برای پخش دوبار کلیک کنید، برای تغییر ترتیب بکشید"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "دانلود نسخهٔ {} و راه‌اندازی مجدد Cadence؛ صف شما ذخیره می‌شود"
+
+msgid "Downloading update: {}%"
+msgstr "در حال دانلود به‌روزرسانی: {}%"
+
 msgid "Duration"
 msgstr "مدت"
 
@@ -693,6 +705,9 @@ msgstr "فراموش کردن {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "قالبی که سرور باید به آن تبدیل کند. از آهنگ بعدی اعمال می‌شود."
 
+msgid "Forward"
+msgstr "جلو"
+
 msgid "Gapless playback"
 msgstr "پخش بی‌وقفه"
 
@@ -744,6 +759,9 @@ msgstr "نیلی"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "برای پخش قطعه‌های YouTube، yt-dlp را نصب کنید"
 
+msgid "Installing update..."
+msgstr "در حال نصب به‌روزرسانی..."
+
 msgid "Integrations"
 msgstr "یکپارچه‌سازی‌ها"
 
@@ -786,11 +804,17 @@ msgstr "نگه داشتن نماد Cadence با کنترل‌های پخش در 
 msgid "Keep this station in the favorites on this device"
 msgstr "نگه‌داشتن این ایستگاه در علاقه‌مندی‌ها روی این دستگاه"
 
+msgid "Keep this version until the next launch"
+msgstr "این نسخه را تا اجرای بعدی نگه دار"
+
 msgid "Keep {}"
 msgstr "نگه داشتن {}"
 
 msgid "Language"
 msgstr "زبان"
+
+msgid "Later"
+msgstr "بعداً"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "اجازه به \"{}\" برای درخواست دوباره کنترل این پخش‌کننده"
@@ -1016,6 +1040,9 @@ msgstr "هنوز چیزی برای افزودن نیست"
 msgid "Nothing to go back to"
 msgstr "جایی برای بازگشت نیست"
 
+msgid "Nothing to go forward to"
+msgstr "جایی برای رفتن به جلو نیست"
+
 msgid "Nothing to play here"
 msgstr "چیزی برای پخش اینجا نیست"
 
@@ -1054,6 +1081,9 @@ msgstr "باز کردن صفحه‌ی در حال پخش"
 
 msgid "Open radio"
 msgstr "باز کردن رادیو"
+
+msgid "Open release page"
+msgstr "باز کردن صفحهٔ انتشار"
 
 msgid "Open the album \"{}\""
 msgstr "باز کردن آلبوم \"{}\""
@@ -1658,6 +1688,9 @@ msgstr "این صفحه‌ی کاوش وجود ندارد"
 msgid "This folder is empty"
 msgstr "این پوشه خالی است"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "این نصب نمی‌تواند خودش را به‌روز کند؛ صفحهٔ انتشار را در مرورگر باز کنید"
+
 msgid "This mix is no longer available"
 msgstr "این میکس دیگر در دسترس نیست"
 
@@ -1699,6 +1732,12 @@ msgstr "صدادار کردن"
 
 msgid "Up next"
 msgstr "بعدی در صف"
+
+msgid "Update and restart"
+msgstr "به‌روزرسانی و راه‌اندازی مجدد"
+
+msgid "Update failed: {}"
+msgstr "به‌روزرسانی ناموفق بود: {}"
 
 msgid "URL"
 msgstr "URL"

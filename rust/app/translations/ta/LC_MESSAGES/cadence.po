@@ -215,6 +215,9 @@ msgstr "தடைசெய்த சாதனங்கள்"
 msgid "by {}"
 msgstr "{} உருவாக்கியது"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} கிடைக்கிறது"
+
 msgid "Cancel"
 msgstr "ரத்துசெய்"
 
@@ -400,6 +403,9 @@ msgstr "இசையை நகர்த்த முடியவில்லை:
 
 msgid "Could not open the folder: {}"
 msgstr "கோப்புறையைத் திறக்க முடியவில்லை: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "வெளியீட்டுப் பக்கத்தைத் திறக்க முடியவில்லை: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Music ஐத் திறக்க முடியவில்லை: {}"
@@ -609,6 +615,12 @@ msgstr "இயக்க இருமுறை கிளிக் செய்ய
 msgid "Double-click to play, drag to reorder"
 msgstr "இயக்க இருமுறை கிளிக் செய்யவும், வரிசையை மாற்ற இழுக்கவும்"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "பதிப்பு {} ஐப் பதிவிறக்கி Cadence ஐ மறுதொடக்கம் செய்யவும்; உங்கள் வரிசை சேமிக்கப்படும்"
+
+msgid "Downloading update: {}%"
+msgstr "புதுப்பிப்பைப் பதிவிறக்குகிறது: {}%"
+
 msgid "Duration"
 msgstr "கால அளவு"
 
@@ -693,6 +705,9 @@ msgstr "{}-ஐ மற"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "சேவையகம் டிரான்ஸ்கோட் செய்ய வேண்டிய வடிவம். அடுத்த பாடலிலிருந்து பொருந்தும்."
 
+msgid "Forward"
+msgstr "முன்செல்"
+
 msgid "Gapless playback"
 msgstr "இடைவெளியற்ற இயக்கம்"
 
@@ -744,6 +759,9 @@ msgstr "கருநீலம்"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "YouTube தடங்களை இயக்க yt-dlp ஐ நிறுவவும்"
 
+msgid "Installing update..."
+msgstr "புதுப்பிப்பை நிறுவுகிறது..."
+
 msgid "Integrations"
 msgstr "ஒருங்கிணைப்புகள்"
 
@@ -786,11 +804,17 @@ msgstr "மெனு பட்டியில் அல்லது கணின
 msgid "Keep this station in the favorites on this device"
 msgstr "இந்தச் சாதனத்தில் இந்த நிலையத்தைப் பிடித்தவையில் வைத்திரு"
 
+msgid "Keep this version until the next launch"
+msgstr "அடுத்த தொடக்கம் வரை இந்தப் பதிப்பை வைத்திருக்கவும்"
+
 msgid "Keep {}"
 msgstr "{}-ஐ வைத்திரு"
 
 msgid "Language"
 msgstr "மொழி"
+
+msgid "Later"
+msgstr "பிறகு"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "\"{}\" மீண்டும் இந்த பிளேயரைக் கட்டுப்படுத்தக் கேட்க அனுமதி"
@@ -1016,6 +1040,9 @@ msgstr "இன்னும் சேர்க்க எதுவும் இல
 msgid "Nothing to go back to"
 msgstr "திரும்பிச் செல்ல எதுவும் இல்லை"
 
+msgid "Nothing to go forward to"
+msgstr "முன்னே செல்ல எதுவும் இல்லை"
+
 msgid "Nothing to play here"
 msgstr "இங்கே இயக்க எதுவும் இல்லை"
 
@@ -1054,6 +1081,9 @@ msgstr "இப்போது இயங்குவதைத் திற"
 
 msgid "Open radio"
 msgstr "வானொலியைத் திற"
+
+msgid "Open release page"
+msgstr "வெளியீட்டுப் பக்கத்தைத் திற"
 
 msgid "Open the album \"{}\""
 msgstr "\"{}\" ஆல்பத்தைத் திற"
@@ -1658,6 +1688,9 @@ msgstr "இந்தக் கண்டறி பக்கம் இல்லை
 msgid "This folder is empty"
 msgstr "இந்தக் கோப்புறை காலியாக உள்ளது"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "இந்த நிறுவல் தன்னைப் புதுப்பிக்க முடியாது; உலாவியில் வெளியீட்டுப் பக்கத்தைத் திறக்கவும்"
+
 msgid "This mix is no longer available"
 msgstr "இந்தக் கலவை இனி கிடைக்காது"
 
@@ -1699,6 +1732,12 @@ msgstr "ஒலி இயக்கு"
 
 msgid "Up next"
 msgstr "அடுத்து வருபவை"
+
+msgid "Update and restart"
+msgstr "புதுப்பித்து மறுதொடக்கம் செய்"
+
+msgid "Update failed: {}"
+msgstr "புதுப்பிப்பு தோல்வியடைந்தது: {}"
 
 msgid "URL"
 msgstr "URL"

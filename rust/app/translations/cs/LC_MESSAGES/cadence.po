@@ -221,6 +221,9 @@ msgstr "Zablokovaná zařízení"
 msgid "by {}"
 msgstr "autor: {}"
 
+msgid "Cadence {} is available"
+msgstr "Je k dispozici Cadence {}"
+
 msgid "Cancel"
 msgstr "Zrušit"
 
@@ -406,6 +409,9 @@ msgstr "Nepodařilo se přesunout hudbu: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Nelze otevřít složku: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Stránku vydání se nepodařilo otevřít: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Nelze otevřít YouTube Music: {}"
@@ -617,6 +623,12 @@ msgstr "Dvojitým kliknutím přehrajete"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dvojitým kliknutím přehrajete, přetažením změníte pořadí"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Stáhnout verzi {} a restartovat Cadence; fronta se uloží"
+
+msgid "Downloading update: {}%"
+msgstr "Stahování aktualizace: {} %"
+
 msgid "Duration"
 msgstr "Délka"
 
@@ -701,6 +713,9 @@ msgstr "Zapomenout {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Formát, do kterého má server překódovat. Platí od další skladby."
 
+msgid "Forward"
+msgstr "Vpřed"
+
 msgid "Gapless playback"
 msgstr "Přehrávání bez mezer"
 
@@ -752,6 +767,9 @@ msgstr "Indigová"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Pro přehrávání skladeb z YouTube nainstalujte yt-dlp"
 
+msgid "Installing update..."
+msgstr "Instalace aktualizace..."
+
 msgid "Integrations"
 msgstr "Integrace"
 
@@ -794,11 +812,17 @@ msgstr "Ikona Cadence s ovládáním přehrávání v řádku nabídek nebo v oz
 msgid "Keep this station in the favorites on this device"
 msgstr "Ponechat tuto stanici v oblíbených na tomto zařízení"
 
+msgid "Keep this version until the next launch"
+msgstr "Ponechat tuto verzi do příštího spuštění"
+
 msgid "Keep {}"
 msgstr "Ponechat {}"
 
 msgid "Language"
 msgstr "Jazyk"
+
+msgid "Later"
+msgstr "Později"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Povolit \"{}\" znovu požádat o ovládání tohoto přehrávače"
@@ -1025,6 +1049,9 @@ msgstr "Zatím není co přidat"
 msgid "Nothing to go back to"
 msgstr "Není kam se vrátit"
 
+msgid "Nothing to go forward to"
+msgstr "Není kam jít vpřed"
+
 msgid "Nothing to play here"
 msgstr "Není tu co přehrát"
 
@@ -1063,6 +1090,9 @@ msgstr "Otevřít Právě hraje"
 
 msgid "Open radio"
 msgstr "Otevřít rádio"
+
+msgid "Open release page"
+msgstr "Otevřít stránku vydání"
 
 msgid "Open the album \"{}\""
 msgstr "Otevřít album „{}“"
@@ -1670,6 +1700,9 @@ msgstr "Tato stránka sekce Objevovat neexistuje"
 msgid "This folder is empty"
 msgstr "Tato složka je prázdná"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Tato instalace se nemůže aktualizovat sama; otevřete stránku vydání v prohlížeči"
+
 msgid "This mix is no longer available"
 msgstr "Tento mix už není k dispozici"
 
@@ -1711,6 +1744,12 @@ msgstr "Zrušit ztlumení"
 
 msgid "Up next"
 msgstr "Následuje"
+
+msgid "Update and restart"
+msgstr "Aktualizovat a restartovat"
+
+msgid "Update failed: {}"
+msgstr "Aktualizace se nezdařila: {}"
 
 msgid "URL"
 msgstr "URL"

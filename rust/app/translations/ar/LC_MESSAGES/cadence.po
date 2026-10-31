@@ -239,6 +239,9 @@ msgstr "الأجهزة المحظورة"
 msgid "by {}"
 msgstr "بواسطة {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} متاح"
+
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -424,6 +427,9 @@ msgstr "تعذر نقل الموسيقى: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "تعذر فتح المجلد: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "تعذر فتح صفحة الإصدار: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "تعذر فتح YouTube Music: {}"
@@ -641,6 +647,12 @@ msgstr "انقر نقرًا مزدوجًا للتشغيل"
 msgid "Double-click to play, drag to reorder"
 msgstr "انقر نقرًا مزدوجًا للتشغيل، واسحب لإعادة الترتيب"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "تنزيل الإصدار {} وإعادة تشغيل Cadence؛ سيتم حفظ قائمة الانتظار"
+
+msgid "Downloading update: {}%"
+msgstr "جارٍ تنزيل التحديث: {}%"
+
 msgid "Duration"
 msgstr "المدة"
 
@@ -725,6 +737,9 @@ msgstr "نسيان {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "الصيغة التي يحوّل الخادم الترميز إليها. يُطبَّق بدءًا من الأغنية التالية."
 
+msgid "Forward"
+msgstr "للأمام"
+
 msgid "Gapless playback"
 msgstr "تشغيل دون فواصل"
 
@@ -776,6 +791,9 @@ msgstr "نيلي"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "ثبّت yt-dlp لتشغيل مقاطع YouTube"
 
+msgid "Installing update..."
+msgstr "جارٍ تثبيت التحديث..."
+
 msgid "Integrations"
 msgstr "التكاملات"
 
@@ -818,11 +836,17 @@ msgstr "إبقاء أيقونة Cadence مع أزرار التشغيل في شر
 msgid "Keep this station in the favorites on this device"
 msgstr "الاحتفاظ بهذه المحطة في المفضلة على هذا الجهاز"
 
+msgid "Keep this version until the next launch"
+msgstr "الاحتفاظ بهذا الإصدار حتى التشغيل التالي"
+
 msgid "Keep {}"
 msgstr "الإبقاء على {}"
 
 msgid "Language"
 msgstr "اللغة"
+
+msgid "Later"
+msgstr "لاحقًا"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "السماح لـ \"{}\" بطلب التحكم في هذا المشغل مجددًا"
@@ -1052,6 +1076,9 @@ msgstr "لا شيء لإضافته بعد"
 msgid "Nothing to go back to"
 msgstr "لا يوجد ما يمكن الرجوع إليه"
 
+msgid "Nothing to go forward to"
+msgstr "لا يوجد ما يمكن التقدم إليه"
+
 msgid "Nothing to play here"
 msgstr "لا يوجد ما يمكن تشغيله هنا"
 
@@ -1090,6 +1117,9 @@ msgstr "فتح شاشة التشغيل الحالي"
 
 msgid "Open radio"
 msgstr "فتح الراديو"
+
+msgid "Open release page"
+msgstr "فتح صفحة الإصدار"
 
 msgid "Open the album \"{}\""
 msgstr "فتح الألبوم \"{}\""
@@ -1706,6 +1736,9 @@ msgstr "صفحة الاستكشاف هذه غير موجودة"
 msgid "This folder is empty"
 msgstr "هذا المجلد فارغ"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "لا يمكن لهذا التثبيت تحديث نفسه؛ افتح صفحة الإصدار في المتصفح"
+
 msgid "This mix is no longer available"
 msgstr "لم يعد هذا المزيج متاحًا"
 
@@ -1747,6 +1780,12 @@ msgstr "إلغاء كتم الصوت"
 
 msgid "Up next"
 msgstr "التالي في القائمة"
+
+msgid "Update and restart"
+msgstr "تحديث وإعادة التشغيل"
+
+msgid "Update failed: {}"
+msgstr "فشل التحديث: {}"
 
 msgid "URL"
 msgstr "عنوان URL"

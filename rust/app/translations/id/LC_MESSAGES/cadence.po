@@ -209,6 +209,9 @@ msgstr "Perangkat yang diblokir"
 msgid "by {}"
 msgstr "oleh {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} tersedia"
+
 msgid "Cancel"
 msgstr "Batal"
 
@@ -394,6 +397,9 @@ msgstr "Tidak dapat memindahkan musik: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Tidak dapat membuka folder: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Tidak dapat membuka halaman rilis: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Tidak dapat membuka YouTube Music: {}"
@@ -601,6 +607,12 @@ msgstr "Klik dua kali untuk memutar"
 msgid "Double-click to play, drag to reorder"
 msgstr "Klik dua kali untuk memutar, seret untuk mengubah urutan"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Unduh versi {} dan mulai ulang Cadence; antrean Anda disimpan"
+
+msgid "Downloading update: {}%"
+msgstr "Mengunduh pembaruan: {}%"
+
 msgid "Duration"
 msgstr "Durasi"
 
@@ -685,6 +697,9 @@ msgstr "Lupakan {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format tujuan transkode server. Berlaku mulai lagu berikutnya."
 
+msgid "Forward"
+msgstr "Maju"
+
 msgid "Gapless playback"
 msgstr "Pemutaran tanpa jeda"
 
@@ -736,6 +751,9 @@ msgstr "Nila"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Instal yt-dlp untuk memutar trek YouTube"
 
+msgid "Installing update..."
+msgstr "Memasang pembaruan..."
+
 msgid "Integrations"
 msgstr "Integrasi"
 
@@ -778,11 +796,17 @@ msgstr "Tampilkan ikon Cadence dengan kontrol pemutaran di bilah menu atau baki 
 msgid "Keep this station in the favorites on this device"
 msgstr "Simpan stasiun ini di favorit pada perangkat ini"
 
+msgid "Keep this version until the next launch"
+msgstr "Pertahankan versi ini sampai peluncuran berikutnya"
+
 msgid "Keep {}"
 msgstr "Pertahankan {}"
 
 msgid "Language"
 msgstr "Bahasa"
+
+msgid "Later"
+msgstr "Nanti"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Izinkan \"{}\" meminta kontrol pemutar ini lagi"
@@ -1007,6 +1031,9 @@ msgstr "Belum ada yang bisa ditambahkan"
 msgid "Nothing to go back to"
 msgstr "Tidak ada halaman sebelumnya"
 
+msgid "Nothing to go forward to"
+msgstr "Tidak ada halaman berikutnya"
+
 msgid "Nothing to play here"
 msgstr "Tidak ada yang bisa diputar di sini"
 
@@ -1045,6 +1072,9 @@ msgstr "Buka Sedang diputar"
 
 msgid "Open radio"
 msgstr "Buka radio"
+
+msgid "Open release page"
+msgstr "Buka halaman rilis"
 
 msgid "Open the album \"{}\""
 msgstr "Buka album \"{}\""
@@ -1646,6 +1676,9 @@ msgstr "Halaman Jelajahi ini tidak ada"
 msgid "This folder is empty"
 msgstr "Folder ini kosong"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Pemasangan ini tidak dapat memperbarui dirinya sendiri; buka halaman rilis di peramban"
+
 msgid "This mix is no longer available"
 msgstr "Mix ini sudah tidak tersedia"
 
@@ -1687,6 +1720,12 @@ msgstr "Bunyikan"
 
 msgid "Up next"
 msgstr "Selanjutnya"
+
+msgid "Update and restart"
+msgstr "Perbarui dan mulai ulang"
+
+msgid "Update failed: {}"
+msgstr "Pembaruan gagal: {}"
 
 msgid "URL"
 msgstr "URL"
