@@ -1781,6 +1781,9 @@ msgstr "நீங்கள் இங்கே உள்ளீர்கள்: {}
 msgid "Your mixes"
 msgstr "உங்கள் கலவைகள்"
 
+msgid "Your session expired. Log in again."
+msgstr "உங்கள் அமர்வு காலாவதியானது. மீண்டும் உள்நுழையவும்."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "இந்தச் சேவையகத்தில் பகிர உங்கள் பயனருக்கு அனுமதி இல்லை"
 

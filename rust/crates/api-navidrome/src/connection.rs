@@ -5,7 +5,7 @@ use cadence_api_subsonic::SubsonicServer;
 use cadence_core::model::ServerConfig;
 use cadence_core::web_url::trimmed_base_url;
 use reqwest::StatusCode;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, watch};
 
 use crate::NavidromeServer;
 use crate::http::{NAVIDROME_IDENTITY, decode_error, query_string};
@@ -60,14 +60,18 @@ impl NavidromeServer {
             subsonic_auth.clone(),
             NAVIDROME_IDENTITY,
         )?;
+        let session_token = nd_token.clone().filter(|token| !token.is_empty());
+        let password = password.clone().filter(|password| !password.is_empty());
+        let is_session_lost = session_token.is_none() && password.is_none();
         Ok(Self {
             config,
             base_url,
             http_client,
             subsonic_auth,
-            session_token: RwLock::new(nd_token.clone().filter(|token| !token.is_empty())),
-            password: RwLock::new(password.clone().filter(|password| !password.is_empty())),
+            session_token: RwLock::new(session_token),
+            password: RwLock::new(password),
             session_renewal: Mutex::new(()),
+            session_lost: watch::Sender::new(is_session_lost),
             subsonic_server,
         })
     }
@@ -81,7 +85,10 @@ impl NavidromeServer {
         if let Some(token) = self.current_session_token() {
             return Some(token);
         }
-        let password = self.saved_password()?;
+        let Some(password) = self.saved_password() else {
+            self.report_session_state();
+            return None;
+        };
         match request_session(&self.http_client, &self.config, &password).await {
             Ok(auth) => {
                 self.replace_session_token(Some(auth.token.clone()));
@@ -90,6 +97,7 @@ impl NavidromeServer {
             Err(error) => {
                 tracing::warn!(%error, "renewing the Navidrome session failed");
                 self.forget_password_if_rejected(&error);
+                self.report_session_state();
                 None
             }
         }

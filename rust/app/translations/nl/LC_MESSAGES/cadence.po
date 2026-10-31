@@ -1781,6 +1781,9 @@ msgstr "Je bent hier: {}"
 msgid "Your mixes"
 msgstr "Jouw mixen"
 
+msgid "Your session expired. Log in again."
+msgstr "Je sessie is verlopen. Log opnieuw in."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Je gebruiker mag op deze server niet delen"
 

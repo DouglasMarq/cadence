@@ -22,6 +22,13 @@ impl MusicServer for FakeServer {
         self.current_credential()
     }
 
+    async fn session_lost(&self) {
+        let mut is_lost = self.session_lost.subscribe();
+        if is_lost.wait_for(|is_lost| *is_lost).await.is_err() {
+            tracing::debug!("the demo server is gone, it can no longer lose its session");
+        }
+    }
+
     async fn ping(&self) -> Result<()> {
         Ok(())
     }

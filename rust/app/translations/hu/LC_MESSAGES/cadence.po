@@ -1781,6 +1781,9 @@ msgstr "Itt vagy: {}"
 msgid "Your mixes"
 msgstr "Mixeid"
 
+msgid "Your session expired. Log in again."
+msgstr "A munkamenet lejárt. Jelentkezzen be újra."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "A felhasználódnak nincs megosztási joga ezen a szerveren"
 

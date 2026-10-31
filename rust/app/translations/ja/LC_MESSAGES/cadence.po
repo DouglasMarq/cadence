@@ -1769,6 +1769,9 @@ msgstr "現在の場所: {}"
 msgid "Your mixes"
 msgstr "あなたのミックス"
 
+msgid "Your session expired. Log in again."
+msgstr "セッションの有効期限が切れました。もう一度ログインしてください。"
+
 msgid "Your user is not allowed to share on this server"
 msgstr "このサーバーでは、このユーザーに共有の権限がありません"
 

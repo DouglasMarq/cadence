@@ -1781,6 +1781,9 @@ msgstr "Buradasınız: {}"
 msgid "Your mixes"
 msgstr "Mix'lerin"
 
+msgid "Your session expired. Log in again."
+msgstr "Oturumunuzun süresi doldu. Yeniden giriş yapın."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Kullanıcınızın bu sunucuda paylaşım izni yok"
 

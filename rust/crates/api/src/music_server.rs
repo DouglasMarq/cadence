@@ -19,6 +19,10 @@ pub trait MusicServer: Send + Sync {
         None
     }
 
+    async fn session_lost(&self) {
+        std::future::pending::<()>().await;
+    }
+
     async fn ping(&self) -> Result<()>;
 
     async fn song_list(&self, query: &SongListQuery, paging: Paging) -> Result<Page<Song>>;

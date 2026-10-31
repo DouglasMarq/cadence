@@ -30,6 +30,10 @@ impl FakeServer {
         }
     }
 
+    pub fn lose_session(&self) {
+        self.session_lost.send_replace(true);
+    }
+
     pub fn scrobbles(&self) -> Vec<ScrobbleCall> {
         self.scrobbles
             .lock()

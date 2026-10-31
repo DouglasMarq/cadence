@@ -2,6 +2,7 @@ use std::sync::Mutex;
 
 use cadence_api::Credential;
 use cadence_core::model::ServerConfig;
+use tokio::sync::watch;
 
 use super::artist_albums::ArtistAlbums;
 use super::library::DemoLibrary;
@@ -26,6 +27,7 @@ pub struct FakeServer {
     pub(super) scan: DemoScan,
     pub(super) shares: DemoShares,
     pub(super) radio: Mutex<DemoRadio>,
+    pub(super) session_lost: watch::Sender<bool>,
 }
 
 impl FakeServer {
@@ -43,6 +45,7 @@ impl FakeServer {
             scan: DemoScan::default(),
             shares: DemoShares::default(),
             radio: Mutex::default(),
+            session_lost: watch::Sender::new(false),
         }
     }
 

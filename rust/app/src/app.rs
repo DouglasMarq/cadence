@@ -211,9 +211,9 @@ fn restored_login(context: &Context, settings: &Settings, mode: Mode) -> Result<
     Ok(Some((config, server)))
 }
 
-fn show_restored_session(window: &AppWindow, restored: Result<RestoredLogin>) {
+fn show_restored_session(window: &AppWindow, context: &Context, restored: Result<RestoredLogin>) {
     match restored {
-        Ok(Some((_, server))) => login::enter_main(window, &server),
+        Ok(Some((_, server))) => login::open_main(window, context, &server),
         Ok(None) => login::show_login(window, ""),
         Err(error) => login::show_login(window, &format!("{error:#}")),
     }
@@ -246,7 +246,7 @@ fn restore_session(app: &RunningApp) {
             );
         }
         on_ui(&weak_window, move |window| {
-            show_restored_session(window, restored);
+            show_restored_session(window, &context, restored);
         });
     });
 }

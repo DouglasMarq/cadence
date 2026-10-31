@@ -1781,6 +1781,9 @@ msgstr "Hemen zaude: {}"
 msgid "Your mixes"
 msgstr "Zure nahasketak"
 
+msgid "Your session expired. Log in again."
+msgstr "Saioa iraungi da. Hasi saioa berriro."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Zure erabiltzaileak ez du baimenik zerbitzari honetan partekatzeko"
 

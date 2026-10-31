@@ -65,12 +65,50 @@ pub fn enter_main(window: &AppWindow, server: &Arc<dyn MusicServer>) {
     tracks::refresh(window);
 }
 
+pub fn open_main(window: &AppWindow, context: &Context, server: &Arc<dyn MusicServer>) {
+    enter_main(window, server);
+    watch_session(window, context, server);
+}
+
+pub fn watch_session(window: &AppWindow, context: &Context, server: &Arc<dyn MusicServer>) {
+    let weak = window.as_weak();
+    let context = context.clone();
+    let server = Arc::clone(server);
+    let work = context.session.background_work();
+    context.runtime.clone().spawn(async move {
+        if work.run(server.session_lost()).await.is_some() {
+            on_ui(&weak, move |window| {
+                leave_lost_session(window, &context, &server);
+            });
+        }
+    });
+}
+
+fn leave_lost_session(window: &AppWindow, context: &Context, server: &Arc<dyn MusicServer>) {
+    let is_current = context
+        .session
+        .get()
+        .is_some_and(|current| Arc::ptr_eq(&current, server));
+    if !is_current {
+        return;
+    }
+    context.send(Command::RemoveServer(server.config().id.clone()));
+    context.session.set(None);
+    window.global::<AppState>().set_server_name("".into());
+    show_login(window, &tr!("Your session expired. Log in again."));
+}
+
 pub fn show_login(window: &AppWindow, error: &str) {
     window.global::<LoginState>().set_error(error.into());
     window.global::<AppState>().set_page(Page::Login);
 }
 
-fn finish(window: &slint::Weak<AppWindow>, result: Result<Arc<dyn MusicServer>>) {
+fn finish(
+    window: &slint::Weak<AppWindow>,
+    context: &Context,
+    result: Result<Arc<dyn MusicServer>>,
+) {
+    let context = context.clone();
     on_ui(window, move |window| {
         let login = window.global::<LoginState>();
         login.set_is_busy(false);
@@ -78,7 +116,7 @@ fn finish(window: &slint::Weak<AppWindow>, result: Result<Arc<dyn MusicServer>>)
             Ok(server) => {
                 login.set_password("".into());
                 login.set_error("".into());
-                enter_main(window, &server);
+                open_main(window, &context, &server);
             }
             Err(error) => login.set_error(format!("{error:#}").into()),
         }
@@ -129,7 +167,7 @@ fn install_login(window: &AppWindow, context: &Context) {
         let weak = weak.clone();
         login_context.runtime.spawn(async move {
             let result = login(&context, config, password).await;
-            finish(&weak, result);
+            finish(&weak, &context, result);
         });
     });
 }
@@ -217,6 +255,48 @@ mod tests {
             panic!("expected Connected");
         };
         assert_eq!((connected, credential), (config, None));
+    }
+
+    #[test]
+    fn given_a_lost_session_when_the_app_is_open_then_it_logs_out_and_asks_for_the_login() {
+        let server = Arc::new(FakeServer::new(3));
+        let dyn_server: Arc<dyn MusicServer> = Arc::clone(&server) as Arc<dyn MusicServer>;
+        let Some(view) = TestWindow::open(Arc::clone(&dyn_server)) else {
+            return;
+        };
+        watch_session(&view.app, &view.context, &dyn_server);
+
+        server.lose_session();
+
+        assert!(view.pump(|| view.app.global::<AppState>().get_page() == Page::Login));
+        assert_eq!(
+            view.app.global::<LoginState>().get_error(),
+            "Your session expired. Log in again."
+        );
+        assert!(view.context.session.get().is_none());
+        assert_eq!(view.app.global::<AppState>().get_server_name(), "");
+        let commands = std::iter::from_fn(|| view.next_command());
+        let removed_ids: Vec<String> = commands
+            .filter_map(|command| match command {
+                Command::RemoveServer(id) => Some(id),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(removed_ids, [server.config().id.clone()]);
+    }
+
+    #[test]
+    fn given_another_server_is_open_when_the_old_one_loses_its_session_then_nothing_changes() {
+        let server = Arc::new(FakeServer::new(3));
+        let dyn_server: Arc<dyn MusicServer> = Arc::clone(&server) as Arc<dyn MusicServer>;
+        let Some(view) = TestWindow::open(Arc::new(FakeServer::new(4))) else {
+            return;
+        };
+
+        leave_lost_session(&view.app, &view.context, &dyn_server);
+
+        assert_eq!(view.app.global::<AppState>().get_page(), Page::Main);
+        assert!(view.context.session.get().is_some());
     }
 
     fn open_login() -> Option<TestWindow> {

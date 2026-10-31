@@ -22,3 +22,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Navidrome: an expired session no longer leaves the app on the Subsonic API, where tracks ignore the chosen order and one-letter searches find nothing. The password is now saved in the system keyring and the session renews on its own. Logins saved by earlier versions have no password, so log in once more to enable this.
 - Navidrome: the search page finds matches for a single letter.
+- Navidrome: when a session expires and cannot be renewed, Cadence logs out and asks for the login instead of carrying on with sorting and search broken.

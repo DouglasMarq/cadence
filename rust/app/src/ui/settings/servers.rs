@@ -43,7 +43,7 @@ pub(super) fn switch_server(scope: &SettingsScope, id: SharedString) {
             login::enter_session(&context, server, login::Connection::restored(config));
         }
         on_ui(&weak_window, move |window| {
-            show_switch_result(window, result);
+            show_switch_result(window, &context, result);
         });
     });
 }
@@ -59,11 +59,11 @@ async fn restore_in_background(
         .and_then(|restore_result| restore_result)
 }
 
-fn show_switch_result(window: &AppWindow, result: Result<Arc<dyn MusicServer>>) {
+fn show_switch_result(window: &AppWindow, context: &Context, result: Result<Arc<dyn MusicServer>>) {
     let state = window.global::<SettingsState>();
     match result {
         Ok(server) => {
-            login::enter_main(window, &server);
+            login::open_main(window, context, &server);
             state.invoke_load("".into());
         }
         Err(error) => {

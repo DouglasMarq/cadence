@@ -1793,6 +1793,9 @@ msgstr "Jūs esat šeit: {}"
 msgid "Your mixes"
 msgstr "Tavi miksi"
 
+msgid "Your session expired. Log in again."
+msgstr "Jūsu sesija ir beigusies. Piesakieties vēlreiz."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Jūsu lietotājam nav atļauts kopīgot šajā serverī"
 

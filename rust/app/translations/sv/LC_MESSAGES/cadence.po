@@ -1781,6 +1781,9 @@ msgstr "Du är här: {}"
 msgid "Your mixes"
 msgstr "Dina mixar"
 
+msgid "Your session expired. Log in again."
+msgstr "Din session har gått ut. Logga in igen."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Din användare får inte dela på den här servern"
 

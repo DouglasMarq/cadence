@@ -1781,6 +1781,9 @@ msgstr "Olet tässä: {}"
 msgid "Your mixes"
 msgstr "Omat miksauksesi"
 
+msgid "Your session expired. Log in again."
+msgstr "Istuntosi on vanhentunut. Kirjaudu uudelleen sisään."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Käyttäjälläsi ei ole oikeutta jakaa tällä palvelimella"
 

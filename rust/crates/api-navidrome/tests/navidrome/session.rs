@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use cadence_api::{ApiError, Credential, MusicServer};
 use cadence_api_navidrome::NavidromeServer;
 use cadence_core::model::{Paging, SongListQuery};
@@ -8,6 +10,8 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 use crate::support::{
     SUBSONIC_AUTH, config, mount_ping, native_song_json, server, subsonic_failed, subsonic_ok,
 };
+
+const SESSION_LOSS_WAIT: Duration = Duration::from_millis(100);
 
 async fn mount_login(mock: &MockServer) {
     Mock::given(method("POST"))
@@ -416,4 +420,75 @@ async fn given_a_login_saved_by_an_older_version_when_it_is_read_then_it_has_no_
             password: None,
         }
     );
+}
+
+async fn wait_for_session_loss(server: &NavidromeServer) {
+    let waited = tokio::time::timeout(SESSION_LOSS_WAIT, server.session_lost()).await;
+    assert!(waited.is_ok(), "the session should be reported as lost");
+}
+
+async fn assert_session_still_usable(server: &NavidromeServer) {
+    let waited = tokio::time::timeout(SESSION_LOSS_WAIT, server.session_lost()).await;
+    assert!(
+        waited.is_err(),
+        "the session should not be reported as lost"
+    );
+}
+
+#[tokio::test]
+async fn given_a_refused_password_when_renewing_then_the_session_is_reported_as_lost() {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_expired_song_list(&mock).await;
+    mount_renewal(&mock, ResponseTemplate::new(401), 1).await;
+    mount_subsonic_song_search(&mock, 1).await;
+    let server = server_with_saved_password(&mock, Some("expired"));
+    assert_session_still_usable(&server).await;
+
+    server
+        .song_list(&SongListQuery::default(), first_songs())
+        .await
+        .expect("songs from subsonic");
+
+    wait_for_session_loss(&server).await;
+}
+
+#[tokio::test]
+async fn given_a_rejected_token_without_a_password_when_listing_then_the_session_is_reported_as_lost()
+ {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_expired_song_list(&mock).await;
+    mount_subsonic_song_search(&mock, 1).await;
+    let server = server(&mock, Some("expired"));
+
+    server
+        .song_list(&SongListQuery::default(), first_songs())
+        .await
+        .expect("songs from subsonic");
+
+    wait_for_session_loss(&server).await;
+}
+
+#[tokio::test]
+async fn given_a_saved_login_without_token_or_password_when_restored_then_the_session_is_lost() {
+    let mock = MockServer::start().await;
+
+    wait_for_session_loss(&server(&mock, None)).await;
+}
+
+#[tokio::test]
+async fn given_a_server_failure_when_renewing_then_the_session_is_not_reported_as_lost() {
+    let mock = MockServer::start().await;
+    mount_ping(&mock, "0.64.2", &[]).await;
+    mount_renewal(&mock, ResponseTemplate::new(500), 1).await;
+    mount_subsonic_song_search(&mock, 1).await;
+    let server = server_with_saved_password(&mock, None);
+
+    server
+        .song_list(&SongListQuery::default(), first_songs())
+        .await
+        .expect("songs from subsonic");
+
+    assert_session_still_usable(&server).await;
 }

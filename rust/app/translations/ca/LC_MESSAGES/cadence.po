@@ -1781,6 +1781,9 @@ msgstr "Sou aquí: {}"
 msgid "Your mixes"
 msgstr "Els teus mixos"
 
+msgid "Your session expired. Log in again."
+msgstr "La sessió ha caducat. Torneu a iniciar la sessió."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "El vostre usuari no té permís per a compartir en aquest servidor"
 

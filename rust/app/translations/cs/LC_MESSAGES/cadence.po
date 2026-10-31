@@ -1793,6 +1793,9 @@ msgstr "Jste zde: {}"
 msgid "Your mixes"
 msgstr "Vaše mixy"
 
+msgid "Your session expired. Log in again."
+msgstr "Vaše relace vypršela. Přihlaste se znovu."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Váš uživatel nemá na tomto serveru oprávnění sdílet"
 

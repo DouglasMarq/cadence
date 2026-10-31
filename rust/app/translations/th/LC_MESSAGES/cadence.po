@@ -1769,6 +1769,9 @@ msgstr "คุณอยู่ที่: {}"
 msgid "Your mixes"
 msgstr "มิกซ์ของคุณ"
 
+msgid "Your session expired. Log in again."
+msgstr "เซสชันของคุณหมดอายุแล้ว เข้าสู่ระบบอีกครั้ง"
+
 msgid "Your user is not allowed to share on this server"
 msgstr "ผู้ใช้ของคุณไม่ได้รับอนุญาตให้แบ่งปันบนเซิร์ฟเวอร์นี้"
 

@@ -1793,6 +1793,9 @@ msgstr "Te afli aici: {}"
 msgid "Your mixes"
 msgstr "Mixurile tale"
 
+msgid "Your session expired. Log in again."
+msgstr "Sesiunea a expirat. Conectează-te din nou."
+
 msgid "Your user is not allowed to share on this server"
 msgstr "Utilizatorul tău nu are permisiunea de a partaja pe acest server"
 
