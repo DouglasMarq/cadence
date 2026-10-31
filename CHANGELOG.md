@@ -17,3 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Views show their last saved content at once, also after a restart, and refresh it in place.
 - Opening a view stops the work of the previous one, and cover downloads are limited to six at a time, newest first.
 - The artist page shows each section as it arrives instead of waiting for all of them and for the image.
+
+### Fixed
+
+- Navidrome: an expired session no longer leaves the app on the Subsonic API, where tracks ignore the chosen order and one-letter searches find nothing. The password is now saved in the system keyring and the session renews on its own. Logins saved by earlier versions have no password, so log in once more to enable this.
+- Navidrome: the search page finds matches for a single letter.
