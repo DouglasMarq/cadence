@@ -10,6 +10,8 @@ pub enum Credential {
     Navidrome {
         subsonic: String,
         nd_token: Option<String>,
+        #[serde(default)]
+        password: Option<String>,
     },
     Subsonic {
         subsonic: String,
@@ -51,6 +53,7 @@ mod tests {
             Credential::Navidrome {
                 subsonic: "u=cadence&s=salt&t=token".into(),
                 nd_token: Some("session".into()),
+                password: Some("password".into()),
             },
             Credential::Subsonic {
                 subsonic: "u=cadence&p=password".into(),

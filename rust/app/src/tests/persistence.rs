@@ -86,6 +86,7 @@ async fn refreshed_credential_is_persisted_on_connect_and_shutdown() {
     let credential = |token: &str| Credential::Navidrome {
         subsonic: "u=demo&s=a&t=b".into(),
         nd_token: Some(token.into()),
+        password: None,
     };
     harness.server.set_credential(credential("first"));
     harness.connect();

@@ -263,6 +263,7 @@ pub async fn a_stale_session_token_falls_back(backend: Backend) {
     let stale = cadence_api::Credential::Navidrome {
         subsonic,
         nd_token: Some("stale.session.token".into()),
+        password: None,
     };
     let server = backend
         .reconnect(backend.login_test_config(), &stale)

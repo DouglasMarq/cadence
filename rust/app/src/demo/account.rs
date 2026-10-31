@@ -19,5 +19,6 @@ pub fn demo_credential() -> Credential {
     Credential::Navidrome {
         subsonic: "u=demo".into(),
         nd_token: None,
+        password: None,
     }
 }

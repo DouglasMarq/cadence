@@ -36,7 +36,7 @@ impl NavidromeServer {
         params: &[(&str, String)],
     ) -> Result<NativeResponse> {
         let request = self.native_request(method, path, params)?;
-        self.send_native(request).await
+        self.send_with_session(request).await
     }
 
     pub(crate) async fn native_with_body<Body: Serialize + ?Sized>(
@@ -46,7 +46,7 @@ impl NavidromeServer {
         body: &Body,
     ) -> Result<NativeResponse> {
         let request = self.native_request(method, path, &[])?.json(body);
-        self.send_native(request).await
+        self.send_with_session(request).await
     }
 
     pub(crate) async fn native_get<Decoded: DeserializeOwned>(
@@ -63,7 +63,7 @@ impl NavidromeServer {
         native: impl Future<Output = Result<Output>>,
         subsonic: impl Future<Output = Result<Output>>,
     ) -> Result<Output> {
-        if !self.has_session_token() {
+        if !self.can_use_native_api() {
             return subsonic.await;
         }
         match native.await {
@@ -78,14 +78,10 @@ impl NavidromeServer {
         path: &[&str],
         params: &[(&str, String)],
     ) -> Result<RequestBuilder> {
-        let token = self
-            .current_session_token()
-            .ok_or_else(missing_session_error)?;
         Ok(self
             .http_client
             .request(method, self.native_url(path)?)
-            .query(params)
-            .header(SESSION_TOKEN_HEADER, format!("Bearer {token}")))
+            .query(params))
     }
 
     fn native_url(&self, path: &[&str]) -> Result<Url> {
@@ -98,8 +94,28 @@ impl NavidromeServer {
         Ok(url)
     }
 
-    async fn send_native(&self, request: RequestBuilder) -> Result<NativeResponse> {
-        let response = request.send().await.map_err(ApiError::from_network)?;
+    async fn send_with_session(&self, request: RequestBuilder) -> Result<NativeResponse> {
+        let retry = request.try_clone();
+        let token = self
+            .session_token_or_login()
+            .await
+            .ok_or_else(missing_session_error)?;
+        let outcome = self.send_native(request, &token).await;
+        let (Err(ApiError::Auth(_)), Some(retry)) = (&outcome, retry) else {
+            return outcome;
+        };
+        let Some(renewed_token) = self.session_token_or_login().await else {
+            return outcome;
+        };
+        self.send_native(retry, &renewed_token).await
+    }
+
+    async fn send_native(&self, request: RequestBuilder, token: &str) -> Result<NativeResponse> {
+        let response = request
+            .header(SESSION_TOKEN_HEADER, format!("Bearer {token}"))
+            .send()
+            .await
+            .map_err(ApiError::from_network)?;
         self.capture_refreshed_token(response.headers());
         let status = response.status();
         let total = total_count(response.headers());
@@ -108,7 +124,7 @@ impl NavidromeServer {
             .await
             .map_err(ApiError::from_network)?
             .to_vec();
-        self.forget_rejected_session_token(status);
+        self.forget_rejected_session_token(status, token);
         if !status.is_success() {
             return Err(http_status_error(status, &body));
         }

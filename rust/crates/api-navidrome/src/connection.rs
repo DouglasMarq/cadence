@@ -5,6 +5,7 @@ use cadence_api_subsonic::SubsonicServer;
 use cadence_core::model::ServerConfig;
 use cadence_core::web_url::trimmed_base_url;
 use reqwest::StatusCode;
+use tokio::sync::Mutex;
 
 use crate::NavidromeServer;
 use crate::http::{NAVIDROME_IDENTITY, decode_error, query_string};
@@ -21,6 +22,7 @@ impl NavidromeServer {
                 auth.subsonic_token,
             ),
             nd_token: Some(auth.token),
+            password: Some(password.to_owned()),
         };
         let server = Self::from_parts(config, http_client, &credential)?;
         Ok((server, credential))
@@ -34,6 +36,7 @@ impl NavidromeServer {
         Credential::Navidrome {
             subsonic: self.subsonic_auth.clone(),
             nd_token: self.current_session_token(),
+            password: self.saved_password(),
         }
     }
 
@@ -42,7 +45,12 @@ impl NavidromeServer {
         http_client: reqwest::Client,
         credential: &Credential,
     ) -> Result<Self> {
-        let Credential::Navidrome { subsonic, nd_token } = credential else {
+        let Credential::Navidrome {
+            subsonic,
+            nd_token,
+            password,
+        } = credential
+        else {
             return Err(ApiError::Auth("not a Navidrome credential".into()));
         };
         let base_url = trimmed_base_url(&config.url).to_owned();
@@ -58,12 +66,33 @@ impl NavidromeServer {
             http_client,
             subsonic_auth,
             session_token: RwLock::new(nd_token.clone().filter(|token| !token.is_empty())),
+            password: RwLock::new(password.clone().filter(|password| !password.is_empty())),
+            session_renewal: Mutex::new(()),
             subsonic_server,
         })
     }
 
     pub(crate) fn server_id(&self) -> &str {
         &self.config.id
+    }
+
+    pub(crate) async fn session_token_or_login(&self) -> Option<String> {
+        let _only_one_login_at_a_time = self.session_renewal.lock().await;
+        if let Some(token) = self.current_session_token() {
+            return Some(token);
+        }
+        let password = self.saved_password()?;
+        match request_session(&self.http_client, &self.config, &password).await {
+            Ok(auth) => {
+                self.replace_session_token(Some(auth.token.clone()));
+                Some(auth.token)
+            }
+            Err(error) => {
+                tracing::warn!(%error, "renewing the Navidrome session failed");
+                self.forget_password_if_rejected(&error);
+                None
+            }
+        }
     }
 }
 

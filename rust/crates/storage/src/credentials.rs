@@ -161,6 +161,7 @@ mod tests {
         let credential = cadence_api::Credential::Navidrome {
             subsonic: "u=me&s=salt&t=token".into(),
             nd_token: Some("jwt".into()),
+            password: Some("fictional".into()),
         };
         set("server-nd", &credential.to_json().unwrap()).unwrap();
         let stored = get("server-nd").unwrap().unwrap();

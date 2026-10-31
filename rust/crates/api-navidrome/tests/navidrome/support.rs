@@ -22,6 +22,7 @@ pub fn credential(token: Option<&str>) -> Credential {
     Credential::Navidrome {
         subsonic: SUBSONIC_AUTH.into(),
         nd_token: token.map(str::to_owned),
+        password: None,
     }
 }
 
