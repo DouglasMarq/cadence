@@ -11,6 +11,7 @@ use super::listed_requests::{PickedPlaylist, PlaylistWrite, add_listed, create_l
 use super::picker::{PendingRequest, PickedSongs, SharedPicker, lock};
 use super::playlist_writes::exclusive_playlist_write;
 use crate::ui::{AppWindow, PlaylistPickerState, on_ui, playlist_detail, playlists, show_status};
+use crate::views::View;
 
 enum RequestOutcome {
     Succeeded(String),
@@ -92,6 +93,7 @@ fn pick_ids(
     write: PlaylistWrite<PickedPlaylist, IdsRequest>,
 ) {
     let (weak, shared) = (window.as_weak(), Arc::clone(&picker.shared));
+    let views = picker.context.views(&write.server);
     picker.context.runtime.spawn(async move {
         let PlaylistWrite {
             server,
@@ -99,6 +101,9 @@ fn pick_ids(
             songs: request,
         } = write;
         let added = add_new_songs(server.as_ref(), &target.id, &request.song_ids).await;
+        if matches!(added, Ok(count) if count > 0) {
+            views.invalidate_playlist(&target.id).await;
+        }
         on_ui(&weak, move |window| {
             let finished = FinishedPick {
                 generation: request.generation,
@@ -203,8 +208,12 @@ fn create_with_ids(
     } = write;
     let song_ids = new_song_ids(&[], &request.song_ids);
     let (weak, shared) = (window.as_weak(), Arc::clone(&picker.shared));
+    let views = picker.context.views(&server);
     picker.context.runtime.spawn(async move {
         let created = server.create_playlist(&name, &song_ids).await;
+        if created.is_ok() {
+            views.invalidate(View::Playlists).await;
+        }
         on_ui(&weak, move |window| {
             let finished = FinishedCreate {
                 generation: request.generation,

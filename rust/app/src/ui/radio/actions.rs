@@ -7,6 +7,7 @@ use slint::ComponentHandle;
 use super::view::RadioView;
 use crate::controller::{Command, RadioCommand};
 use crate::ui::{AppWindow, RadioSource, RadioState, show_status};
+use crate::views::View;
 
 impl RadioView {
     pub(super) fn play(&self, source: RadioSource, id: &str) {
@@ -76,8 +77,12 @@ impl RadioView {
         self.set_busy(true);
         let draft = RadioStationDraft::from_station(&station);
         let view = self.clone();
+        let views = self.context.views(&server);
         self.context.runtime.spawn(async move {
             let created = server.create_radio_station(&draft).await;
+            if created.is_ok() {
+                views.invalidate(View::Radio).await;
+            }
             let shown = view.clone();
             view.on_window(move |window| {
                 shown.finish_change(
@@ -99,8 +104,12 @@ impl RadioView {
         self.set_busy(true);
         let id = id.to_owned();
         let view = self.clone();
+        let views = self.context.views(&server);
         self.context.runtime.spawn(async move {
             let deleted = server.delete_radio_station(&id).await;
+            if deleted.is_ok() {
+                views.invalidate(View::Radio).await;
+            }
             let shown = view.clone();
             view.on_window(move |window| {
                 window.global::<RadioState>().set_delete_id("".into());

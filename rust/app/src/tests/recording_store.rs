@@ -7,6 +7,7 @@ use cadence_storage::settings::Settings;
 use tokio::sync::mpsc;
 
 use crate::store::{JsonStore, StateFile, Store};
+use crate::views::ViewStore;
 
 pub(super) struct RecordingStore {
     inner: Arc<JsonStore>,
@@ -55,5 +56,8 @@ impl Store for RecordingStore {
     }
     fn write_state(&self, file: StateFile, bytes: &[u8]) -> Result<()> {
         self.inner.write_state(file, bytes)
+    }
+    fn views(&self) -> Arc<ViewStore> {
+        self.inner.views()
     }
 }

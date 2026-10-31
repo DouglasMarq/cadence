@@ -215,6 +215,9 @@ msgstr "Mga naka-ban na device"
 msgid "by {}"
 msgstr "ni {}"
 
+msgid "Cadence {} is available"
+msgstr "Available na ang Cadence {}"
+
 msgid "Cancel"
 msgstr "Kanselahin"
 
@@ -400,6 +403,9 @@ msgstr "Hindi mailipat ang musika: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Hindi mabuksan ang folder: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Hindi mabuksan ang page ng release: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Hindi mabuksan ang YouTube Music: {}"
@@ -609,6 +615,12 @@ msgstr "I-double click para i-play"
 msgid "Double-click to play, drag to reorder"
 msgstr "I-double click para i-play, i-drag para ayusin ang pagkakasunod-sunod"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "I-download ang bersyon {} at i-restart ang Cadence; mase-save ang iyong queue"
+
+msgid "Downloading update: {}%"
+msgstr "Dina-download ang update: {}%"
+
 msgid "Duration"
 msgstr "Haba"
 
@@ -693,6 +705,9 @@ msgstr "Kalimutan ang {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format na pagta-transcode-an ng server. Ilalapat simula sa susunod na kanta."
 
+msgid "Forward"
+msgstr "Pasulong"
+
 msgid "Gapless playback"
 msgstr "Gapless na pag-play"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "I-install ang yt-dlp para ma-play ang mga track sa YouTube"
 
+msgid "Installing update..."
+msgstr "Ini-install ang update..."
+
 msgid "Integrations"
 msgstr "Mga integration"
 
@@ -786,11 +804,17 @@ msgstr "Panatilihin ang icon ng Cadence na may mga kontrol sa pag-play sa menu b
 msgid "Keep this station in the favorites on this device"
 msgstr "Itago ang istasyong ito sa mga paborito sa device na ito"
 
+msgid "Keep this version until the next launch"
+msgstr "Panatilihin ang bersyong ito hanggang sa susunod na pagbukas"
+
 msgid "Keep {}"
 msgstr "Panatilihin ang {}"
 
 msgid "Language"
 msgstr "Wika"
+
+msgid "Later"
+msgstr "Mamaya"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Payagan ang \"{}\" na humiling muli na kontrolin ang player na ito"
@@ -1016,6 +1040,9 @@ msgstr "Wala pang maidadagdag"
 msgid "Nothing to go back to"
 msgstr "Walang mababalikan"
 
+msgid "Nothing to go forward to"
+msgstr "Walang mapupuntahan pasulong"
+
 msgid "Nothing to play here"
 msgstr "Walang mapapatugtog dito"
 
@@ -1054,6 +1081,9 @@ msgstr "Buksan ang now playing"
 
 msgid "Open radio"
 msgstr "Buksan ang radyo"
+
+msgid "Open release page"
+msgstr "Buksan ang page ng release"
 
 msgid "Open the album \"{}\""
 msgstr "Buksan ang album na \"{}\""
@@ -1658,6 +1688,9 @@ msgstr "Hindi umiiral ang pahinang ito ng Tuklasin"
 msgid "This folder is empty"
 msgstr "Walang laman ang folder na ito"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Hindi kayang i-update ng install na ito ang sarili nito; buksan ang page ng release sa iyong browser"
+
 msgid "This mix is no longer available"
 msgstr "Hindi na available ang mix na ito"
 
@@ -1699,6 +1732,12 @@ msgstr "I-unmute"
 
 msgid "Up next"
 msgstr "Susunod"
+
+msgid "Update and restart"
+msgstr "I-update at i-restart"
+
+msgid "Update failed: {}"
+msgstr "Hindi na-update: {}"
 
 msgid "URL"
 msgstr "URL"

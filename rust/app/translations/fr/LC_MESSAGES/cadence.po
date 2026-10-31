@@ -215,6 +215,9 @@ msgstr "Appareils bannis"
 msgid "by {}"
 msgstr "par {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} est disponible"
+
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -400,6 +403,9 @@ msgstr "Impossible de déplacer la musique : {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Impossible d'ouvrir le dossier : {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Impossible d'ouvrir la page de la version : {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Impossible d'ouvrir YouTube Music : {}"
@@ -609,6 +615,12 @@ msgstr "Double-cliquer pour lire"
 msgid "Double-click to play, drag to reorder"
 msgstr "Double-cliquer pour lire, faire glisser pour réorganiser"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Télécharger la version {} et redémarrer Cadence ; la file d'attente est enregistrée"
+
+msgid "Downloading update: {}%"
+msgstr "Téléchargement de la mise à jour : {} %"
+
 msgid "Duration"
 msgstr "Durée"
 
@@ -693,6 +705,9 @@ msgstr "Oublier {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format vers lequel le serveur doit transcoder. S'applique à partir du titre suivant."
 
+msgid "Forward"
+msgstr "Avancer"
+
 msgid "Gapless playback"
 msgstr "Lecture sans blanc"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Installez yt-dlp pour lire les pistes YouTube"
 
+msgid "Installing update..."
+msgstr "Installation de la mise à jour..."
+
 msgid "Integrations"
 msgstr "Intégrations"
 
@@ -786,11 +804,17 @@ msgstr "Garder une icône Cadence avec les commandes de lecture dans la barre de
 msgid "Keep this station in the favorites on this device"
 msgstr "Garder cette station dans les favoris sur cet appareil"
 
+msgid "Keep this version until the next launch"
+msgstr "Conserver cette version jusqu'au prochain lancement"
+
 msgid "Keep {}"
 msgstr "Conserver {}"
 
 msgid "Language"
 msgstr "Langue"
+
+msgid "Later"
+msgstr "Plus tard"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Permettre à \"{}\" de demander à nouveau à contrôler ce lecteur"
@@ -1016,6 +1040,9 @@ msgstr "Rien à ajouter pour le moment"
 msgid "Nothing to go back to"
 msgstr "Aucune page précédente"
 
+msgid "Nothing to go forward to"
+msgstr "Aucune page suivante"
+
 msgid "Nothing to play here"
 msgstr "Rien à lire ici"
 
@@ -1054,6 +1081,9 @@ msgstr "Ouvrir la lecture en cours"
 
 msgid "Open radio"
 msgstr "Ouvrir la radio"
+
+msgid "Open release page"
+msgstr "Ouvrir la page de la version"
 
 msgid "Open the album \"{}\""
 msgstr "Ouvrir l'album « {} »"
@@ -1658,6 +1688,9 @@ msgstr "Cette page de Découvrir n'existe pas"
 msgid "This folder is empty"
 msgstr "Ce dossier est vide"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Cette installation ne peut pas se mettre à jour ; ouvrez la page de la version dans le navigateur"
+
 msgid "This mix is no longer available"
 msgstr "Ce mix n'est plus disponible"
 
@@ -1699,6 +1732,12 @@ msgstr "Rétablir le son"
 
 msgid "Up next"
 msgstr "À suivre"
+
+msgid "Update and restart"
+msgstr "Mettre à jour et redémarrer"
+
+msgid "Update failed: {}"
+msgstr "Échec de la mise à jour : {}"
 
 msgid "URL"
 msgstr "URL"

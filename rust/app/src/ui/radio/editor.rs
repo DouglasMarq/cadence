@@ -4,6 +4,7 @@ use slint::ComponentHandle;
 use super::form::draft_from_form;
 use super::view::RadioView;
 use crate::ui::{AppWindow, RadioSource, RadioState, time_based_id};
+use crate::views::View;
 
 fn local_station_id() -> String {
     format!("local-{}", time_based_id())
@@ -77,11 +78,15 @@ impl RadioView {
         };
         self.set_busy(true);
         let view = self.clone();
+        let views = self.context.views(&server);
         self.context.runtime.spawn(async move {
             let saved = match id.is_empty() {
                 true => server.create_radio_station(&draft).await,
                 false => server.update_radio_station(&id, &draft).await,
             };
+            if saved.is_ok() {
+                views.invalidate(View::Radio).await;
+            }
             let shown = view.clone();
             view.on_window(move |window| shown.finish_server_edit(window, saved));
         });

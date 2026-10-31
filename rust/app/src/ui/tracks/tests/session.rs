@@ -1,16 +1,30 @@
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
-use slint::{ComponentHandle, Model, SharedString};
+use cadence_api::MusicServer;
+use cadence_core::model::{Page, Song};
+use i_slint_backend_testing::ElementHandle;
+use slint::platform::WindowEvent;
+use slint::{ComponentHandle, LogicalPosition, Model, SharedString};
 
+use super::super::query::current_query;
 use crate::controller::Command;
 use crate::demo::FakeServer;
 use crate::list_stream::{Placement, SongSource};
+use crate::tests::held_server::HeldServer;
 use crate::tests::offline_server::OFFLINE;
 use crate::tests::session_window::SessionWindow;
 use crate::ui::{AppState, PlaylistPickerState, Route, TrackRow, TracksState};
+use crate::views::{Snapshot, ViewSlot, count_slot, page_slot};
 
 const SONG_COUNT: usize = 600;
 const RATING: i32 = 4;
+const STALE_SONG_COUNT: usize = SONG_COUNT - 50;
+const STALE_TITLE: &str = "Stale cached title";
+const SCROLLED_PIXELS: f32 = 1_200.0;
+const LIST_POINTER: LogicalPosition = LogicalPosition::new(640.0, 500.0);
+const PROBED_ROWS: usize = 90;
+const SCROLL_SETTLE: Duration = Duration::from_millis(300);
 
 fn tracks(view: &SessionWindow) -> TracksState<'_> {
     view.app.global::<TracksState>()
@@ -286,4 +300,106 @@ fn given_debounced_filters_when_the_debounce_ends_then_the_list_reloads() {
         let total = usize::try_from(tracks(&view).get_total()).unwrap_or(SONG_COUNT);
         total < SONG_COUNT && !tracks(&view).get_is_loading()
     }));
+}
+
+fn on_screen_titles(view: &SessionWindow) -> Vec<String> {
+    let rows = tracks(view).get_rows();
+    (0..PROBED_ROWS)
+        .filter_map(|index| rows.row_data(index))
+        .map(|row| row.title.to_string())
+        .filter(|title| !title.is_empty())
+        .filter(|title| {
+            ElementHandle::find_by_accessible_label(&view.app, title)
+                .next()
+                .is_some()
+        })
+        .collect()
+}
+
+fn scroll_down(view: &SessionWindow) {
+    view.app
+        .window()
+        .dispatch_event(WindowEvent::PointerScrolled {
+            position: LIST_POINTER,
+            delta_x: 0.0,
+            delta_y: -SCROLLED_PIXELS,
+        });
+    let started = Instant::now();
+    view.pump(|| started.elapsed() > SCROLL_SETTLE);
+}
+
+fn seeded<Payload: Snapshot>(run: &SessionWindow, slot: &ViewSlot, payload: Payload) {
+    let store = run.context.store.views();
+    let server_id = FakeServer::config_for_demo().id;
+    run.context
+        .runtime
+        .block_on(store.seed(&server_id, slot, payload));
+}
+
+fn visited_library() -> (SessionWindow, Arc<HeldServer>) {
+    let library = Arc::new(FakeServer::new(SONG_COUNT));
+    let first_run = SessionWindow::open(Arc::clone(&library) as Arc<dyn MusicServer>);
+    assert!(first_run.pump(|| row(&first_run, 0).is_loaded));
+    assert!(first_run.wait_until_idle(), "the first run settles");
+    (first_run, Arc::new(HeldServer::new(library)))
+}
+
+fn restarted_on(first_run: SessionWindow, held: &Arc<HeldServer>) -> SessionWindow {
+    let view = first_run.restart(Arc::clone(held) as Arc<dyn MusicServer>);
+    assert!(view.pump(|| row(&view, 0).is_loaded));
+    view
+}
+
+fn scrolled_off_the_first_row(view: &SessionWindow) -> Vec<String> {
+    let first_title = row(view, 0).title.to_string();
+    scroll_down(view);
+    let scrolled_titles = on_screen_titles(view);
+    assert!(!scrolled_titles.is_empty(), "rows remain on screen");
+    assert!(!scrolled_titles.contains(&first_title), "the list scrolled");
+    scrolled_titles
+}
+
+#[test]
+fn given_a_scrolled_selection_when_the_refresh_changes_rows_then_both_stay() {
+    let (first_run, held) = visited_library();
+    let query = current_query(&first_run.app).unwrap();
+    let slot = page_slot(&query, 0).unwrap();
+    let mut stale: Page<Song> = {
+        let store = first_run.context.store.views();
+        let server_id = FakeServer::config_for_demo().id;
+        let stored = store.stored(&server_id, &slot);
+        first_run.context.runtime.block_on(stored).unwrap()
+    };
+    let fresh_title = stale.items.first().unwrap().title.clone();
+    stale.items.first_mut().unwrap().title = STALE_TITLE.into();
+    seeded(&first_run, &slot, stale);
+    let view = restarted_on(first_run, &held);
+    assert_eq!(row(&view, 0).title, STALE_TITLE);
+    tracks(&view).invoke_select_row(1, false, false);
+    let scrolled_titles = scrolled_off_the_first_row(&view);
+
+    held.release();
+
+    assert!(view.pump(|| row(&view, 0).title == fresh_title.as_str()));
+    assert_eq!(on_screen_titles(&view), scrolled_titles);
+    assert_eq!(tracks(&view).get_selected_count(), 1);
+}
+
+#[test]
+fn given_a_scrolled_list_when_the_refresh_changes_the_total_then_the_position_stays() {
+    let (first_run, held) = visited_library();
+    let query = current_query(&first_run.app).unwrap();
+    seeded(&first_run, &count_slot(&query).unwrap(), STALE_SONG_COUNT);
+    let view = restarted_on(first_run, &held);
+    assert_eq!(
+        usize::try_from(tracks(&view).get_total()).ok(),
+        Some(STALE_SONG_COUNT)
+    );
+    let scrolled_titles = scrolled_off_the_first_row(&view);
+
+    held.release();
+
+    assert!(view.pump(|| { usize::try_from(tracks(&view).get_total()).ok() == Some(SONG_COUNT) }));
+    assert!(view.wait_until_idle(), "the refresh settles");
+    assert_eq!(on_screen_titles(&view), scrolled_titles);
 }

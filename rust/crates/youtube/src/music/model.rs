@@ -28,13 +28,13 @@ impl MusicSong {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum CollectionKind {
     Album,
     Playlist,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MusicCollection {
     pub browse_id: String,
     pub kind: CollectionKind,
@@ -67,13 +67,13 @@ pub fn is_browse_id(candidate: &str) -> bool {
     is_id_of_at_most(candidate, MAX_BROWSE_ID_LENGTH)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ShelfItem {
     Song(MusicSong),
     Collection(MusicCollection),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MusicShelf {
     pub title: String,
     pub items: Vec<ShelfItem>,
@@ -88,13 +88,13 @@ impl MusicShelf {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MoodCategory {
     pub title: String,
     pub params: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CollectionPage {
     pub title: String,
     pub subtitle: String,

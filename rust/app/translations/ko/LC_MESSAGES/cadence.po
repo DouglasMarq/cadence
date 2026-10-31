@@ -209,6 +209,9 @@ msgstr "차단된 기기"
 msgid "by {}"
 msgstr "만든 사람: {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {}을(를) 사용할 수 있습니다"
+
 msgid "Cancel"
 msgstr "취소"
 
@@ -394,6 +397,9 @@ msgstr "음악을 옮길 수 없습니다: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "폴더를 열 수 없습니다: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "릴리스 페이지를 열 수 없습니다: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Music을 열 수 없습니다: {}"
@@ -601,6 +607,12 @@ msgstr "두 번 클릭하여 재생"
 msgid "Double-click to play, drag to reorder"
 msgstr "두 번 클릭하여 재생, 끌어서 순서 변경"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "버전 {}을(를) 다운로드하고 Cadence를 다시 시작합니다. 대기열은 저장됩니다"
+
+msgid "Downloading update: {}%"
+msgstr "업데이트 다운로드 중: {}%"
+
 msgid "Duration"
 msgstr "재생 시간"
 
@@ -685,6 +697,9 @@ msgstr "{} 삭제"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "서버가 트랜스코딩할 형식입니다. 다음 곡부터 적용됩니다."
 
+msgid "Forward"
+msgstr "앞으로"
+
 msgid "Gapless playback"
 msgstr "갭리스 재생"
 
@@ -736,6 +751,9 @@ msgstr "인디고"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "YouTube 트랙을 재생하려면 yt-dlp를 설치하세요"
 
+msgid "Installing update..."
+msgstr "업데이트 설치 중..."
+
 msgid "Integrations"
 msgstr "연동"
 
@@ -778,11 +796,17 @@ msgstr "메뉴 막대나 시스템 트레이에 재생 컨트롤이 있는 Caden
 msgid "Keep this station in the favorites on this device"
 msgstr "이 방송국을 이 기기의 즐겨찾기에 보관"
 
+msgid "Keep this version until the next launch"
+msgstr "다음 실행까지 이 버전 유지"
+
 msgid "Keep {}"
 msgstr "{} 유지"
 
 msgid "Language"
 msgstr "언어"
+
+msgid "Later"
+msgstr "나중에"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "\"{}\"이(가) 다시 이 플레이어 제어를 요청할 수 있게 합니다"
@@ -1007,6 +1031,9 @@ msgstr "아직 추가할 항목이 없습니다"
 msgid "Nothing to go back to"
 msgstr "돌아갈 곳이 없습니다"
 
+msgid "Nothing to go forward to"
+msgstr "앞으로 갈 곳이 없습니다"
+
 msgid "Nothing to play here"
 msgstr "재생할 항목이 없습니다"
 
@@ -1045,6 +1072,9 @@ msgstr "지금 재생 중 열기"
 
 msgid "Open radio"
 msgstr "라디오 열기"
+
+msgid "Open release page"
+msgstr "릴리스 페이지 열기"
 
 msgid "Open the album \"{}\""
 msgstr "앨범 \"{}\" 열기"
@@ -1646,6 +1676,9 @@ msgstr "이 둘러보기 페이지는 존재하지 않습니다"
 msgid "This folder is empty"
 msgstr "이 폴더는 비어 있습니다"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "이 설치본은 자체 업데이트할 수 없습니다. 브라우저에서 릴리스 페이지를 여세요"
+
 msgid "This mix is no longer available"
 msgstr "이 믹스는 더 이상 사용할 수 없습니다"
 
@@ -1687,6 +1720,12 @@ msgstr "음소거 해제"
 
 msgid "Up next"
 msgstr "다음 곡"
+
+msgid "Update and restart"
+msgstr "업데이트 후 다시 시작"
+
+msgid "Update failed: {}"
+msgstr "업데이트 실패: {}"
 
 msgid "URL"
 msgstr "URL"

@@ -3,11 +3,24 @@ use std::sync::Arc;
 
 use cadence_api::MusicServer;
 use cadence_core::model::Genre;
-use slint::{ComponentHandle, SharedString};
+use slint::{ComponentHandle, Model, SharedString};
 
 use super::string_model;
 use crate::session::Session;
+use crate::ui::genres::genre_slot;
 use crate::ui::{AppWindow, Context, TracksState, on_ui, show_status};
+
+fn selected_genre_id(state: &TracksState<'_>) -> Option<SharedString> {
+    let position = usize::try_from(state.get_genre_index() - 1).ok()?;
+    state.get_genre_ids().row_data(position)
+}
+
+fn position_of(ids: &[SharedString], genre_id: Option<SharedString>) -> i32 {
+    genre_id
+        .and_then(|genre_id| ids.iter().position(|id| *id == genre_id))
+        .and_then(|position| i32::try_from(position + 1).ok())
+        .unwrap_or(0)
+}
 
 fn set_genres(window: &AppWindow, mut genres: Vec<Genre>) {
     genres.sort_by_cached_key(|genre| genre.name.to_lowercase());
@@ -19,6 +32,8 @@ fn set_genres(window: &AppWindow, mut genres: Vec<Genre>) {
         .map(|genre| genre.id.as_str().into())
         .collect();
     let state = window.global::<TracksState>();
+    let selected = selected_genre_id(&state);
+    state.set_genre_index(position_of(&ids, selected));
     state.set_genres(string_model(names));
     state.set_genre_ids(string_model(ids));
 }
@@ -47,8 +62,11 @@ fn spawn_genre_load(
     let window = window.clone();
     let server_id = server.config().id.clone();
     let session = context.session.clone();
-    context.runtime.spawn(async move {
-        let result = server.genre_list().await;
+    let views = context.views(&server);
+    let genres = async move { server.genre_list().await };
+    views.keep_loading(Some(genre_slot()), genres, move |result| {
+        let session = session.clone();
+        let server_id = server_id.clone();
         on_ui(&window, move |window| {
             if !is_still_connected_to(&session, &server_id) {
                 return;
@@ -95,5 +113,13 @@ mod tests {
             view.status(),
             "Could not load genres: network error: timed out"
         );
+    }
+
+    #[test]
+    fn given_a_chosen_genre_when_the_list_refreshes_then_the_choice_follows_its_id() {
+        let ids = ["a".into(), "b".into()];
+        assert_eq!(position_of(&ids, Some("b".into())), 2);
+        assert_eq!(position_of(&ids, Some("gone".into())), 0);
+        assert_eq!(position_of(&ids, None), 0);
     }
 }

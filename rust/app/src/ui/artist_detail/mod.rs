@@ -1,5 +1,6 @@
 mod actions;
 mod biography;
+mod covers;
 mod current;
 mod info;
 mod loading;
@@ -16,8 +17,9 @@ use super::{AppWindow, ArtistDetailState, Context};
 use crate::controller::Command;
 pub use actions::play_artist;
 use actions::{play_album, shuffle_artist, toggle_favorite};
+use covers::load_album_cover;
 use current::read_current;
-use loading::{load, load_album_cover};
+use loading::load;
 
 fn install_load(window: &AppWindow, context: &Context) {
     let weak_window = window.as_weak();
@@ -66,7 +68,7 @@ fn install_play_top(window: &AppWindow, context: &Context) {
     window
         .global::<ArtistDetailState>()
         .on_play_top(move |song_id| {
-            let songs = read_current(|current| current.top_songs.clone());
+            let songs = read_current(|current| current.top_songs());
             if !songs.is_empty() {
                 context.send(Command::PlaySongs {
                     songs,

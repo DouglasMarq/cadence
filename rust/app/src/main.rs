@@ -27,6 +27,7 @@ mod store;
 mod termination;
 mod tray;
 mod ui;
+mod views;
 mod window_chrome;
 mod youtube;
 

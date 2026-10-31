@@ -11,10 +11,12 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Duration;
 
+use cadence_core::model::Artist;
 use slint::{ComponentHandle, ModelRc, SharedString, Timer, TimerMode, VecModel};
 
 use super::artist_detail::play_artist;
 use super::{AppWindow, ArtistsState, Context};
+use item::ArtistItem;
 pub use item::song_count_label;
 use list::ArtistList;
 use models::{GridModel, ListModel};
@@ -27,6 +29,12 @@ type SearchText = Rc<RefCell<String>>;
 
 pub fn set_favorite(window: &AppWindow, artist_id: &str, is_favorite: bool) {
     with_list(window, |list| list.set_favorite(artist_id, is_favorite));
+}
+
+pub fn artist_seed(window: &AppWindow, artist_id: &str) -> Option<Artist> {
+    with_list(window, |list| list.item(artist_id))
+        .flatten()
+        .map(ArtistItem::into_profile)
 }
 
 fn install_models(window: &AppWindow, context: &Context) {
@@ -55,6 +63,7 @@ fn install_load(window: &AppWindow, context: &Context, search: SearchText) {
     let session = context.session.clone();
     window.global::<ArtistsState>().on_load(move |_| {
         if let (Some(window), true) = (weak_window.upgrade(), session.get().is_some()) {
+            session.open_view();
             reload(&window, &search.borrow());
         }
     });

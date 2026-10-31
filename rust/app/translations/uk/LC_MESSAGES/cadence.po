@@ -221,6 +221,9 @@ msgstr "Заблоковані пристрої"
 msgid "by {}"
 msgstr "від {}"
 
+msgid "Cadence {} is available"
+msgstr "Доступна версія Cadence {}"
+
 msgid "Cancel"
 msgstr "Скасувати"
 
@@ -406,6 +409,9 @@ msgstr "Не вдалося перенести музику: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Не вдалося відкрити папку: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Не вдалося відкрити сторінку релізу: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Не вдалося відкрити YouTube Music: {}"
@@ -617,6 +623,12 @@ msgstr "Двічі клацніть, щоб відтворити"
 msgid "Double-click to play, drag to reorder"
 msgstr "Двічі клацніть, щоб відтворити, перетягніть, щоб змінити порядок"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Завантажити версію {} і перезапустити Cadence; чергу буде збережено"
+
+msgid "Downloading update: {}%"
+msgstr "Завантаження оновлення: {}%"
+
 msgid "Duration"
 msgstr "Тривалість"
 
@@ -701,6 +713,9 @@ msgstr "Забути {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Формат, у який сервер має перекодовувати. Діє з наступної пісні."
 
+msgid "Forward"
+msgstr "Вперед"
+
 msgid "Gapless playback"
 msgstr "Відтворення без пауз"
 
@@ -752,6 +767,9 @@ msgstr "Індиго"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Установіть yt-dlp, щоб відтворювати треки з YouTube"
 
+msgid "Installing update..."
+msgstr "Встановлення оновлення..."
+
 msgid "Integrations"
 msgstr "Інтеграції"
 
@@ -794,11 +812,17 @@ msgstr "Показувати значок Cadence з кнопками відтв
 msgid "Keep this station in the favorites on this device"
 msgstr "Зберігати цю станцію в улюбленому на цьому пристрої"
 
+msgid "Keep this version until the next launch"
+msgstr "Залишити цю версію до наступного запуску"
+
 msgid "Keep {}"
 msgstr "Залишити {}"
 
 msgid "Language"
 msgstr "Мова"
+
+msgid "Later"
+msgstr "Пізніше"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Дозволити \"{}\" знову просити керування цим плеєром"
@@ -1025,6 +1049,9 @@ msgstr "Поки нічого додавати"
 msgid "Nothing to go back to"
 msgstr "Немає куди повертатися"
 
+msgid "Nothing to go forward to"
+msgstr "Немає куди переходити вперед"
+
 msgid "Nothing to play here"
 msgstr "Тут нічого відтворювати"
 
@@ -1063,6 +1090,9 @@ msgstr "Відкрити «Зараз грає»"
 
 msgid "Open radio"
 msgstr "Відкрити радіо"
+
+msgid "Open release page"
+msgstr "Відкрити сторінку релізу"
 
 msgid "Open the album \"{}\""
 msgstr "Відкрити альбом «{}»"
@@ -1670,6 +1700,9 @@ msgstr "Цієї сторінки «Огляду» не існує"
 msgid "This folder is empty"
 msgstr "Ця папка порожня"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Ця інсталяція не може оновитися сама; відкрийте сторінку релізу в браузері"
+
 msgid "This mix is no longer available"
 msgstr "Цей мікс більше недоступний"
 
@@ -1711,6 +1744,12 @@ msgstr "Увімкнути звук"
 
 msgid "Up next"
 msgstr "Далі"
+
+msgid "Update and restart"
+msgstr "Оновити й перезапустити"
+
+msgid "Update failed: {}"
+msgstr "Не вдалося оновити: {}"
 
 msgid "URL"
 msgstr "URL"

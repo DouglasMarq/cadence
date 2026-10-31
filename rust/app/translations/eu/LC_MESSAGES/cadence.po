@@ -215,6 +215,9 @@ msgstr "Blokeatutako gailuak"
 msgid "by {}"
 msgstr "egilea: {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} eskuragarri dago"
+
 msgid "Cancel"
 msgstr "Utzi"
 
@@ -400,6 +403,9 @@ msgstr "Ezin izan da musika eraman: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Ezin izan da karpeta ireki: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Ezin izan da bertsioaren orria ireki: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Ezin izan da YouTube Music ireki: {}"
@@ -609,6 +615,12 @@ msgstr "Egin klik bikoitza erreproduzitzeko"
 msgid "Double-click to play, drag to reorder"
 msgstr "Egin klik bikoitza erreproduzitzeko, arrastatu berrantolatzeko"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Deskargatu {} bertsioa eta berrabiarazi Cadence; ilara gorde egiten da"
+
+msgid "Downloading update: {}%"
+msgstr "Eguneraketa deskargatzen: {}%"
+
 msgid "Duration"
 msgstr "Iraupena"
 
@@ -693,6 +705,9 @@ msgstr "Ahaztu {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Zerbitzariak transkodetzeko erabili behar duen formatua. Hurrengo abestitik aurrera aplikatzen da."
 
+msgid "Forward"
+msgstr "Aurrera"
+
 msgid "Gapless playback"
 msgstr "Etenik gabeko erreprodukzioa"
 
@@ -744,6 +759,9 @@ msgstr "Indigoa"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Instalatu yt-dlp YouTube-ko pistak erreproduzitzeko"
 
+msgid "Installing update..."
+msgstr "Eguneraketa instalatzen..."
+
 msgid "Integrations"
 msgstr "Integrazioak"
 
@@ -786,11 +804,17 @@ msgstr "Mantendu Cadence ikono bat erreprodukzio-kontrolekin menu-barran edo sis
 msgid "Keep this station in the favorites on this device"
 msgstr "Gorde irrati hau gailu honetako gogokoetan"
 
+msgid "Keep this version until the next launch"
+msgstr "Mantendu bertsio hau hurrengo abiarazterarte"
+
 msgid "Keep {}"
 msgstr "Mantendu {}"
 
 msgid "Language"
 msgstr "Hizkuntza"
+
+msgid "Later"
+msgstr "Geroago"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Utzi \"{}\" berriro erreproduzigailu hau kontrolatzeko eskatzen"
@@ -1016,6 +1040,9 @@ msgstr "Oraindik ez dago gehitzeko ezer"
 msgid "Nothing to go back to"
 msgstr "Ez dago atzera egiteko ezer"
 
+msgid "Nothing to go forward to"
+msgstr "Ez dago aurrera egiteko ezer"
+
 msgid "Nothing to play here"
 msgstr "Ez dago erreproduzitzeko ezer hemen"
 
@@ -1054,6 +1081,9 @@ msgstr "Ireki \"Orain erreproduzitzen\""
 
 msgid "Open radio"
 msgstr "Ireki irratia"
+
+msgid "Open release page"
+msgstr "Ireki bertsioaren orria"
 
 msgid "Open the album \"{}\""
 msgstr "Ireki \"{}\" albuma"
@@ -1658,6 +1688,9 @@ msgstr "Aurkitu orri hau ez dago"
 msgid "This folder is empty"
 msgstr "Karpeta hau hutsik dago"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Instalazio hau ezin da bere kabuz eguneratu; ireki bertsioaren orria arakatzailean"
+
 msgid "This mix is no longer available"
 msgstr "Nahasketa hau ez dago erabilgarri jada"
 
@@ -1699,6 +1732,12 @@ msgstr "Aktibatu soinua"
 
 msgid "Up next"
 msgstr "Hurrengoak"
+
+msgid "Update and restart"
+msgstr "Eguneratu eta berrabiarazi"
+
+msgid "Update failed: {}"
+msgstr "Eguneraketak huts egin du: {}"
 
 msgid "URL"
 msgstr "URLa"

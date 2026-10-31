@@ -92,6 +92,62 @@ impl ListState {
         let image = self.covers.get(&index);
         Some(item.into_card(image))
     }
+
+    fn replace_item(&mut self, index: usize, item: ArtistItem) -> bool {
+        let Some(shown) = self.items.get_mut(index) else {
+            self.items.push(item);
+            return false;
+        };
+        if *shown == item {
+            return false;
+        }
+        if shown.cover_art_id != item.cover_art_id {
+            self.covers.forget(&index);
+        }
+        *shown = item;
+        true
+    }
+
+    fn drop_rows_after(&mut self, page_end: usize) {
+        for index in page_end..self.items.len() {
+            self.covers.forget(&index);
+        }
+        self.items.truncate(page_end);
+    }
+
+    fn merge_page(&mut self, start: usize, items: Vec<ArtistItem>) -> PageChange {
+        let old_len = self.items.len();
+        let page_end = start + items.len();
+        let is_short = items.len() < PAGE_SIZE;
+        let replaced = items
+            .into_iter()
+            .enumerate()
+            .filter_map(|(offset, item)| {
+                let index = start + offset;
+                self.replace_item(index, item).then_some(index)
+            })
+            .collect();
+        if is_short {
+            self.drop_rows_after(page_end);
+        }
+        if start == old_len || is_short {
+            self.is_fetching = false;
+        }
+        if page_end >= old_len || is_short {
+            self.is_complete = is_short;
+        }
+        PageChange {
+            replaced,
+            old_len,
+            new_len: self.items.len(),
+        }
+    }
+}
+
+struct PageChange {
+    replaced: Vec<usize>,
+    old_len: usize,
+    new_len: usize,
 }
 
 pub struct ArtistList {
@@ -179,26 +235,45 @@ impl ArtistList {
         self.state.borrow().generation == generation
     }
 
-    pub fn is_next_page(&self, generation: u64, start: usize) -> bool {
+    fn is_loaded_page(&self, generation: u64, start: usize) -> bool {
         let state = self.state.borrow();
-        state.generation == generation && state.items.len() == start
+        state.generation == generation && start <= state.items.len()
     }
 
     pub fn apply_page(&self, generation: u64, start: usize, items: Vec<ArtistItem>) {
-        if !self.is_next_page(generation, start) {
+        if !self.is_loaded_page(generation, start) {
             return;
         }
-        let (old_len, new_len) = {
-            let mut state = self.state.borrow_mut();
-            state.is_fetching = false;
-            state.is_complete = items.len() < PAGE_SIZE;
-            let old_len = state.items.len();
-            state.items.extend(items);
-            (old_len, state.items.len())
-        };
-        if new_len > old_len {
-            self.notify_appended(old_len, new_len);
+        let change = self.state.borrow_mut().merge_page(start, items);
+        for index in &change.replaced {
+            self.notify_index_changed(*index);
         }
+        if change.new_len > change.old_len {
+            self.notify_appended(change.old_len, change.new_len);
+        }
+        if change.new_len < change.old_len {
+            self.notify_removed(change.old_len, change.new_len);
+        }
+    }
+
+    fn notify_removed(&self, old_len: usize, new_len: usize) {
+        self.list_notify.row_removed(new_len, old_len - new_len);
+        let (old_rows, new_rows) = (self.grid_rows(old_len), self.grid_rows(new_len));
+        if new_rows < old_rows {
+            self.grid_notify.row_removed(new_rows, old_rows - new_rows);
+        }
+        if !new_len.is_multiple_of(self.columns.get()) {
+            self.grid_notify.row_changed(new_rows - 1);
+        }
+    }
+
+    pub fn item(&self, artist_id: &str) -> Option<ArtistItem> {
+        let state = self.state.borrow();
+        state
+            .items
+            .iter()
+            .find(|item| item.id == artist_id)
+            .cloned()
     }
 
     pub fn page_failed(&self, generation: u64) {
@@ -322,7 +397,6 @@ pub mod tests {
                 format!("cover 1 {}", PAGE_SIZE - 2)
             ]
         );
-        assert!(!list.is_next_page(1, 0));
         list.apply_page(1, 0, items(0, PAGE_SIZE));
         list.apply_page(1, PAGE_SIZE, items(PAGE_SIZE, 5));
         assert!(list.is_complete());
@@ -337,7 +411,6 @@ pub mod tests {
         list.reset(ArtistListQuery::default());
         list.reset(ArtistListQuery::default());
         assert_eq!(drain(&log), ["page 1 0", "page 2 0"]);
-        assert!(!list.is_next_page(1, 0));
         list.apply_page(1, 0, items(0, 3));
         assert!(!list.is_current(1));
         list.page_failed(1);
@@ -372,6 +445,74 @@ pub mod tests {
         list.apply_cover(1, 0, Some(Image::default()));
         assert!(list.card(0).is_some_and(|card| card.has_image));
         assert!(drain(&log).is_empty());
+    }
+
+    #[test]
+    fn given_a_loaded_page_when_the_refresh_matches_then_covers_and_paging_stay() {
+        let (list, log) = list();
+        list.reset(ArtistListQuery::default());
+        list.apply_page(1, 0, items(0, PAGE_SIZE));
+        list.apply_cover(1, 0, Some(Image::default()));
+        list.request_card(PAGE_SIZE - 1);
+        drain(&log);
+
+        list.apply_page(1, 0, items(0, PAGE_SIZE));
+
+        assert!(list.card(0).is_some_and(|card| card.has_image));
+        list.request_card(PAGE_SIZE - 2);
+        assert_eq!(drain(&log), [format!("cover 1 {}", PAGE_SIZE - 2)]);
+    }
+
+    #[test]
+    fn given_a_loaded_page_when_the_refresh_differs_then_rows_change_in_place() {
+        let (list, _log) = list();
+        list.reset(ArtistListQuery::default());
+        list.apply_page(1, 0, items(0, 3));
+        list.apply_cover(1, 0, Some(Image::default()));
+        list.apply_cover(1, 2, Some(Image::default()));
+        let mut refreshed = items(0, 3);
+        refreshed[2].name = "Renamed".to_owned();
+        refreshed[0].cover_art_id = Some("ar-new".to_owned());
+
+        list.apply_page(1, 0, refreshed);
+
+        assert_eq!(list.len(), 3);
+        assert!(list.card(2).is_some_and(|card| card.name == "Renamed"));
+        assert!(list.card(2).is_some_and(|card| card.has_image));
+        assert!(list.card(0).is_some_and(|card| !card.has_image));
+    }
+
+    #[test]
+    fn given_a_shorter_refresh_when_applied_then_the_tail_goes_and_the_list_completes() {
+        let (list, log) = list();
+        list.reset(ArtistListQuery::default());
+        list.apply_page(1, 0, items(0, PAGE_SIZE));
+        list.apply_page(1, PAGE_SIZE, items(PAGE_SIZE, PAGE_SIZE));
+        list.request_card(2 * PAGE_SIZE - 1);
+        drain(&log);
+
+        list.apply_page(1, 0, items(0, 5));
+
+        assert_eq!(list.len(), 5);
+        assert!(list.is_complete());
+        list.apply_page(1, 2 * PAGE_SIZE, items(2 * PAGE_SIZE, 5));
+        assert_eq!(list.len(), 5);
+    }
+
+    #[test]
+    fn given_a_short_cached_page_when_the_refresh_is_full_then_paging_resumes() {
+        let (list, log) = list();
+        list.reset(ArtistListQuery::default());
+        list.apply_page(1, 0, items(0, 5));
+        assert!(list.is_complete());
+        drain(&log);
+
+        list.apply_page(1, 0, items(0, PAGE_SIZE));
+
+        assert_eq!(list.len(), PAGE_SIZE);
+        assert!(!list.is_complete());
+        list.request_card(PAGE_SIZE - 1);
+        assert_eq!(drain(&log)[0], format!("page 1 {PAGE_SIZE}"));
     }
 
     #[test]

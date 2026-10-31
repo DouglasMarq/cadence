@@ -17,10 +17,14 @@ pub fn remove(window: &AppWindow, deps: &DetailDeps, indexes: Vec<usize>) {
     };
     window.global::<PlaylistDetailState>().set_is_busy(true);
     let (weak, shared) = (window.as_weak(), Arc::clone(&deps.shared));
+    let views = deps.context.views(&server);
     deps.context.runtime.spawn(async move {
         let result = server
             .remove_from_playlist(&target.playlist_id, &indexes)
             .await;
+        if result.is_ok() {
+            views.invalidate_playlist(&target.playlist_id).await;
+        }
         on_ui(&weak, move |window| {
             let finished = FinishedRemoval {
                 target,

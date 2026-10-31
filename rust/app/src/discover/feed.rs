@@ -3,6 +3,9 @@ use cadence_youtube::CookieBrowser;
 use cadence_youtube::music::{
     GLOBAL_CHARTS, MoodCategory, MusicLocale, MusicShelf, SystemLocale, chart_country_or_fallback,
 };
+use serde::{Deserialize, Serialize};
+
+use crate::views::Overlay;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum FeedRequest {
@@ -13,7 +16,7 @@ pub enum FeedRequest {
     Mood { params: String },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum FeedNotice {
     #[default]
     None,
@@ -47,7 +50,7 @@ impl FeedNotice {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct DiscoverFeed {
     pub shelves: Vec<MusicShelf>,
     pub moods: Vec<MoodCategory>,
@@ -60,6 +63,14 @@ impl DiscoverFeed {
             shelves,
             moods: Vec::new(),
             notice,
+        }
+    }
+}
+
+impl Overlay for DiscoverFeed {
+    fn drop_live_fields(&mut self) {
+        if self.notice.is_warning() {
+            self.notice = FeedNotice::None;
         }
     }
 }
@@ -124,6 +135,16 @@ mod tests {
             (fallback.language.as_str(), fallback.country.as_str()),
             ("en", "BR")
         );
+    }
+
+    #[test]
+    fn given_a_failed_sign_in_when_the_feed_is_stored_then_the_warning_is_left_out() {
+        let mut feed = DiscoverFeed {
+            notice: FeedNotice::SignInFailed("expired".into()),
+            ..DiscoverFeed::default()
+        };
+        feed.drop_live_fields();
+        assert_eq!(feed.notice, FeedNotice::None);
     }
 
     #[test]

@@ -215,6 +215,9 @@ msgstr "Kitiltott eszközök"
 msgid "by {}"
 msgstr "készítette: {}"
 
+msgid "Cadence {} is available"
+msgstr "Elérhető a Cadence {}"
+
 msgid "Cancel"
 msgstr "Mégse"
 
@@ -400,6 +403,9 @@ msgstr "Nem sikerült áthelyezni a zenét: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Nem sikerült megnyitni a mappát: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "A kiadás oldala nem nyitható meg: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Nem sikerült megnyitni a YouTube Musicot: {}"
@@ -609,6 +615,12 @@ msgstr "Dupla kattintás a lejátszáshoz"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dupla kattintás a lejátszáshoz, húzás az átrendezéshez"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "A(z) {} verzió letöltése és a Cadence újraindítása; a várólista mentésre kerül"
+
+msgid "Downloading update: {}%"
+msgstr "Frissítés letöltése: {}%"
+
 msgid "Duration"
 msgstr "Időtartam"
 
@@ -693,6 +705,9 @@ msgstr "{} elfelejtése"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "A formátum, amelyre a szerver átkódol. A következő daltól érvényes."
 
+msgid "Forward"
+msgstr "Előre"
+
 msgid "Gapless playback"
 msgstr "Szünetmentes lejátszás"
 
@@ -744,6 +759,9 @@ msgstr "Indigó"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "A YouTube-számok lejátszásához telepítsd a yt-dlp-t"
 
+msgid "Installing update..."
+msgstr "Frissítés telepítése..."
+
 msgid "Integrations"
 msgstr "Integrációk"
 
@@ -786,11 +804,17 @@ msgstr "Cadence ikon lejátszásvezérlőkkel a menüsorban vagy a rendszertálc
 msgid "Keep this station in the favorites on this device"
 msgstr "Az állomás megtartása a kedvencek között ezen az eszközön"
 
+msgid "Keep this version until the next launch"
+msgstr "Ennek a verziónak a megtartása a következő indításig"
+
 msgid "Keep {}"
 msgstr "{} megtartása"
 
 msgid "Language"
 msgstr "Nyelv"
+
+msgid "Later"
+msgstr "Később"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "\"{}\" újra kérheti a lejátszó vezérlését"
@@ -1016,6 +1040,9 @@ msgstr "Még nincs mit hozzáadni"
 msgid "Nothing to go back to"
 msgstr "Nincs hová visszalépni"
 
+msgid "Nothing to go forward to"
+msgstr "Nincs hová előrelépni"
+
 msgid "Nothing to play here"
 msgstr "Itt nincs mit lejátszani"
 
@@ -1054,6 +1081,9 @@ msgstr "Most játszott megnyitása"
 
 msgid "Open radio"
 msgstr "Rádió megnyitása"
+
+msgid "Open release page"
+msgstr "Kiadás oldalának megnyitása"
 
 msgid "Open the album \"{}\""
 msgstr "A(z) „{}” album megnyitása"
@@ -1658,6 +1688,9 @@ msgstr "Ez a Felfedezés oldal nem létezik"
 msgid "This folder is empty"
 msgstr "Ez a mappa üres"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Ez a telepítés nem tudja önmagát frissíteni; nyissa meg a kiadás oldalát a böngészőben"
+
 msgid "This mix is no longer available"
 msgstr "Ez a mix már nem érhető el"
 
@@ -1699,6 +1732,12 @@ msgstr "Némítás feloldása"
 
 msgid "Up next"
 msgstr "Következik"
+
+msgid "Update and restart"
+msgstr "Frissítés és újraindítás"
+
+msgid "Update failed: {}"
+msgstr "A frissítés sikertelen: {}"
 
 msgid "URL"
 msgstr "URL"

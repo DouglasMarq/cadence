@@ -215,6 +215,9 @@ msgstr "Blokkerte einingar"
 msgid "by {}"
 msgstr "av {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} er tilgjengeleg"
+
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -400,6 +403,9 @@ msgstr "Klarte ikkje å flytte musikken: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Kunne ikkje opne mappa: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Kunne ikkje opne utgjevingssida: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Kunne ikkje opne YouTube Music: {}"
@@ -609,6 +615,12 @@ msgstr "Dobbeltklikk for å spele"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dobbeltklikk for å spele, dra for å endre rekkjefølgje"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Last ned versjon {} og start Cadence på nytt; køen blir lagra"
+
+msgid "Downloading update: {}%"
+msgstr "Lastar ned oppdatering: {} %"
+
 msgid "Duration"
 msgstr "Lengd"
 
@@ -693,6 +705,9 @@ msgstr "Gløym {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Formatet tenaren skal omkode til. Gjeld frå neste song."
 
+msgid "Forward"
+msgstr "Framover"
+
 msgid "Gapless playback"
 msgstr "Sømlaus avspeling"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Installer yt-dlp for å spele av YouTube-spor"
 
+msgid "Installing update..."
+msgstr "Installerer oppdatering..."
+
 msgid "Integrations"
 msgstr "Integrasjonar"
 
@@ -786,11 +804,17 @@ msgstr "Vis eit Cadence-ikon med avspelingskontrollar i menylinja eller systemst
 msgid "Keep this station in the favorites on this device"
 msgstr "Ta vare på denne stasjonen i favorittane på denne eininga"
 
+msgid "Keep this version until the next launch"
+msgstr "Behald denne versjonen til neste oppstart"
+
 msgid "Keep {}"
 msgstr "Behald {}"
 
 msgid "Language"
 msgstr "Språk"
+
+msgid "Later"
+msgstr "Seinare"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "La \"{}\" be om å styre denne spelaren igjen"
@@ -1016,6 +1040,9 @@ msgstr "Ingenting å leggje til enno"
 msgid "Nothing to go back to"
 msgstr "Ingenting å gå tilbake til"
 
+msgid "Nothing to go forward to"
+msgstr "Ingenting å gå framover til"
+
 msgid "Nothing to play here"
 msgstr "Ingenting å spele av her"
 
@@ -1054,6 +1081,9 @@ msgstr "Opne «Spelar no»"
 
 msgid "Open radio"
 msgstr "Opne radio"
+
+msgid "Open release page"
+msgstr "Opne utgjevingssida"
 
 msgid "Open the album \"{}\""
 msgstr "Opne albumet \"{}\""
@@ -1658,6 +1688,9 @@ msgstr "Denne Utforsk-sida finst ikkje"
 msgid "This folder is empty"
 msgstr "Denne mappa er tom"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Denne installasjonen kan ikkje oppdatere seg sjølv; opne utgjevingssida i nettlesaren"
+
 msgid "This mix is no longer available"
 msgstr "Denne miksen er ikkje lenger tilgjengeleg"
 
@@ -1699,6 +1732,12 @@ msgstr "Slå på lyd"
 
 msgid "Up next"
 msgstr "Neste"
+
+msgid "Update and restart"
+msgstr "Oppdater og start på nytt"
+
+msgid "Update failed: {}"
+msgstr "Oppdateringa mislukkast: {}"
 
 msgid "URL"
 msgstr "URL"

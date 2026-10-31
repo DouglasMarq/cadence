@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use cadence_storage::settings::YouTubeSettings;
 use slint::ComponentHandle;
 
 use super::deps::{DiscoverDeps, DiscoverView};
@@ -9,6 +10,7 @@ use super::render::render_sections;
 use super::sections::{Section, Sections};
 use crate::discover::{DiscoverFeed, FeedRequest, default_chart_country};
 use crate::ui::{AppWindow, on_ui, show_status};
+use crate::views::{View, ViewSlot};
 
 pub fn show_sections(view: DiscoverView) {
     let DiscoverView { window, deps } = view;
@@ -61,21 +63,37 @@ fn claim_requests(
         .collect()
 }
 
+fn feed_slot(request: &FeedRequest, settings: &YouTubeSettings) -> ViewSlot {
+    let account = (settings.cookies_from_browser, settings.country.as_deref());
+    View::Discover.slot(format!("feed/{request:?}/{account:?}"))
+}
+
 fn fetch_feed(
     DiscoverView { window, deps }: DiscoverView,
-    (request, settings): (FeedRequest, cadence_storage::settings::YouTubeSettings),
+    (request, settings): (FeedRequest, YouTubeSettings),
 ) {
+    let Some(server) = deps.context.session.get() else {
+        apply_feed(window, request, Err(tr!("Not connected to a server")));
+        return;
+    };
     let source = Arc::clone(&deps.source);
     let weak_window = window.as_weak();
-    deps.context.runtime.spawn(async move {
-        let result = source
-            .feed(request.clone(), settings)
+    let slot = feed_slot(&request, &settings);
+    let asked = request.clone();
+    let feed = async move {
+        source
+            .feed(asked, settings)
             .await
-            .map_err(|error| error.to_string());
-        on_ui(&weak_window, move |window| {
-            apply_feed(window, request, result)
+            .map_err(|error| error.to_string())
+    };
+    deps.context
+        .views(&server)
+        .load_detached(Some(slot), feed, move |result| {
+            let request = request.clone();
+            on_ui(&weak_window, move |window| {
+                apply_feed(window, request, result)
+            });
         });
-    });
 }
 
 fn apply_feed(window: &AppWindow, request: FeedRequest, result: Result<DiscoverFeed, String>) {

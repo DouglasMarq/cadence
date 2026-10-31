@@ -1,0 +1,88 @@
+import { Theme } from "theme.slint";
+import { ActionChip } from "widgets.slint";
+
+export enum UpdateStage { hidden, offered, downloading, installing }
+
+export global UpdateState {
+    in property <UpdateStage> stage;
+    in property <string> version;
+    in property <bool> can-install;
+    in property <int> percent;
+    callback update-and-restart();
+    callback open-release-page();
+    callback later();
+}
+
+export component UpdatePrompt inherits Rectangle {
+    height: layout.preferred-height;
+    border-radius: Theme.radius;
+    background: Theme.surface-raised;
+    border-width: 1px;
+    border-color: Theme.border;
+
+    TouchArea { }
+
+    layout := VerticalLayout {
+        padding: 12px;
+        spacing: 10px;
+
+        Text {
+            text: @tr("Cadence {} is available", UpdateState.version);
+            color: Theme.foreground;
+            font-weight: 600;
+            wrap: word-wrap;
+        }
+
+        if UpdateState.stage == UpdateStage.offered: HorizontalLayout {
+            alignment: end;
+            spacing: 8px;
+
+            ActionChip {
+                text: @tr("Later");
+                tooltip: @tr("Keep this version until the next launch");
+                clicked => {
+                    UpdateState.later();
+                }
+            }
+
+            if UpdateState.can-install: ActionChip {
+                text: @tr("Update and restart");
+                tooltip: @tr("Download version {} and restart Cadence; your queue is saved", UpdateState.version);
+                clicked => {
+                    UpdateState.update-and-restart();
+                }
+            }
+
+            if !UpdateState.can-install: ActionChip {
+                text: @tr("Open release page");
+                tooltip: @tr("This install cannot update itself; open the release page in your browser");
+                clicked => {
+                    UpdateState.open-release-page();
+                }
+            }
+        }
+
+        if UpdateState.stage == UpdateStage.downloading: Text {
+            text: @tr("Downloading update: {}%", UpdateState.percent);
+            color: Theme.muted;
+        }
+
+        if UpdateState.stage == UpdateStage.installing: Text {
+            text: @tr("Installing update...");
+            color: Theme.muted;
+        }
+
+        if UpdateState.stage == UpdateStage.downloading || UpdateState.stage == UpdateStage.installing: Rectangle {
+            height: 4px;
+            border-radius: self.height / 2;
+            background: Theme.foreground.with-alpha(0.16);
+
+            Rectangle {
+                x: 0;
+                width: parent.width * UpdateState.percent / 100;
+                border-radius: parent.border-radius;
+                background: Theme.primary;
+            }
+        }
+    }
+}

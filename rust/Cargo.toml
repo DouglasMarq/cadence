@@ -14,6 +14,7 @@ members = [
     "crates/radio-browser",
     "crates/remote",
     "crates/storage",
+    "crates/updater",
     "crates/youtube",
     "spikes/ui-slint",
 ]
@@ -37,6 +38,7 @@ cadence-player = { path = "crates/player" }
 cadence-radio-browser = { path = "crates/radio-browser" }
 cadence-remote = { path = "crates/remote" }
 cadence-storage = { path = "crates/storage" }
+cadence-updater = { path = "crates/updater" }
 cadence-youtube = { path = "crates/youtube" }
 image = { version = "0.25.10", default-features = false }
 lru = "0.18.5"

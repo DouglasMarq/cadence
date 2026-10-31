@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use cadence_api::{ApiError, MusicServer, Result, StreamOptions};
+use cadence_api::{ApiError, ArtistPartSink, MusicServer, Result, StreamOptions};
 use cadence_core::model::{
     Album, AlbumDetail, AlbumListQuery, Artist, ArtistDetail, ArtistListQuery, Folder, FolderId,
     Genre, ItemKind, LibraryScan, MusicFolder, Page, Paging, Playlist, RadioStation,
@@ -56,6 +56,10 @@ impl MusicServer for JellyfinServer {
 
     async fn artist(&self, id: &str) -> Result<ArtistDetail> {
         self.artist_detail(id).await
+    }
+
+    async fn artist_in_parts(&self, id: &str, deliver: ArtistPartSink<'_>) -> Result<()> {
+        self.deliver_artist_parts(id, deliver).await
     }
 
     async fn genre_list(&self) -> Result<Vec<Genre>> {

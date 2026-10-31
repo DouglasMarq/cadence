@@ -215,6 +215,9 @@ msgstr "Blokerede enheder"
 msgid "by {}"
 msgstr "af {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} er tilgængelig"
+
 msgid "Cancel"
 msgstr "Annuller"
 
@@ -400,6 +403,9 @@ msgstr "Kunne ikke flytte musikken: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Kunne ikke åbne mappen: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Kunne ikke åbne udgivelsessiden: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Kunne ikke åbne YouTube Music: {}"
@@ -609,6 +615,12 @@ msgstr "Dobbeltklik for at afspille"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dobbeltklik for at afspille, træk for at omarrangere"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Hent version {} og genstart Cadence; din kø gemmes"
+
+msgid "Downloading update: {}%"
+msgstr "Henter opdatering: {} %"
+
 msgid "Duration"
 msgstr "Varighed"
 
@@ -693,6 +705,9 @@ msgstr "Glem {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format, som serveren skal omkode til. Gælder fra næste sang."
 
+msgid "Forward"
+msgstr "Frem"
+
 msgid "Gapless playback"
 msgstr "Afspilning uden pauser"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Installer yt-dlp for at afspille YouTube-numre"
 
+msgid "Installing update..."
+msgstr "Installerer opdatering..."
+
 msgid "Integrations"
 msgstr "Integrationer"
 
@@ -786,11 +804,17 @@ msgstr "Vis et Cadence-ikon med afspilningsknapper i menulinjen eller systembakk
 msgid "Keep this station in the favorites on this device"
 msgstr "Behold denne station i favoritterne på denne enhed"
 
+msgid "Keep this version until the next launch"
+msgstr "Behold denne version indtil næste start"
+
 msgid "Keep {}"
 msgstr "Behold {}"
 
 msgid "Language"
 msgstr "Sprog"
+
+msgid "Later"
+msgstr "Senere"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Lad \"{}\" bede om at styre denne afspiller igen"
@@ -1016,6 +1040,9 @@ msgstr "Intet at tilføje endnu"
 msgid "Nothing to go back to"
 msgstr "Intet at gå tilbage til"
 
+msgid "Nothing to go forward to"
+msgstr "Intet at gå frem til"
+
 msgid "Nothing to play here"
 msgstr "Intet at afspille her"
 
@@ -1054,6 +1081,9 @@ msgstr "Åbn Afspiller nu"
 
 msgid "Open radio"
 msgstr "Åbn radio"
+
+msgid "Open release page"
+msgstr "Åbn udgivelsessiden"
 
 msgid "Open the album \"{}\""
 msgstr "Åbn albummet \"{}\""
@@ -1658,6 +1688,9 @@ msgstr "Denne Opdag-side findes ikke"
 msgid "This folder is empty"
 msgstr "Denne mappe er tom"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Denne installation kan ikke opdatere sig selv; åbn udgivelsessiden i din browser"
+
 msgid "This mix is no longer available"
 msgstr "Dette mix er ikke længere tilgængeligt"
 
@@ -1699,6 +1732,12 @@ msgstr "Slå lyd til"
 
 msgid "Up next"
 msgstr "Næste i køen"
+
+msgid "Update and restart"
+msgstr "Opdater og genstart"
+
+msgid "Update failed: {}"
+msgstr "Opdatering mislykkedes: {}"
 
 msgid "URL"
 msgstr "URL"

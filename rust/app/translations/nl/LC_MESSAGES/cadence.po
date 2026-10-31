@@ -215,6 +215,9 @@ msgstr "Geblokkeerde apparaten"
 msgid "by {}"
 msgstr "door {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} is beschikbaar"
+
 msgid "Cancel"
 msgstr "Annuleren"
 
@@ -400,6 +403,9 @@ msgstr "Kan de muziek niet verplaatsen: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Kan de map niet openen: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Kan de releasepagina niet openen: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Kan YouTube Music niet openen: {}"
@@ -609,6 +615,12 @@ msgstr "Dubbelklik om af te spelen"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dubbelklik om af te spelen, sleep om te herschikken"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Versie {} downloaden en Cadence opnieuw starten; je wachtrij wordt bewaard"
+
+msgid "Downloading update: {}%"
+msgstr "Update downloaden: {}%"
+
 msgid "Duration"
 msgstr "Duur"
 
@@ -693,6 +705,9 @@ msgstr "{} vergeten"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Formaat waarnaar de server moet transcoderen. Geldt vanaf het volgende nummer."
 
+msgid "Forward"
+msgstr "Vooruit"
+
 msgid "Gapless playback"
 msgstr "Naadloos afspelen"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Installeer yt-dlp om YouTube-tracks af te spelen"
 
+msgid "Installing update..."
+msgstr "Update installeren..."
+
 msgid "Integrations"
 msgstr "Integraties"
 
@@ -786,11 +804,17 @@ msgstr "Een Cadence-pictogram met afspeelknoppen in de menubalk of het systeemva
 msgid "Keep this station in the favorites on this device"
 msgstr "Deze zender op dit apparaat in de favorieten bewaren"
 
+msgid "Keep this version until the next launch"
+msgstr "Deze versie houden tot de volgende start"
+
 msgid "Keep {}"
 msgstr "{} behouden"
 
 msgid "Language"
 msgstr "Taal"
+
+msgid "Later"
+msgstr "Later"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "\"{}\" opnieuw laten vragen om deze speler te bedienen"
@@ -1016,6 +1040,9 @@ msgstr "Nog niets om toe te voegen"
 msgid "Nothing to go back to"
 msgstr "Niets om naar terug te gaan"
 
+msgid "Nothing to go forward to"
+msgstr "Kan niet verder vooruit"
+
 msgid "Nothing to play here"
 msgstr "Hier is niets om af te spelen"
 
@@ -1054,6 +1081,9 @@ msgstr "Nu afspelen openen"
 
 msgid "Open radio"
 msgstr "Radio openen"
+
+msgid "Open release page"
+msgstr "Releasepagina openen"
 
 msgid "Open the album \"{}\""
 msgstr "Het album \"{}\" openen"
@@ -1658,6 +1688,9 @@ msgstr "Deze Ontdekken-pagina bestaat niet"
 msgid "This folder is empty"
 msgstr "Deze map is leeg"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Deze installatie kan zichzelf niet bijwerken; open de releasepagina in je browser"
+
 msgid "This mix is no longer available"
 msgstr "Deze mix is niet meer beschikbaar"
 
@@ -1699,6 +1732,12 @@ msgstr "Dempen opheffen"
 
 msgid "Up next"
 msgstr "Hierna"
+
+msgid "Update and restart"
+msgstr "Bijwerken en opnieuw starten"
+
+msgid "Update failed: {}"
+msgstr "Bijwerken mislukt: {}"
 
 msgid "URL"
 msgstr "URL"

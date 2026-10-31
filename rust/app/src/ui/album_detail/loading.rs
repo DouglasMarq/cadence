@@ -1,15 +1,20 @@
-use cadence_api::ApiError;
+use std::sync::Arc;
+
+use cadence_api::{ApiError, MusicServer};
 use cadence_core::model::AlbumDetail;
 use cadence_storage::cover_cache::DecodedImage;
-use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
+use slint::{ComponentHandle, ModelRc, SharedString, VecModel, Weak};
 
 use super::super::album_grid::credited_artists;
-use super::super::images::{CoverSource, tint_of, to_image};
+use super::super::images::{CoverClaim, CoverSource, tint_of, to_image};
+use super::super::rows::show_rows;
 use super::super::{AlbumDetailArtist, AlbumDetailState, AppWindow, Context, on_ui, show_status};
 use super::info::album_info;
 use super::tracks::show_tracks;
+use crate::views::View;
 
 const COVER_SIZE: u32 = 440;
+const DETAIL_ITEM: &str = "detail";
 
 fn is_shown(window: &AppWindow, album_id: &SharedString) -> bool {
     window.global::<AlbumDetailState>().get_album_id() == *album_id
@@ -26,7 +31,9 @@ pub(super) fn show(window: &AppWindow, detail: AlbumDetail) {
         })
         .collect();
     state.set_name(album.name.as_str().into());
-    state.set_artists(ModelRc::new(VecModel::from(artists)));
+    show_rows(&state.get_artists(), artists, |model| {
+        state.set_artists(model);
+    });
     state.set_info(album_info(&detail).into());
     state.set_is_favorite(album.is_favorite);
     state.set_rating(i32::from(album.user_rating.unwrap_or(0)));
@@ -47,7 +54,7 @@ fn clear(window: &AppWindow, album_id: &SharedString) {
     state.set_is_loading(true);
     state.set_error(SharedString::default());
     state.set_name(SharedString::default());
-    state.set_artists(ModelRc::default());
+    state.set_artists(ModelRc::new(VecModel::default()));
     state.set_info(SharedString::default());
     state.set_has_cover(false);
     state.set_cover(slint::Image::default());
@@ -73,22 +80,44 @@ fn show_cover(window: &AppWindow, album_id: &SharedString, cover: &DecodedImage)
     }
 }
 
-pub fn load(window: &AppWindow, context: &Context, album_id: SharedString) {
-    clear(window, &album_id);
-    let Some(server) = context.session.get() else {
-        return;
-    };
-    let weak_window = window.as_weak();
-    let covers = context.covers.clone();
-    context.runtime.spawn(async move {
-        let result = server.album(&album_id).await;
+struct AlbumPage {
+    weak_window: Weak<AppWindow>,
+    context: Context,
+    server: Arc<dyn MusicServer>,
+    album_id: SharedString,
+    claim: CoverClaim,
+}
+
+impl AlbumPage {
+    fn fetch_cover(&self, cover_id: String) {
+        let source = CoverSource::Server {
+            server: Arc::clone(&self.server),
+            cover_id,
+        };
+        let covers = self.context.view_covers();
+        let weak_window = self.weak_window.clone();
+        let album_id = self.album_id.clone();
+        self.context.runtime.spawn(async move {
+            let Some(cover) = source.fetch(covers.as_ref(), COVER_SIZE).await else {
+                return;
+            };
+            on_ui(&weak_window, move |window| {
+                show_cover(window, &album_id, &cover);
+            });
+        });
+    }
+
+    fn deliver(&self, result: Result<AlbumDetail, ApiError>) {
         let cover_id = result
             .as_ref()
             .ok()
-            .and_then(|detail| detail.album.cover_art_id.clone());
-        let shown_id = album_id.clone();
-        on_ui(&weak_window, move |window| {
-            if !is_shown(window, &shown_id) {
+            .and_then(|detail| detail.album.cover_art_id.as_deref());
+        if let Some(cover_id) = self.claim.claim(cover_id) {
+            self.fetch_cover(cover_id);
+        }
+        let album_id = self.album_id.clone();
+        on_ui(&self.weak_window, move |window| {
+            if !is_shown(window, &album_id) {
                 return;
             }
             match result {
@@ -96,15 +125,24 @@ pub fn load(window: &AppWindow, context: &Context, album_id: SharedString) {
                 Err(error) => show_error(window, &error),
             }
         });
-        let Some(cover_id) = cover_id else {
-            return;
-        };
-        let source = CoverSource::Server { server, cover_id };
-        let Some(cover) = source.fetch(covers.as_ref(), COVER_SIZE).await else {
-            return;
-        };
-        on_ui(&weak_window, move |window| {
-            show_cover(window, &album_id, &cover);
-        });
-    });
+    }
+}
+
+pub fn load(window: &AppWindow, context: &Context, album_id: SharedString) {
+    context.session.open_view();
+    clear(window, &album_id);
+    let Some(server) = context.session.get() else {
+        return;
+    };
+    let views = context.views(&server);
+    let slot = View::Album(album_id.to_string()).slot(DETAIL_ITEM);
+    let page = AlbumPage {
+        weak_window: window.as_weak(),
+        context: context.clone(),
+        server: Arc::clone(&server),
+        album_id: album_id.clone(),
+        claim: CoverClaim::default(),
+    };
+    let detail = async move { server.album(&album_id).await };
+    views.load(Some(slot), detail, move |result| page.deliver(result));
 }

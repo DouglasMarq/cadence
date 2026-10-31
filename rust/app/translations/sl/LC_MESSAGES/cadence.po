@@ -227,6 +227,9 @@ msgstr "Blokirane naprave"
 msgid "by {}"
 msgstr "avtor: {}"
 
+msgid "Cadence {} is available"
+msgstr "Na voljo je Cadence {}"
+
 msgid "Cancel"
 msgstr "Prekliči"
 
@@ -412,6 +415,9 @@ msgstr "Glasbe ni bilo mogoče premakniti: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Mape ni bilo mogoče odpreti: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Strani izdaje ni bilo mogoče odpreti: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Music ni bilo mogoče odpreti: {}"
@@ -625,6 +631,12 @@ msgstr "Dvokliknite za predvajanje"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dvokliknite za predvajanje, povlecite za razvrščanje"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Prenesi različico {} in znova zaženi Cadence; čakalna vrsta se shrani"
+
+msgid "Downloading update: {}%"
+msgstr "Prenašanje posodobitve: {} %"
+
 msgid "Duration"
 msgstr "Trajanje"
 
@@ -709,6 +721,9 @@ msgstr "Pozabi {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format, v katerega naj strežnik pretvarja. Velja od naslednje skladbe."
 
+msgid "Forward"
+msgstr "Naprej"
+
 msgid "Gapless playback"
 msgstr "Predvajanje brez premorov"
 
@@ -760,6 +775,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Za predvajanje skladb iz storitve YouTube namestite yt-dlp"
 
+msgid "Installing update..."
+msgstr "Nameščanje posodobitve..."
+
 msgid "Integrations"
 msgstr "Integracije"
 
@@ -802,11 +820,17 @@ msgstr "Prikaži ikono Cadence s kontrolniki predvajanja v menijski ali sistemsk
 msgid "Keep this station in the favorites on this device"
 msgstr "Obdrži to postajo med priljubljenimi na tej napravi"
 
+msgid "Keep this version until the next launch"
+msgstr "Obdrži to različico do naslednjega zagona"
+
 msgid "Keep {}"
 msgstr "Obdrži {}"
 
 msgid "Language"
 msgstr "Jezik"
+
+msgid "Later"
+msgstr "Pozneje"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Dovoli, da \"{}\" znova zaprosi za upravljanje tega predvajalnika"
@@ -1034,6 +1058,9 @@ msgstr "Še ni ničesar za dodajanje"
 msgid "Nothing to go back to"
 msgstr "Ni se kam vrniti"
 
+msgid "Nothing to go forward to"
+msgstr "Ni se kam premakniti naprej"
+
 msgid "Nothing to play here"
 msgstr "Tu ni ničesar za predvajanje"
 
@@ -1072,6 +1099,9 @@ msgstr "Odpri pogled predvajanja"
 
 msgid "Open radio"
 msgstr "Odpri radio"
+
+msgid "Open release page"
+msgstr "Odpri stran izdaje"
 
 msgid "Open the album \"{}\""
 msgstr "Odpri album „{}“"
@@ -1682,6 +1712,9 @@ msgstr "Ta stran v razdelku Odkrij ne obstaja"
 msgid "This folder is empty"
 msgstr "Ta mapa je prazna"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Ta namestitev se ne more posodobiti sama; odprite stran izdaje v brskalniku"
+
 msgid "This mix is no longer available"
 msgstr "Ta miks ni več na voljo"
 
@@ -1723,6 +1756,12 @@ msgstr "Vklopi zvok"
 
 msgid "Up next"
 msgstr "Sledi"
+
+msgid "Update and restart"
+msgstr "Posodobi in znova zaženi"
+
+msgid "Update failed: {}"
+msgstr "Posodobitev ni uspela: {}"
 
 msgid "URL"
 msgstr "URL"

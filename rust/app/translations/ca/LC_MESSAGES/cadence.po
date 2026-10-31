@@ -215,6 +215,9 @@ msgstr "Dispositius bloquejats"
 msgid "by {}"
 msgstr "de {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} està disponible"
+
 msgid "Cancel"
 msgstr "Cancel·la"
 
@@ -400,6 +403,9 @@ msgstr "No s'ha pogut moure la música: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "No s'ha pogut obrir la carpeta: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "No s'ha pogut obrir la pàgina de la versió: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "No s'ha pogut obrir YouTube Music: {}"
@@ -609,6 +615,12 @@ msgstr "Feu doble clic per reproduir"
 msgid "Double-click to play, drag to reorder"
 msgstr "Feu doble clic per reproduir, arrossegueu per reordenar"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Baixa la versió {} i reinicia Cadence; la cua es desa"
+
+msgid "Downloading update: {}%"
+msgstr "S'està baixant l'actualització: {}%"
+
 msgid "Duration"
 msgstr "Durada"
 
@@ -693,6 +705,9 @@ msgstr "Oblida {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format al qual el servidor ha de transcodificar. S'aplica a partir de la cançó següent."
 
+msgid "Forward"
+msgstr "Endavant"
+
 msgid "Gapless playback"
 msgstr "Reproducció sense pauses"
 
@@ -744,6 +759,9 @@ msgstr "Índigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Instal·leu yt-dlp per a reproduir pistes de YouTube"
 
+msgid "Installing update..."
+msgstr "S'està instal·lant l'actualització..."
+
 msgid "Integrations"
 msgstr "Integracions"
 
@@ -786,11 +804,17 @@ msgstr "Mantén una icona de Cadence amb controls de reproducció a la barra de 
 msgid "Keep this station in the favorites on this device"
 msgstr "Desa aquesta emissora als preferits d'aquest dispositiu"
 
+msgid "Keep this version until the next launch"
+msgstr "Mantén aquesta versió fins al proper inici"
+
 msgid "Keep {}"
 msgstr "Conserva {}"
 
 msgid "Language"
 msgstr "Idioma"
+
+msgid "Later"
+msgstr "Més tard"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Deixa que \"{}\" torni a demanar controlar aquest reproductor"
@@ -1016,6 +1040,9 @@ msgstr "Encara no hi ha res per afegir"
 msgid "Nothing to go back to"
 msgstr "No hi ha res on tornar"
 
+msgid "Nothing to go forward to"
+msgstr "No hi ha res cap endavant"
+
 msgid "Nothing to play here"
 msgstr "Aquí no hi ha res per reproduir"
 
@@ -1054,6 +1081,9 @@ msgstr "Obre la reproducció actual"
 
 msgid "Open radio"
 msgstr "Obre la ràdio"
+
+msgid "Open release page"
+msgstr "Obre la pàgina de la versió"
 
 msgid "Open the album \"{}\""
 msgstr "Obre l'àlbum «{}»"
@@ -1658,6 +1688,9 @@ msgstr "Aquesta pàgina de Descobreix no existeix"
 msgid "This folder is empty"
 msgstr "Aquesta carpeta és buida"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Aquesta instal·lació no es pot actualitzar sola; obre la pàgina de la versió al navegador"
+
 msgid "This mix is no longer available"
 msgstr "Aquest mix ja no està disponible"
 
@@ -1699,6 +1732,12 @@ msgstr "Activa el so"
 
 msgid "Up next"
 msgstr "A continuació"
+
+msgid "Update and restart"
+msgstr "Actualitza i reinicia"
+
+msgid "Update failed: {}"
+msgstr "Ha fallat l'actualització: {}"
 
 msgid "URL"
 msgstr "URL"

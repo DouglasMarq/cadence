@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::{Mutex, PoisonError};
+use std::sync::{Arc, Mutex, PoisonError};
 
 use anyhow::{Context, Result, anyhow};
 use cadence_api::Credential;
@@ -10,6 +10,8 @@ use cadence_storage::settings::Settings;
 use cadence_storage::{credentials, state_files};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
+
+use crate::views::ViewStore;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StateFile {
@@ -37,6 +39,7 @@ pub trait Store: Send + Sync {
     fn delete_credential(&self, server_id: &str) -> Result<()>;
     fn read_state(&self, file: StateFile) -> Result<Option<Vec<u8>>>;
     fn write_state(&self, file: StateFile, bytes: &[u8]) -> Result<()>;
+    fn views(&self) -> Arc<ViewStore>;
 }
 
 struct QueueFiles {
@@ -78,6 +81,7 @@ impl QueueFiles {
 pub struct SystemStore {
     paths: Paths,
     queue_files: QueueFiles,
+    views: Arc<ViewStore>,
 }
 
 impl SystemStore {
@@ -85,6 +89,7 @@ impl SystemStore {
         let paths = Paths::from_env()?;
         Ok(Self {
             queue_files: QueueFiles::new(paths.data_dir.clone()),
+            views: Arc::new(ViewStore::new(&paths.cache_dir)),
             paths,
         })
     }
@@ -135,12 +140,16 @@ impl Store for SystemStore {
     fn write_state(&self, file: StateFile, bytes: &[u8]) -> Result<()> {
         Ok(state_files::write(&self.state_path(file), bytes)?)
     }
+    fn views(&self) -> Arc<ViewStore> {
+        Arc::clone(&self.views)
+    }
 }
 
 pub struct JsonStore {
     dir: PathBuf,
     queue_files: QueueFiles,
     credentials: Mutex<HashMap<String, Credential>>,
+    views: Arc<ViewStore>,
 }
 
 impl JsonStore {
@@ -148,6 +157,7 @@ impl JsonStore {
         let dir = dir.into();
         Self {
             queue_files: QueueFiles::new(dir.clone()),
+            views: Arc::new(ViewStore::new(&dir)),
             dir,
             credentials: Mutex::default(),
         }
@@ -215,6 +225,9 @@ impl Store for JsonStore {
     }
     fn write_state(&self, file: StateFile, bytes: &[u8]) -> Result<()> {
         Ok(state_files::write(&self.dir.join(file.file_name()), bytes)?)
+    }
+    fn views(&self) -> Arc<ViewStore> {
+        Arc::clone(&self.views)
     }
 }
 

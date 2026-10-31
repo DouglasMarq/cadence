@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, PoisonError};
 
 use cadence_api::MusicServer;
 use cadence_core::queue::{QueueTrack, YouTubeVideo};
@@ -27,6 +27,21 @@ pub fn tint_of(cover: &DecodedImage) -> Option<Color> {
 
 fn thumbnail_cache_key(video: &YouTubeVideo) -> String {
     format!("youtube:{}", video.video_id)
+}
+
+#[derive(Default)]
+pub struct CoverClaim(Mutex<Option<String>>);
+
+impl CoverClaim {
+    pub fn claim(&self, cover_id: Option<&str>) -> Option<String> {
+        let cover_id = cover_id?;
+        let mut claimed = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        if claimed.as_deref() == Some(cover_id) {
+            return None;
+        }
+        *claimed = Some(cover_id.to_owned());
+        claimed.clone()
+    }
 }
 
 pub enum CoverSource {
@@ -80,6 +95,25 @@ mod tests {
 
     use super::*;
     use crate::demo::{FakeServer, test_song};
+
+    #[test]
+    fn given_a_cover_id_when_claimed_twice_then_only_the_first_claim_fetches_it() {
+        let claim = CoverClaim::default();
+        assert_eq!(claim.claim(Some("cover-1")).as_deref(), Some("cover-1"));
+        assert_eq!(claim.claim(Some("cover-1")), None);
+    }
+
+    #[test]
+    fn given_a_claimed_cover_when_a_new_id_arrives_then_it_is_fetched() {
+        let claim = CoverClaim::default();
+        claim.claim(Some("cover-1"));
+        assert_eq!(claim.claim(Some("cover-2")).as_deref(), Some("cover-2"));
+    }
+
+    #[test]
+    fn given_no_cover_id_when_claimed_then_nothing_is_fetched() {
+        assert_eq!(CoverClaim::default().claim(None), None);
+    }
 
     fn youtube_track(thumbnail_url: Option<&str>) -> QueueTrack {
         QueueTrack::from(&YouTubeTrack {

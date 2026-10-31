@@ -215,6 +215,9 @@ msgstr "Блокирани устройства"
 msgid "by {}"
 msgstr "от {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} е налична"
+
 msgid "Cancel"
 msgstr "Отказ"
 
@@ -400,6 +403,9 @@ msgstr "Музиката не можа да бъде преместена: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Неуспешно отваряне на папката: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Страницата на изданието не може да се отвори: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Неуспешно отваряне на YouTube Music: {}"
@@ -609,6 +615,12 @@ msgstr "Щракнете два пъти за възпроизвеждане"
 msgid "Double-click to play, drag to reorder"
 msgstr "Щракнете два пъти за възпроизвеждане, плъзнете за пренареждане"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Изтегляне на версия {} и рестартиране на Cadence; опашката ви се запазва"
+
+msgid "Downloading update: {}%"
+msgstr "Изтегляне на актуализацията: {}%"
+
 msgid "Duration"
 msgstr "Продължителност"
 
@@ -693,6 +705,9 @@ msgstr "Забравяне на {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Формат, в който сървърът да прекодира. Важи от следващата песен."
 
+msgid "Forward"
+msgstr "Напред"
+
 msgid "Gapless playback"
 msgstr "Възпроизвеждане без паузи"
 
@@ -744,6 +759,9 @@ msgstr "Индиго"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Инсталирайте yt-dlp, за да възпроизвеждате песни от YouTube"
 
+msgid "Installing update..."
+msgstr "Инсталиране на актуализацията..."
+
 msgid "Integrations"
 msgstr "Интеграции"
 
@@ -786,11 +804,17 @@ msgstr "Икона на Cadence с бутони за възпроизвежда�
 msgid "Keep this station in the favorites on this device"
 msgstr "Запазване на тази станция в любимите на това устройство"
 
+msgid "Keep this version until the next launch"
+msgstr "Запазване на тази версия до следващото стартиране"
+
 msgid "Keep {}"
 msgstr "Запазване на {}"
 
 msgid "Language"
 msgstr "Език"
+
+msgid "Later"
+msgstr "По-късно"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Разрешаване на \"{}\" отново да иска управление на този плейър"
@@ -1016,6 +1040,9 @@ msgstr "Все още няма какво да се добави"
 msgid "Nothing to go back to"
 msgstr "Няма към какво да се върнете"
 
+msgid "Nothing to go forward to"
+msgstr "Няма накъде да продължите напред"
+
 msgid "Nothing to play here"
 msgstr "Тук няма нищо за възпроизвеждане"
 
@@ -1054,6 +1081,9 @@ msgstr "Отваряне на „Сега звучи“"
 
 msgid "Open radio"
 msgstr "Отваряне на радиото"
+
+msgid "Open release page"
+msgstr "Отваряне на страницата на изданието"
 
 msgid "Open the album \"{}\""
 msgstr "Отваряне на албума „{}“"
@@ -1658,6 +1688,9 @@ msgstr "Тази страница от „Откриване“ не същес�
 msgid "This folder is empty"
 msgstr "Тази папка е празна"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Тази инсталация не може да се актуализира сама; отворете страницата на изданието в браузъра"
+
 msgid "This mix is no longer available"
 msgstr "Този микс вече не е наличен"
 
@@ -1699,6 +1732,12 @@ msgstr "Включване на звука"
 
 msgid "Up next"
 msgstr "Следват"
+
+msgid "Update and restart"
+msgstr "Актуализиране и рестартиране"
+
+msgid "Update failed: {}"
+msgstr "Актуализацията не бе успешна: {}"
 
 msgid "URL"
 msgstr "URL"

@@ -25,6 +25,7 @@ import { FoldersView } from "folders.slint";
 import { ShareClipboard } from "share.slint";
 import { RadioView } from "radio.slint";
 import { DeviceApprovalDialog, DevicesState } from "devices.slint";
+import { UpdatePrompt, UpdateStage, UpdateState } from "update_prompt.slint";
 
 export { Actions, AppState, LoginState, Page, PlayerState, QueueRow, QueueState, Route, TrackRow, TracksState } from "globals.slint";
 export { HomeState } from "home.slint";
@@ -47,6 +48,7 @@ export { FoldersState } from "folders.slint";
 export { ShareState } from "share.slint";
 export { RadioRow, RadioSource, RadioState, RadioTab } from "radio.slint";
 export { ConnectedDevice, DevicesState, RemoteDevice } from "devices.slint";
+export { UpdateStage, UpdateState } from "update_prompt.slint";
 export { Tooltip } from "widgets.slint";
 
 
@@ -208,6 +210,12 @@ export component AppWindow inherits Window {
         if DevicesState.is-approval-open: DeviceApprovalDialog { }
 
         ShareClipboard { }
+
+        if UpdateState.stage != UpdateStage.hidden: UpdatePrompt {
+            x: parent.width - self.width - 20px;
+            y: parent.height - self.height - 104px;
+            width: min(420px, parent.width - 40px);
+        }
 
         if AppState.status != "": Rectangle {
             x: parent.width - self.width - 20px;

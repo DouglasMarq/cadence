@@ -5,6 +5,7 @@ use slint::{ComponentHandle, Model, ModelNotify, ModelTracker, SharedString};
 
 use super::super::{AlbumDetailState, AlbumDetailTrack, AppWindow, format_duration};
 use super::layout::{AlbumRow, PlacedRow, TrackLayout, disc_of};
+use crate::ui::rows::notify_row_count;
 use crate::ui::tracks::primary_artist_id;
 
 #[derive(Default)]
@@ -50,9 +51,17 @@ impl Model for AlbumTracks {
 impl AlbumTracks {
     pub fn replace(&self, songs: Vec<Song>) {
         let songs = ordered(songs);
+        if self.list.borrow().songs == songs {
+            return;
+        }
         let layout = TrackLayout::new(&songs);
+        let before = self.row_count();
         *self.list.borrow_mut() = AlbumTrackList { songs, layout };
-        self.notify.reset();
+        let after = self.row_count();
+        notify_row_count(&self.notify, before, after);
+        for row in 0..before.min(after) {
+            self.notify.row_changed(row);
+        }
     }
 
     pub fn songs(&self) -> Vec<Song> {
@@ -189,6 +198,19 @@ mod tests {
         assert_eq!(rows[1].number, "1");
         assert_eq!(rows[1].duration, "1:01");
         assert_eq!(tracks.height(), 196.0);
+    }
+
+    #[test]
+    fn given_a_refresh_when_rows_change_then_the_list_follows_in_place() {
+        let tracks = AlbumTracks::default();
+        tracks.replace(vec![song("a", 1, 1), song("b", 1, 2)]);
+
+        tracks.replace(vec![song("a", 1, 1), song("b", 1, 2)]);
+        tracks.replace(vec![song("a", 1, 1), song("c", 1, 2), song("d", 1, 3)]);
+
+        let ids: Vec<String> = tracks.songs().into_iter().map(|song| song.id).collect();
+        assert_eq!(ids, ["a", "c", "d"]);
+        assert_eq!(tracks.row_count(), 3);
     }
 
     #[test]

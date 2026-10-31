@@ -72,6 +72,17 @@ impl<Key: Hash + Eq + Clone, Cover: Clone> CoverLru<Key, Cover> {
         self.failed.insert(key.to_owned());
     }
 
+    pub fn forget<Query>(&mut self, key: &Query) -> bool
+    where
+        Key: Borrow<Query>,
+        Query: Hash + Eq + ?Sized,
+    {
+        let had_cover = self.covers.pop(key).is_some();
+        let was_pending = self.pending.remove(key);
+        let had_failed = self.failed.remove(key);
+        had_cover || was_pending || had_failed
+    }
+
     pub fn clear(&mut self) {
         self.covers.clear();
         self.pending.clear();
@@ -138,6 +149,19 @@ mod tests {
         let mut covers: CoverLru<usize, u8> = CoverLru::new(2);
         assert!(covers.begin(&0));
         covers.retry_later(&0);
+        assert!(covers.begin(&0));
+    }
+
+    #[test]
+    fn given_a_forgotten_cover_it_can_be_requested_again_and_says_if_it_was_known() {
+        let mut covers: CoverLru<usize, u8> = CoverLru::new(2);
+        assert!(!covers.forget(&0));
+        covers.insert(0, 1);
+        assert!(covers.forget(&0));
+        assert!(covers.begin(&0));
+        assert!(covers.forget(&0));
+        covers.fail(&0);
+        assert!(covers.forget(&0));
         assert!(covers.begin(&0));
     }
 

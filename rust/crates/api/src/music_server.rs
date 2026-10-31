@@ -1,13 +1,15 @@
 use async_trait::async_trait;
 use cadence_core::model::{
-    Album, AlbumDetail, AlbumListQuery, Artist, ArtistDetail, ArtistListQuery, Folder, FolderId,
-    Genre, ItemKind, LibraryScan, MusicFolder, Page, Paging, Playlist, RadioStation,
+    Album, AlbumDetail, AlbumListQuery, Artist, ArtistDetail, ArtistListQuery, ArtistPart, Folder,
+    FolderId, Genre, ItemKind, LibraryScan, MusicFolder, Page, Paging, Playlist, RadioStation,
     RadioStationDraft, SearchResults, ServerConfig, ServerPlayQueue, Share, Song, SongListQuery,
 };
 
 use crate::credential::Credential;
 use crate::error::Result;
 use crate::stream_options::StreamOptions;
+
+pub type ArtistPartSink<'sink> = &'sink (dyn Fn(ArtistPart) + Send + Sync);
 
 #[async_trait]
 pub trait MusicServer: Send + Sync {
@@ -31,6 +33,16 @@ pub trait MusicServer: Send + Sync {
 
     async fn artist_list(&self, query: &ArtistListQuery, paging: Paging) -> Result<Page<Artist>>;
     async fn artist(&self, id: &str) -> Result<ArtistDetail>;
+
+    async fn artist_in_parts(&self, id: &str, deliver: ArtistPartSink<'_>) -> Result<()> {
+        let detail = self.artist(id).await?;
+        let biography = detail.artist.biography.clone();
+        deliver(ArtistPart::Profile(detail.artist));
+        deliver(ArtistPart::Biography(biography));
+        deliver(ArtistPart::Albums(detail.albums));
+        deliver(ArtistPart::TopSongs(detail.top_songs));
+        Ok(())
+    }
 
     async fn genre_list(&self) -> Result<Vec<Genre>>;
     async fn music_folders(&self) -> Result<Vec<MusicFolder>>;

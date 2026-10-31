@@ -157,9 +157,24 @@ impl TestWindow {
         Self::open_with_remote(server, crate::remote::Remote::default())
     }
 
+    pub fn open_with_covers(
+        server: Arc<dyn MusicServer>,
+        covers: Arc<dyn crate::covers::CoverProvider>,
+    ) -> Option<Self> {
+        Self::open_full(server, crate::remote::Remote::default(), covers)
+    }
+
     pub fn open_with_remote(
         server: Arc<dyn MusicServer>,
         remote: crate::remote::Remote,
+    ) -> Option<Self> {
+        Self::open_full(server, remote, Arc::new(DemoCovers))
+    }
+
+    fn open_full(
+        server: Arc<dyn MusicServer>,
+        remote: crate::remote::Remote,
+        covers: Arc<dyn crate::covers::CoverProvider>,
     ) -> Option<Self> {
         let window = MinimalSoftwareWindow::new(RepaintBufferType::NewBuffer);
         let clipboard = CopiedText::default();
@@ -177,7 +192,7 @@ impl TestWindow {
             session: Session::default(),
             store: Arc::new(JsonStore::new(dir.path())),
             connector: Arc::new(DemoConnector::default()),
-            covers: Arc::new(DemoCovers),
+            covers,
             remote,
         };
         context.session.set(Some(Arc::clone(&server)));

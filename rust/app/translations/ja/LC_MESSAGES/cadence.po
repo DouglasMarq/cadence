@@ -209,6 +209,9 @@ msgstr "禁止したデバイス"
 msgid "by {}"
 msgstr "作成者: {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} を利用できます"
+
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -394,6 +397,9 @@ msgstr "音楽を移動できませんでした: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "フォルダーを開けませんでした: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "リリースページを開けませんでした: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Music を開けませんでした: {}"
@@ -601,6 +607,12 @@ msgstr "ダブルクリックで再生"
 msgid "Double-click to play, drag to reorder"
 msgstr "ダブルクリックで再生、ドラッグで並べ替え"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "バージョン {} をダウンロードして Cadence を再起動します。キューは保存されます"
+
+msgid "Downloading update: {}%"
+msgstr "アップデートをダウンロード中: {}%"
+
 msgid "Duration"
 msgstr "長さ"
 
@@ -685,6 +697,9 @@ msgstr "{} を削除"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "サーバーがトランスコードする形式です。次の曲から適用されます。"
 
+msgid "Forward"
+msgstr "進む"
+
 msgid "Gapless playback"
 msgstr "ギャップレス再生"
 
@@ -736,6 +751,9 @@ msgstr "インディゴ"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "YouTube のトラックを再生するには yt-dlp をインストールしてください"
 
+msgid "Installing update..."
+msgstr "アップデートをインストール中..."
+
 msgid "Integrations"
 msgstr "連携"
 
@@ -778,11 +796,17 @@ msgstr "メニューバーまたはシステムトレイに再生コントロー
 msgid "Keep this station in the favorites on this device"
 msgstr "このステーションをこのデバイスのお気に入りに保存"
 
+msgid "Keep this version until the next launch"
+msgstr "次回の起動までこのバージョンを使い続けます"
+
 msgid "Keep {}"
 msgstr "{} を残す"
 
 msgid "Language"
 msgstr "言語"
+
+msgid "Later"
+msgstr "後で"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "\"{}\" が再びこのプレーヤーの操作を要求できるようにする"
@@ -1007,6 +1031,9 @@ msgstr "まだ追加できるものがありません"
 msgid "Nothing to go back to"
 msgstr "戻る先がありません"
 
+msgid "Nothing to go forward to"
+msgstr "進む先がありません"
+
 msgid "Nothing to play here"
 msgstr "ここには再生できるものがありません"
 
@@ -1045,6 +1072,9 @@ msgstr "再生中の画面を開く"
 
 msgid "Open radio"
 msgstr "ラジオを開く"
+
+msgid "Open release page"
+msgstr "リリースページを開く"
 
 msgid "Open the album \"{}\""
 msgstr "アルバム「{}」を開く"
@@ -1646,6 +1676,9 @@ msgstr "このディスカバー ページは存在しません"
 msgid "This folder is empty"
 msgstr "このフォルダーは空です"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "このインストールは自動更新できません。ブラウザーでリリースページを開いてください"
+
 msgid "This mix is no longer available"
 msgstr "このミックスは利用できなくなりました"
 
@@ -1687,6 +1720,12 @@ msgstr "ミュート解除"
 
 msgid "Up next"
 msgstr "次に再生"
+
+msgid "Update and restart"
+msgstr "更新して再起動"
+
+msgid "Update failed: {}"
+msgstr "更新に失敗しました: {}"
 
 msgid "URL"
 msgstr "URL"

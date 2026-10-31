@@ -1,7 +1,11 @@
+use std::path::Path;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use async_trait::async_trait;
+use cadence_storage::settings::YouTubeSettings;
+use cadence_youtube::music::{CollectionPage, MusicError, MusicShelf, MusicSong};
 use slint::platform::software_renderer::{MinimalSoftwareWindow, RepaintBufferType, Rgb565Pixel};
 use slint::{ComponentHandle, Model, PhysicalSize};
 use tokio::runtime::Runtime;
@@ -13,7 +17,7 @@ use crate::connect::DemoConnector;
 use crate::controller::{Command, TrackCommand};
 use crate::covers::DemoCovers;
 use crate::demo::{DemoLibrary, FakeServer};
-use crate::discover::DemoDiscover;
+use crate::discover::{DemoDiscover, DiscoverFeed, DiscoverSource, FeedRequest};
 use crate::session::Session;
 use crate::store::JsonStore;
 use crate::ui::test_window::{Jobs, claim_routed_platform, routed_runtime};
@@ -23,6 +27,7 @@ use crate::ui::{
 };
 
 const SONGS: usize = 2_400;
+const REFRESH_SETTLE: Duration = Duration::from_millis(300);
 
 type EventQueue = Jobs;
 
@@ -81,12 +86,16 @@ struct Fixture {
     runtime: Runtime,
     window: AppWindow,
     received: UnboundedReceiver<Command>,
-    _store_dir: tempfile::TempDir,
+    store_dir: tempfile::TempDir,
 }
 
 fn open_discover() -> Fixture {
+    let source = Arc::new(DemoDiscover::new(DemoLibrary::with_songs(SONGS)));
+    open_on(source, tempfile::tempdir().unwrap())
+}
+
+fn open_on(source: Arc<dyn DiscoverSource>, store_dir: tempfile::TempDir) -> Fixture {
     let runtime = routed_runtime(2);
-    let store_dir = tempfile::tempdir().unwrap();
     let session = Session::default();
     session.set(Some(Arc::new(FakeServer::new(SONGS))));
     let (commands, received) = mpsc::unbounded_channel();
@@ -101,11 +110,7 @@ fn open_discover() -> Fixture {
     };
     let window = AppWindow::new().unwrap();
     crate::ui::nav::install(&window);
-    install(
-        &window,
-        &context,
-        Arc::new(DemoDiscover::new(DemoLibrary::with_songs(SONGS))),
-    );
+    install(&window, &context, source);
     window.show().unwrap();
     let app = window.global::<AppState>();
     app.set_page(Page::Main);
@@ -114,7 +119,7 @@ fn open_discover() -> Fixture {
         runtime,
         window,
         received,
-        _store_dir: store_dir,
+        store_dir,
     }
 }
 
@@ -330,4 +335,124 @@ fn discover_shows_demo_sections_pages_and_plays_from_the_library_first() {
     playlists_open_as_pages(&fixture, &screen);
     page_songs_play_from_the_clicked_row(&mut fixture, &screen);
     search_lists_songs_and_back_returns(&fixture, &screen);
+}
+
+enum StubFeed {
+    Silent,
+    Refused,
+    Shelf(&'static str),
+}
+
+#[async_trait]
+impl DiscoverSource for StubFeed {
+    async fn feed(
+        &self,
+        _request: FeedRequest,
+        _settings: YouTubeSettings,
+    ) -> Result<DiscoverFeed, MusicError> {
+        match self {
+            Self::Silent => std::future::pending().await,
+            Self::Refused => Err(MusicError::Status(503)),
+            Self::Shelf(title) => Ok(DiscoverFeed {
+                shelves: vec![MusicShelf {
+                    title: (*title).to_owned(),
+                    items: Vec::new(),
+                }],
+                ..DiscoverFeed::default()
+            }),
+        }
+    }
+
+    async fn collection(
+        &self,
+        _browse_id: String,
+        _settings: YouTubeSettings,
+    ) -> Result<CollectionPage, MusicError> {
+        std::future::pending().await
+    }
+
+    async fn search(
+        &self,
+        _query: String,
+        _settings: YouTubeSettings,
+    ) -> Result<Vec<MusicSong>, MusicError> {
+        std::future::pending().await
+    }
+
+    async fn radio(
+        &self,
+        _video_id: String,
+        _settings: YouTubeSettings,
+    ) -> Result<Vec<MusicSong>, MusicError> {
+        std::future::pending().await
+    }
+}
+
+fn visited_feed(screen: &Screen) -> tempfile::TempDir {
+    let source = Arc::new(StubFeed::Shelf("Cached shelf"));
+    let first_run = open_on(source, tempfile::tempdir().unwrap());
+    screen.wait_until("the first run shows the feed", || {
+        first_run.shelf_titles() == ["Cached shelf"]
+    });
+    screen.wait_until("the snapshot is written", || {
+        has_a_cached_entry(first_run.store_dir.path())
+    });
+    first_run.store_dir
+}
+
+fn has_a_cached_entry(store_dir: &Path) -> bool {
+    std::fs::read_dir(store_dir.join("views"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .any(|entry| !entry.file_name().to_string_lossy().starts_with('.'))
+}
+
+#[test]
+fn given_a_visited_feed_when_the_app_restarts_then_it_shows_before_any_answer() {
+    let Some(screen) = install_headless_platform() else {
+        return;
+    };
+    let store_dir = visited_feed(&screen);
+
+    let restarted = open_on(Arc::new(StubFeed::Silent), store_dir);
+
+    screen.wait_until("the cached feed is shown", || {
+        restarted.shelf_titles() == ["Cached shelf"]
+    });
+}
+
+#[test]
+fn given_a_cached_feed_when_the_refresh_answers_then_its_shelves_are_replaced() {
+    let Some(screen) = install_headless_platform() else {
+        return;
+    };
+    let store_dir = visited_feed(&screen);
+
+    let restarted = open_on(Arc::new(StubFeed::Shelf("Fresh shelf")), store_dir);
+
+    screen.wait_until("the fresh feed replaces it", || {
+        restarted.shelf_titles() == ["Fresh shelf"]
+    });
+}
+
+#[test]
+fn given_a_cached_feed_when_the_refresh_fails_then_it_stays_without_an_error() {
+    let Some(screen) = install_headless_platform() else {
+        return;
+    };
+    let store_dir = visited_feed(&screen);
+
+    let restarted = open_on(Arc::new(StubFeed::Refused), store_dir);
+
+    screen.wait_until("the cached feed is shown", || {
+        restarted.shelf_titles() == ["Cached shelf"]
+    });
+    let started = Instant::now();
+    screen.wait_until("the refresh had time to fail", || {
+        started.elapsed() > REFRESH_SETTLE
+    });
+    assert_eq!(restarted.shelf_titles(), ["Cached shelf"]);
+    assert_eq!(restarted.state().get_error(), "");
+    assert!(!restarted.state().get_is_loading());
 }

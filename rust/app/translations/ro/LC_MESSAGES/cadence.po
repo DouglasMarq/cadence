@@ -221,6 +221,9 @@ msgstr "Dispozitive blocate"
 msgid "by {}"
 msgstr "de {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} este disponibil"
+
 msgid "Cancel"
 msgstr "Anulează"
 
@@ -406,6 +409,9 @@ msgstr "Nu s-a putut muta muzica: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Nu s-a putut deschide dosarul: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Pagina versiunii nu a putut fi deschisă: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Nu s-a putut deschide YouTube Music: {}"
@@ -617,6 +623,12 @@ msgstr "Dublu clic pentru redare"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dublu clic pentru redare, trage pentru reordonare"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Descarcă versiunea {} și repornește Cadence; coada este salvată"
+
+msgid "Downloading update: {}%"
+msgstr "Se descarcă actualizarea: {}%"
+
 msgid "Duration"
 msgstr "Durată"
 
@@ -701,6 +713,9 @@ msgstr "Uită {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Formatul în care serverul ar trebui să transcodeze. Se aplică de la următoarea melodie."
 
+msgid "Forward"
+msgstr "Înainte"
+
 msgid "Gapless playback"
 msgstr "Redare fără pauze"
 
@@ -752,6 +767,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Instalează yt-dlp pentru a reda piese de pe YouTube"
 
+msgid "Installing update..."
+msgstr "Se instalează actualizarea..."
+
 msgid "Integrations"
 msgstr "Integrări"
 
@@ -794,11 +812,17 @@ msgstr "Păstrează o pictogramă Cadence cu comenzi de redare în bara de meniu
 msgid "Keep this station in the favorites on this device"
 msgstr "Păstrează acest post la favorite pe acest dispozitiv"
 
+msgid "Keep this version until the next launch"
+msgstr "Păstrează această versiune până la următoarea pornire"
+
 msgid "Keep {}"
 msgstr "Păstrează {}"
 
 msgid "Language"
 msgstr "Limbă"
+
+msgid "Later"
+msgstr "Mai târziu"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Lasă \"{}\" să ceară din nou controlul acestui player"
@@ -1025,6 +1049,9 @@ msgstr "Încă nu este nimic de adăugat"
 msgid "Nothing to go back to"
 msgstr "Nu ai unde să te întorci"
 
+msgid "Nothing to go forward to"
+msgstr "Nu ai unde să mergi înainte"
+
 msgid "Nothing to play here"
 msgstr "Nimic de redat aici"
 
@@ -1063,6 +1090,9 @@ msgstr "Deschide redarea curentă"
 
 msgid "Open radio"
 msgstr "Deschide radioul"
+
+msgid "Open release page"
+msgstr "Deschide pagina versiunii"
 
 msgid "Open the album \"{}\""
 msgstr "Deschide albumul „{}”"
@@ -1670,6 +1700,9 @@ msgstr "Această pagină Descoperă nu există"
 msgid "This folder is empty"
 msgstr "Acest dosar este gol"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Această instalare nu se poate actualiza singură; deschide pagina versiunii în browser"
+
 msgid "This mix is no longer available"
 msgstr "Acest mix nu mai este disponibil"
 
@@ -1711,6 +1744,12 @@ msgstr "Activează sunetul"
 
 msgid "Up next"
 msgstr "Urmează"
+
+msgid "Update and restart"
+msgstr "Actualizează și repornește"
+
+msgid "Update failed: {}"
+msgstr "Actualizarea a eșuat: {}"
 
 msgid "URL"
 msgstr "URL"

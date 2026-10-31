@@ -1,5 +1,7 @@
-use cadence_api::Result;
-use cadence_core::model::{Artist, ArtistDetail, ArtistListQuery, Page, Paging, Song};
+use cadence_api::{ArtistPartSink, Result};
+use cadence_core::model::{
+    Album, Artist, ArtistDetail, ArtistListQuery, ArtistPart, Page, Paging, Song,
+};
 
 use super::SubsonicServer;
 use super::pages::{cloned_page, non_empty_search, wants_favorites_only};
@@ -51,26 +53,50 @@ impl SubsonicServer {
         })
     }
 
-    pub(super) async fn fetch_artist_detail(&self, id: &str) -> Result<ArtistDetail> {
+    async fn fetch_artist_profile(&self, id: &str) -> Result<(Artist, Vec<Album>)> {
         let response: GetArtist = self
             .fetch("getArtist.view", Params::new().add("id", id))
             .await?;
         let mut raw_artist = response.artist;
         let albums = self.normalize_albums(raw_artist.album.take().unwrap_or_default());
-        let top_songs_params = self.top_songs_params(id, &raw_artist.name).await;
-        let (top_songs, artist_info) = futures_util::future::join(
-            self.fetch::<TopSongs>("getTopSongs.view", top_songs_params),
-            self.fetch::<ArtistInfo2>("getArtistInfo2.view", Params::new().add("id", id)),
-        )
-        .await;
+        Ok((normalize::artist(raw_artist, self.server_id()), albums))
+    }
 
-        let mut artist = normalize::artist(raw_artist, self.server_id());
-        artist.biography = biography_or_none(artist_info);
+    async fn fetch_biography(&self, id: &str) -> Option<String> {
+        let artist_info = self
+            .fetch::<ArtistInfo2>("getArtistInfo2.view", Params::new().add("id", id))
+            .await;
+        biography_or_none(artist_info)
+    }
+
+    pub(super) async fn fetch_artist_detail(&self, id: &str) -> Result<ArtistDetail> {
+        let (mut artist, albums) = self.fetch_artist_profile(id).await?;
+        let (top_songs, biography) =
+            futures_util::future::join(self.top_songs(id, &artist.name), self.fetch_biography(id))
+                .await;
+        artist.biography = biography;
         Ok(ArtistDetail {
             artist,
             albums,
-            top_songs: self.top_songs_or_empty(top_songs),
+            top_songs,
         })
+    }
+
+    pub(super) async fn deliver_artist_parts(
+        &self,
+        id: &str,
+        deliver: ArtistPartSink<'_>,
+    ) -> Result<()> {
+        let (artist, albums) = self.fetch_artist_profile(id).await?;
+        let artist_name = artist.name.clone();
+        deliver(ArtistPart::Profile(artist));
+        deliver(ArtistPart::Albums(albums));
+        futures_util::future::join(
+            async { deliver(ArtistPart::TopSongs(self.top_songs(id, &artist_name).await)) },
+            async { deliver(ArtistPart::Biography(self.fetch_biography(id).await)) },
+        )
+        .await;
+        Ok(())
     }
 
     pub async fn top_songs(&self, artist_id: &str, artist_name: &str) -> Vec<Song> {

@@ -221,6 +221,9 @@ msgstr "Блокирани уређаји"
 msgid "by {}"
 msgstr "autor: {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} je dostupan"
+
 msgid "Cancel"
 msgstr "Откажи"
 
@@ -406,6 +409,9 @@ msgstr "Muzika nije mogla da se premesti: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Otvaranje foldera nije uspelo: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Stranica izdanja nije mogla da se otvori: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Otvaranje YouTube Music nije uspelo: {}"
@@ -617,6 +623,12 @@ msgstr "Dvaput kliknite za puštanje"
 msgid "Double-click to play, drag to reorder"
 msgstr "Dvaput kliknite za puštanje, prevucite za promenu redosleda"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Preuzmi verziju {} i ponovo pokreni Cadence; red se čuva"
+
+msgid "Downloading update: {}%"
+msgstr "Preuzimanje ažuriranja: {}%"
+
 msgid "Duration"
 msgstr "Трајање"
 
@@ -701,6 +713,9 @@ msgstr "Zaboravi {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Format u koji server treba da transkodira. Primenjuje se od sledeće pesme."
 
+msgid "Forward"
+msgstr "Napred"
+
 msgid "Gapless playback"
 msgstr "Reprodukcija bez pauza"
 
@@ -752,6 +767,9 @@ msgstr "Индиго"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Instalirajte yt-dlp za puštanje pesama sa YouTube"
 
+msgid "Installing update..."
+msgstr "Instaliranje ažuriranja..."
+
 msgid "Integrations"
 msgstr "Integracije"
 
@@ -794,11 +812,17 @@ msgstr "Прикажи иконицу Cadence са контролама репр
 msgid "Keep this station in the favorites on this device"
 msgstr "Čuvaj ovu stanicu u favoritima na ovom uređaju"
 
+msgid "Keep this version until the next launch"
+msgstr "Zadrži ovu verziju do sledećeg pokretanja"
+
 msgid "Keep {}"
 msgstr "Zadrži {}"
 
 msgid "Language"
 msgstr "Jezik"
+
+msgid "Later"
+msgstr "Kasnije"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Дозволи да \"{}\" поново затражи управљање овим плејером"
@@ -1025,6 +1049,9 @@ msgstr "Još nema ničeg za dodavanje"
 msgid "Nothing to go back to"
 msgstr "Nema gde da se vrati"
 
+msgid "Nothing to go forward to"
+msgstr "Nema gde da se ide napred"
+
 msgid "Nothing to play here"
 msgstr "Ovde nema ničeg za puštanje"
 
@@ -1063,6 +1090,9 @@ msgstr "Otvori trenutno puštano"
 
 msgid "Open radio"
 msgstr "Otvori radio"
+
+msgid "Open release page"
+msgstr "Otvori stranicu izdanja"
 
 msgid "Open the album \"{}\""
 msgstr "Otvori album \"{}\""
@@ -1670,6 +1700,9 @@ msgstr "Ova stranica odeljka Otkrij ne postoji"
 msgid "This folder is empty"
 msgstr "Ovaj folder je prazan"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Ova instalacija ne može sama da se ažurira; otvori stranicu izdanja u pregledaču"
+
 msgid "This mix is no longer available"
 msgstr "Ovaj miks više nije dostupan"
 
@@ -1711,6 +1744,12 @@ msgstr "Uključi ton"
 
 msgid "Up next"
 msgstr "Следеће"
+
+msgid "Update and restart"
+msgstr "Ažuriraj i ponovo pokreni"
+
+msgid "Update failed: {}"
+msgstr "Ažuriranje nije uspelo: {}"
 
 msgid "URL"
 msgstr "URL"

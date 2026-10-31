@@ -1,7 +1,7 @@
-use cadence_api::Result;
+use cadence_api::{ArtistPartSink, Result};
 use cadence_core::model::{
-    Album, AlbumListQuery, AlbumSort, Artist, ArtistDetail, ArtistListQuery, Page, Paging, Song,
-    SortOrder,
+    Album, AlbumListQuery, AlbumSort, Artist, ArtistDetail, ArtistListQuery, ArtistPart, Page,
+    Paging, Song, SortOrder,
 };
 
 use super::JellyfinServer;
@@ -53,16 +53,41 @@ impl JellyfinServer {
         })
     }
 
-    pub(super) async fn artist_detail(&self, id: &str) -> Result<ArtistDetail> {
+    async fn artist_profile(&self, id: &str) -> Result<Artist> {
         let params = QueryParams::default().fields(ARTIST_DETAIL_FIELDS);
         let item: dto::AlbumArtist = self.get(&self.item_path(id), &params).await?;
+        Ok(normalize::artist(item, self.server_id()))
+    }
+
+    pub(super) async fn artist_detail(&self, id: &str) -> Result<ArtistDetail> {
+        let artist = self.artist_profile(id).await?;
         let albums = self.artist_albums(id).await?;
         let top_songs = self.artist_top_songs(id).await?;
         Ok(ArtistDetail {
-            artist: normalize::artist(item, self.server_id()),
+            artist,
             albums,
             top_songs,
         })
+    }
+
+    pub(super) async fn deliver_artist_parts(
+        &self,
+        id: &str,
+        deliver: ArtistPartSink<'_>,
+    ) -> Result<()> {
+        let artist = self.artist_profile(id).await?;
+        let biography = artist.biography.clone();
+        deliver(ArtistPart::Profile(artist));
+        deliver(ArtistPart::Biography(biography));
+        let albums = async {
+            deliver(ArtistPart::Albums(self.artist_albums(id).await?));
+            Ok(())
+        };
+        let top_songs = async {
+            deliver(ArtistPart::TopSongs(self.artist_top_songs(id).await?));
+            Ok(())
+        };
+        tokio::try_join!(albums, top_songs).map(|((), ())| ())
     }
 
     async fn artist_albums(&self, artist_id: &str) -> Result<Vec<Album>> {

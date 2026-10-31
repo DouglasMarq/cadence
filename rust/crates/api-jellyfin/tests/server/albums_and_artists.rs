@@ -1,5 +1,10 @@
+use std::time::Duration;
+
 use cadence_api::MusicServer;
-use cadence_core::model::{AlbumListQuery, AlbumSort, ArtistListQuery, ArtistSort, SortOrder};
+use cadence_core::model::{
+    AlbumListQuery, AlbumSort, ArtistListQuery, ArtistPart, ArtistSort, SortOrder,
+};
+use tokio::sync::mpsc;
 use wiremock::matchers::{method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -206,4 +211,39 @@ async fn artist_list_and_detail_request_item_counts() {
     assert_eq!(artists.items[0].album_count, Some(4));
     let detail = jellyfin.artist("ar1").await.unwrap();
     assert_eq!(detail.artist.album_count, Some(4));
+}
+
+#[tokio::test]
+async fn given_slow_top_songs_when_delivered_in_parts_then_the_profile_and_albums_do_not_wait() {
+    let mock = MockServer::start().await;
+    mount_artist_item_and_albums(&mock).await;
+    Mock::given(method("GET"))
+        .and(path(items_path()))
+        .and(query_param("IncludeItemTypes", "Audio"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(list(Vec::new(), 0))
+                .set_delay(Duration::from_secs(120)),
+        )
+        .mount(&mock)
+        .await;
+    let server = server(&mock);
+    let (sender, mut parts) = mpsc::unbounded_channel();
+    let deliver = move |part: ArtistPart| {
+        sender.send(part).expect("the test is listening");
+    };
+
+    let early_parts = async {
+        let profile = parts.recv().await;
+        let biography = parts.recv().await;
+        (profile, biography, parts.recv().await)
+    };
+    let (profile, biography, albums) = tokio::select! {
+        early_parts = early_parts => early_parts,
+        _finished = server.artist_in_parts("ar1", &deliver) => panic!("slow calls cannot finish"),
+    };
+
+    assert!(matches!(profile, Some(ArtistPart::Profile(artist)) if artist.name == "Artist ar1"));
+    assert_eq!(biography, Some(ArtistPart::Biography(Some("Bio".into()))));
+    assert!(matches!(albums, Some(ArtistPart::Albums(albums)) if albums.len() == 2));
 }

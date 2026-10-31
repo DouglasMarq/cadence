@@ -10,6 +10,7 @@ use crate::ui::PlaylistSongRow;
 use crate::ui::page_cache::changed_total;
 use crate::ui::tracks::{PagedSongs, Selection};
 
+#[derive(Clone)]
 pub struct PageRequest {
     pub generation: u64,
     pub revision: u64,
@@ -58,8 +59,20 @@ impl PlaylistSongsModel {
     }
 
     pub fn apply_first_page(&self, generation: u64, total: usize, songs: Vec<Song>) {
-        if self.is_showing(generation) {
-            self.songs.show_first_page(total.max(songs.len()), songs);
+        if !self.is_showing(generation) {
+            return;
+        }
+        let total = total.max(songs.len());
+        match self.songs.total() {
+            0 => self.songs.show_first_page(total, songs),
+            shown if shown == total => self.songs.apply_page(0, songs),
+            _ => self.relay_rows(0, total, songs),
+        }
+    }
+
+    pub fn grow_to(&self, generation: u64, total: usize) {
+        if self.is_showing(generation) && total > self.songs.total() {
+            self.songs.set_total(total);
         }
     }
 

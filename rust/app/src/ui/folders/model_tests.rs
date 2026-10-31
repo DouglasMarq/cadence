@@ -4,7 +4,7 @@ use std::rc::Rc;
 use cadence_core::model::{Folder, FolderId, Song};
 use slint::Model;
 
-use super::model::{FolderContents, FolderRowsModel, SONG_PAGE_SIZE, SongPageRequest};
+use super::model::{FirstSongs, FolderRowsModel, SONG_PAGE_SIZE, SongPageRequest};
 use crate::demo::test_song;
 
 type Requests = Rc<RefCell<Vec<SongPageRequest>>>;
@@ -26,12 +26,18 @@ fn folders(count: usize) -> Vec<Folder> {
         .collect()
 }
 
-fn contents(folders: Vec<Folder>, song_total: usize, first_songs: Vec<Song>) -> FolderContents {
-    FolderContents {
-        folders,
-        song_total,
-        first_songs,
-    }
+fn contents(
+    folders: Vec<Folder>,
+    song_total: usize,
+    songs: Vec<Song>,
+) -> (Vec<Folder>, FirstSongs) {
+    (folders, FirstSongs { song_total, songs })
+}
+
+fn show(model: &FolderRowsModel, generation: u64, contents: (Vec<Folder>, FirstSongs)) {
+    let (shown_folders, first_songs) = contents;
+    model.show_folders(generation, shown_folders);
+    model.show_first_songs(generation, first_songs);
 }
 
 fn songs_of_page(page: usize) -> Vec<Song> {
@@ -52,7 +58,11 @@ fn taken_pages(requests: &Requests) -> Vec<usize> {
 fn folders_come_first_and_songs_page_in_on_demand() {
     let (model, requests) = recording_model();
     let generation = model.reset(FolderId::directory("artist"));
-    model.show(generation, contents(folders(3), 350, songs_of_page(0)));
+    show(
+        &model,
+        generation,
+        contents(folders(3), 350, songs_of_page(0)),
+    );
     assert_eq!(model.row_count(), 353);
 
     let folder = model.row_data(0).unwrap();
@@ -75,8 +85,8 @@ fn pages_from_an_older_folder_are_ignored_and_failures_back_off() {
     let old = model.reset(FolderId::directory("old"));
     let current = model.reset(FolderId::directory("new"));
     assert!(!model.is_current(old));
-    model.show(old, contents(folders(1), 10, Vec::new()));
-    model.show(current, contents(Vec::new(), 250, songs_of_page(0)));
+    show(&model, old, contents(folders(1), 10, Vec::new()));
+    show(&model, current, contents(Vec::new(), 250, songs_of_page(0)));
 
     model.row_data(220);
     let pending = requests.borrow_mut().drain(..).collect::<Vec<_>>();
@@ -107,7 +117,11 @@ fn pages_from_an_older_folder_are_ignored_and_failures_back_off() {
 fn scrolling_a_huge_folder_keeps_a_bounded_cache() {
     let (model, requests) = recording_model();
     let generation = model.reset(FolderId::directory("flat"));
-    model.show(generation, contents(Vec::new(), 20_000, songs_of_page(0)));
+    show(
+        &model,
+        generation,
+        contents(Vec::new(), 20_000, songs_of_page(0)),
+    );
     for row in (0..20_000).step_by(50) {
         model.row_data(row);
         let pending: Vec<SongPageRequest> = requests.borrow_mut().drain(..).collect();
@@ -120,4 +134,48 @@ fn scrolling_a_huge_folder_keeps_a_bounded_cache() {
         .count();
     assert!(cached <= 8 * SONG_PAGE_SIZE, "{cached} songs cached");
     assert!(model.song_at(19_999).is_some());
+}
+
+#[test]
+fn given_songs_before_the_subfolders_when_the_subfolders_arrive_then_they_come_first() {
+    let (model, _requests) = recording_model();
+    let generation = model.reset(FolderId::directory("artist"));
+    model.show_first_songs(
+        generation,
+        FirstSongs {
+            song_total: 100,
+            songs: songs_of_page(0),
+        },
+    );
+    assert!(!model.is_settled());
+    assert_eq!(model.row_count(), 100);
+
+    model.show_folders(generation, folders(2));
+
+    assert!(model.is_settled());
+    assert_eq!(model.counts(), (2, 100));
+    assert!(model.row_data(0).unwrap().is_folder);
+    assert!(!model.row_data(2).unwrap().is_folder);
+}
+
+#[test]
+fn given_a_shown_folder_when_a_refresh_changes_the_song_total_then_later_pages_are_asked_again() {
+    let (model, requests) = recording_model();
+    let generation = model.reset(FolderId::directory("artist"));
+    show(
+        &model,
+        generation,
+        contents(Vec::new(), 250, songs_of_page(0)),
+    );
+    model.row_data(150);
+    taken_pages(&requests);
+
+    show(
+        &model,
+        generation,
+        contents(Vec::new(), 240, songs_of_page(0)),
+    );
+    model.row_data(150);
+
+    assert!(taken_pages(&requests).contains(&1));
 }

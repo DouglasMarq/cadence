@@ -57,6 +57,7 @@ fn install_load(window: &AppWindow, context: &Context, list: &SharedGenreList) {
         let Some(window) = weak.upgrade() else {
             return;
         };
+        loader.context.session.open_view();
         if genre_id.is_empty() {
             loader.show_index(&window);
             return;

@@ -14,5 +14,6 @@ mod view_tests;
 
 pub use binding::{Binding, set_grid_columns, with_grid, with_table};
 pub use card::{CardSource, album_count_label};
+pub use genre_list::genre_slot;
 pub use grid_loader::card_grid;
 pub use view::install;

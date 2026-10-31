@@ -1,5 +1,4 @@
-use cadence_api::MusicServer;
-use cadence_core::model::{Album, AlbumListQuery, Artist, ArtistListQuery, ItemKind, Paging};
+use cadence_core::model::{Album, AlbumListQuery, Artist, ArtistListQuery, ItemKind, Page};
 
 use crate::ui::album_grid::credited_artist_names;
 
@@ -57,28 +56,12 @@ impl CardSource {
             Self::Artists(_) => ItemKind::Artist,
         }
     }
+}
 
-    pub async fn fetch(
-        &self,
-        server: &dyn MusicServer,
-        paging: Paging,
-    ) -> cadence_api::Result<CardPage> {
-        Ok(match self {
-            Self::Albums(query) => {
-                let page = server.album_list(query, paging).await?;
-                CardPage {
-                    cards: page.items.iter().map(album_card).collect(),
-                    total: page.total_count,
-                }
-            }
-            Self::Artists(query) => {
-                let page = server.artist_list(query, paging).await?;
-                CardPage {
-                    cards: page.items.iter().map(artist_card).collect(),
-                    total: page.total_count,
-                }
-            }
-        })
+pub fn card_page<Item>(listed: &Page<Item>, to_card: fn(&Item) -> CardData) -> CardPage {
+    CardPage {
+        cards: listed.items.iter().map(to_card).collect(),
+        total: listed.total_count,
     }
 }
 

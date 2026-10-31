@@ -1,7 +1,8 @@
 mod cache_state;
-mod disk_index;
-mod image_file;
-mod locking;
+pub(crate) mod disk_index;
+mod download_gate;
+pub(crate) mod image_file;
+pub(crate) mod locking;
 mod tint;
 
 use std::collections::HashMap;
@@ -15,8 +16,11 @@ use tokio::sync::OnceCell;
 use crate::Result;
 use cache_state::{CacheState, ImageKey, SharedLoad};
 use disk_index::DiskIndex;
+use download_gate::DownloadGate;
 use locking::lock;
 pub use tint::Rgb;
+
+const MAX_CONCURRENT_DOWNLOADS: usize = 6;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DecodedImage {
@@ -49,6 +53,7 @@ impl CoverCache {
                 memory: Mutex::new(memory),
                 disk: Mutex::new(disk),
                 inflight: Mutex::new(HashMap::new()),
+                downloads: DownloadGate::new(MAX_CONCURRENT_DOWNLOADS),
             }),
         })
     }
@@ -59,11 +64,15 @@ impl CoverCache {
         }
         let image_key = ImageKey::new(key, edge_pixels);
         let load_cell = self.inflight_load(&image_key);
+        let _forget_on_exit = InflightEntry {
+            cache: self,
+            image_key: &image_key,
+            load_cell: &load_cell,
+        };
         let shared_result = load_cell
             .get_or_init(|| Arc::clone(&self.inner).load(image_key.clone(), url.to_string()))
             .await
             .clone();
-        self.forget_inflight_load(&image_key, &load_cell);
         shared_result.map_err(Arc::unwrap_or_clone)
     }
 
@@ -100,6 +109,19 @@ impl CoverCache {
         if is_same_load {
             inflight.remove(image_key);
         }
+    }
+}
+
+struct InflightEntry<'cache> {
+    cache: &'cache CoverCache,
+    image_key: &'cache ImageKey,
+    load_cell: &'cache Arc<OnceCell<SharedLoad>>,
+}
+
+impl Drop for InflightEntry<'_> {
+    fn drop(&mut self) {
+        self.cache
+            .forget_inflight_load(self.image_key, self.load_cell);
     }
 }
 

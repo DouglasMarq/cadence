@@ -5,6 +5,7 @@ use cadence_core::model::{Page, Song, SongListQuery};
 use slint::{Model, ModelNotify, ModelTracker};
 
 use crate::ui::TrackItem;
+use crate::ui::rows::notify_row_count;
 use crate::ui::tracks::{PAGE_SIZE, Request, TracksModel};
 
 pub struct TrackTable {
@@ -42,8 +43,9 @@ impl TrackTable {
         if !self.is_current(generation) {
             return;
         }
+        let before = self.inner.row_count();
         self.inner.apply_count(generation, total);
-        self.notify.reset();
+        notify_row_count(&self.notify, before, total);
     }
 
     #[cfg(test)]

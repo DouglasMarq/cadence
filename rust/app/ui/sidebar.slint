@@ -90,23 +90,54 @@ export component Sidebar inherits Rectangle {
 
         HorizontalLayout {
             padding: 8px;
+            padding-right: 0px;
             padding-bottom: 16px;
-            spacing: 10px;
-            alignment: start;
 
-            Icon {
-                path: Icons.cadence;
-                color: Theme.primary;
-                width: 24px;
-                height: 24px;
+            HorizontalLayout {
+                horizontal-stretch: 1;
+                spacing: 10px;
+                alignment: start;
+
+                Icon {
+                    path: Icons.cadence;
+                    color: Theme.primary;
+                    width: 24px;
+                    height: 24px;
+                }
+
+                Text {
+                    text: "Cadence";
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: Theme.foreground;
+                    vertical-alignment: center;
+                }
             }
 
-            Text {
-                text: "Cadence";
-                font-size: 18px;
-                font-weight: 700;
-                color: Theme.foreground;
-                vertical-alignment: center;
+            HorizontalLayout {
+                spacing: 2px;
+
+                back-arrow := IconButton {
+                    width: 24px;
+                    height: 24px;
+                    icon: Icons.chevron-left;
+                    is-enabled: AppState.can-go-back;
+                    tooltip: AppState.can-go-back ? @tr("Back") : @tr("Nothing to go back to");
+                    clicked => {
+                        AppState.back();
+                    }
+                }
+
+                forward-arrow := IconButton {
+                    width: 24px;
+                    height: 24px;
+                    icon: Icons.chevron-right;
+                    is-enabled: AppState.can-go-forward;
+                    tooltip: AppState.can-go-forward ? @tr("Forward") : @tr("Nothing to go forward to");
+                    clicked => {
+                        AppState.forward();
+                    }
+                }
             }
         }
 

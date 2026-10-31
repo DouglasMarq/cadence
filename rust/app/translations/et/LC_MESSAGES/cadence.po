@@ -215,6 +215,9 @@ msgstr "Blokeeritud seadmed"
 msgid "by {}"
 msgstr "autor: {}"
 
+msgid "Cadence {} is available"
+msgstr "Cadence {} on saadaval"
+
 msgid "Cancel"
 msgstr "Loobu"
 
@@ -400,6 +403,9 @@ msgstr "Muusikat ei saanud teisaldada: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Kausta avamine ebaõnnestus: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Väljalaske lehte ei saanud avada: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "YouTube Musicu avamine ebaõnnestus: {}"
@@ -609,6 +615,12 @@ msgstr "Topeltklõpsa esitamiseks"
 msgid "Double-click to play, drag to reorder"
 msgstr "Topeltklõpsa esitamiseks, lohista järjestuse muutmiseks"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Laadi alla versioon {} ja taaskäivita Cadence; järjekord salvestatakse"
+
+msgid "Downloading update: {}%"
+msgstr "Uuenduse allalaadimine: {}%"
+
 msgid "Duration"
 msgstr "Kestus"
 
@@ -693,6 +705,9 @@ msgstr "Unusta {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Vorming, millesse server peaks transkodeerima. Kehtib alates järgmisest laulust."
 
+msgid "Forward"
+msgstr "Edasi"
+
 msgid "Gapless playback"
 msgstr "Pausideta taasesitus"
 
@@ -744,6 +759,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "YouTube'i lugude esitamiseks paigalda yt-dlp"
 
+msgid "Installing update..."
+msgstr "Uuenduse paigaldamine..."
+
 msgid "Integrations"
 msgstr "Integratsioonid"
 
@@ -786,11 +804,17 @@ msgstr "Hoia Cadence'i ikooni koos esitusnuppudega menüüribal või süsteemisa
 msgid "Keep this station in the favorites on this device"
 msgstr "Hoia see jaam selles seadmes lemmikutes"
 
+msgid "Keep this version until the next launch"
+msgstr "Jäta see versioon järgmise käivitamiseni"
+
 msgid "Keep {}"
 msgstr "Jäta alles: {}"
 
 msgid "Language"
 msgstr "Keel"
+
+msgid "Later"
+msgstr "Hiljem"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Luba \"{}\" uuesti küsida selle mängija juhtimist"
@@ -1016,6 +1040,9 @@ msgstr "Veel pole midagi lisada"
 msgid "Nothing to go back to"
 msgstr "Pole kuhu tagasi minna"
 
+msgid "Nothing to go forward to"
+msgstr "Pole kuhu edasi minna"
+
 msgid "Nothing to play here"
 msgstr "Siin pole midagi esitada"
 
@@ -1054,6 +1081,9 @@ msgstr "Ava praegu mängiv"
 
 msgid "Open radio"
 msgstr "Ava raadio"
+
+msgid "Open release page"
+msgstr "Ava väljalaske leht"
 
 msgid "Open the album \"{}\""
 msgstr "Ava album \"{}\""
@@ -1658,6 +1688,9 @@ msgstr "Seda Avasta lehte pole olemas"
 msgid "This folder is empty"
 msgstr "See kaust on tühi"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "See paigaldus ei saa end ise uuendada; ava väljalaske leht brauseris"
+
 msgid "This mix is no longer available"
 msgstr "See miks pole enam saadaval"
 
@@ -1699,6 +1732,12 @@ msgstr "Taasta heli"
 
 msgid "Up next"
 msgstr "Järgmisena"
+
+msgid "Update and restart"
+msgstr "Uuenda ja taaskäivita"
+
+msgid "Update failed: {}"
+msgstr "Uuendamine ebaõnnestus: {}"
 
 msgid "URL"
 msgstr "URL"

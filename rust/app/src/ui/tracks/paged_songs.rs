@@ -8,6 +8,7 @@ use slint::{ModelNotify, ModelTracker};
 use super::selection::Selection;
 use crate::list_stream::RowRanges;
 use crate::ui::page_cache::{PageCache, PageShape};
+use crate::ui::rows::notify_row_count;
 
 pub struct SongPages {
     total: usize,
@@ -97,8 +98,11 @@ impl PagedSongs {
     }
 
     pub fn set_total(&self, total: usize) {
-        self.state.borrow_mut().total = total;
-        self.notify.reset();
+        let before = std::mem::replace(&mut self.state.borrow_mut().total, total);
+        if before != total {
+            self.change_selection(None, |selection, _total| selection.clear());
+        }
+        notify_row_count(&self.notify, before, total);
     }
 
     pub fn show_first_page(&self, total: usize, songs: Vec<Song>) {

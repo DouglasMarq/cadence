@@ -207,13 +207,13 @@ fn given_an_offline_server_when_a_genre_opens_then_albums_and_tracks_stop_loadin
 #[test]
 fn given_a_failing_track_page_when_it_arrives_then_the_status_shows_the_failure() {
     let view = open();
-    navigate(&view, "");
-    assert!(view.pump(|| genres(&view).get_genres().row_count() == ALL_GENRES));
-    view.go_offline();
-
     navigate(&view, GENRE_ID);
+    assert!(view.pump(|| !genres(&view).get_is_tracks_loading()));
+    view.go_offline();
     view.clear_status();
-    genres(&view).get_tracks().row_data(0);
+
+    let tracks = genres(&view).get_tracks();
+    tracks.row_data(tracks.row_count().saturating_sub(1));
 
     assert!(view.pump_until_status(&format!("Could not load tracks: {OFFLINE}")));
 }

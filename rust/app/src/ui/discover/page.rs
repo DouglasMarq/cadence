@@ -103,6 +103,7 @@ impl Page {
         self.is_loading = false;
         match result {
             Ok(page) => {
+                self.error = None;
                 self.title = page.title;
                 self.subtitle = page.subtitle;
                 self.thumbnail_url = page.thumbnail_url;

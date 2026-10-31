@@ -2,6 +2,7 @@ use slint::{ComponentHandle, SharedString};
 
 use super::loading::refresh;
 use crate::ui::{AppWindow, Context, PlaylistsState, on_ui, show_status};
+use crate::views::View;
 
 pub fn create_playlist(window: &AppWindow, context: &Context, name: &SharedString) {
     let name = name.trim().to_owned();
@@ -13,8 +14,12 @@ pub fn create_playlist(window: &AppWindow, context: &Context, name: &SharedStrin
     }
     window.global::<PlaylistsState>().set_is_busy(true);
     let weak = window.as_weak();
+    let views = context.views(&server);
     context.runtime.spawn(async move {
         let result = server.create_playlist(&name, &[]).await;
+        if result.is_ok() {
+            views.invalidate(View::Playlists).await;
+        }
         on_ui(&weak, move |window| {
             let state = window.global::<PlaylistsState>();
             state.set_is_busy(false);
@@ -40,8 +45,12 @@ pub fn delete_playlist(window: &AppWindow, context: &Context, id: SharedString) 
     let name = state.get_delete_name().to_string();
     state.set_is_busy(true);
     let weak = window.as_weak();
+    let views = context.views(&server);
     context.runtime.spawn(async move {
         let result = server.delete_playlist(&id).await;
+        if result.is_ok() {
+            views.invalidate_playlist(&id).await;
+        }
         on_ui(&weak, move |window| {
             let state = window.global::<PlaylistsState>();
             state.set_is_busy(false);

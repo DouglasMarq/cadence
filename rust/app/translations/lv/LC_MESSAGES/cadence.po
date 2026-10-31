@@ -221,6 +221,9 @@ msgstr "Bloķētās ierīces"
 msgid "by {}"
 msgstr "autors: {}"
 
+msgid "Cadence {} is available"
+msgstr "Pieejama Cadence {}"
+
 msgid "Cancel"
 msgstr "Atcelt"
 
@@ -406,6 +409,9 @@ msgstr "Neizdevās pārvietot mūziku: {}"
 
 msgid "Could not open the folder: {}"
 msgstr "Neizdevās atvērt mapi: {}"
+
+msgid "Could not open the release page: {}"
+msgstr "Neizdevās atvērt laidiena lapu: {}"
 
 msgid "Could not open YouTube Music: {}"
 msgstr "Neizdevās atvērt YouTube Music: {}"
@@ -617,6 +623,12 @@ msgstr "Veiciet dubultklikšķi, lai atskaņotu"
 msgid "Double-click to play, drag to reorder"
 msgstr "Veiciet dubultklikšķi, lai atskaņotu, velciet, lai pārkārtotu"
 
+msgid "Download version {} and restart Cadence; your queue is saved"
+msgstr "Lejupielādēt versiju {} un restartēt Cadence; rinda tiek saglabāta"
+
+msgid "Downloading update: {}%"
+msgstr "Lejupielādē atjauninājumu: {}%"
+
 msgid "Duration"
 msgstr "Ilgums"
 
@@ -701,6 +713,9 @@ msgstr "Aizmirst {}"
 msgid "Format the server should transcode to. Applies from the next song."
 msgstr "Formāts, uz kuru serverim jāpārkodē. Stājas spēkā no nākamās dziesmas."
 
+msgid "Forward"
+msgstr "Uz priekšu"
+
 msgid "Gapless playback"
 msgstr "Atskaņošana bez pauzēm"
 
@@ -752,6 +767,9 @@ msgstr "Indigo"
 msgid "Install yt-dlp to play YouTube tracks"
 msgstr "Instalējiet yt-dlp, lai atskaņotu YouTube dziesmas"
 
+msgid "Installing update..."
+msgstr "Instalē atjauninājumu..."
+
 msgid "Integrations"
 msgstr "Integrācijas"
 
@@ -794,11 +812,17 @@ msgstr "Rādīt Cadence ikonu ar atskaņošanas vadīklām izvēļņu joslā vai
 msgid "Keep this station in the favorites on this device"
 msgstr "Saglabāt šo staciju izlasē šajā ierīcē"
 
+msgid "Keep this version until the next launch"
+msgstr "Paturēt šo versiju līdz nākamajai palaišanai"
+
 msgid "Keep {}"
 msgstr "Paturēt {}"
 
 msgid "Language"
 msgstr "Valoda"
+
+msgid "Later"
+msgstr "Vēlāk"
 
 msgid "Let \"{}\" ask to control this player again"
 msgstr "Ļaut \"{}\" atkal lūgt vadīt šo atskaņotāju"
@@ -1025,6 +1049,9 @@ msgstr "Pagaidām nav ko pievienot"
 msgid "Nothing to go back to"
 msgstr "Nav kur atgriezties"
 
+msgid "Nothing to go forward to"
+msgstr "Nav kur doties uz priekšu"
+
 msgid "Nothing to play here"
 msgstr "Šeit nav ko atskaņot"
 
@@ -1063,6 +1090,9 @@ msgstr "Atvērt pašlaik atskaņoto"
 
 msgid "Open radio"
 msgstr "Atvērt radio"
+
+msgid "Open release page"
+msgstr "Atvērt laidiena lapu"
 
 msgid "Open the album \"{}\""
 msgstr "Atvērt albumu \"{}\""
@@ -1670,6 +1700,9 @@ msgstr "Šī sadaļas Atklāt lapa nepastāv"
 msgid "This folder is empty"
 msgstr "Šī mape ir tukša"
 
+msgid "This install cannot update itself; open the release page in your browser"
+msgstr "Šī instalācija nevar atjaunināt sevi; atveriet laidiena lapu pārlūkā"
+
 msgid "This mix is no longer available"
 msgstr "Šis mikss vairs nav pieejams"
 
@@ -1711,6 +1744,12 @@ msgstr "Ieslēgt skaņu"
 
 msgid "Up next"
 msgstr "Nākamie"
+
+msgid "Update and restart"
+msgstr "Atjaunināt un restartēt"
+
+msgid "Update failed: {}"
+msgstr "Atjaunināšana neizdevās: {}"
 
 msgid "URL"
 msgstr "URL"

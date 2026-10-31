@@ -25,6 +25,7 @@ use crate::sleep_timer::{self, SleepTimerUi};
 use crate::store::{JsonStore, Store, SystemStore};
 use crate::termination;
 use crate::tray;
+use crate::ui::updates::{self, PendingRelaunch};
 use crate::ui::{self, AppWindow, Context, login, on_ui};
 use cadence_remote as remote_state;
 
@@ -404,6 +405,13 @@ fn raise_on_later_launch(first: FirstInstance, commands: &mpsc::UnboundedSender<
     }
 }
 
+fn start_updates(app: &RunningApp) -> PendingRelaunch {
+    match app.mode {
+        Mode::Demo(_) => PendingRelaunch::default(),
+        Mode::Real => updates::start(app.window, app.context),
+    }
+}
+
 pub fn run(mode: Mode) -> Result<()> {
     let first = match claim_instance(mode) {
         Some(Launch::AlreadyRunning) => return Ok(()),
@@ -440,10 +448,12 @@ pub fn run(mode: Mode) -> Result<()> {
     restore_session(&app);
     restore_saved_queue_once_shown(&context);
     termination::quit_on_termination_signals(runtime.handle());
+    let relaunch = start_updates(&app);
     run_until_quit(&window)?;
 
     save_state_on_exit(&runtime, &app);
     runtime.shutdown_timeout(RUNTIME_SHUTDOWN_TIMEOUT);
+    relaunch.run_after_exit_of(std::process::id());
     Ok(())
 }
 
