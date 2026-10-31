@@ -58,6 +58,7 @@ pub fn enter_session(context: &Context, server: &Arc<dyn MusicServer>, connectio
 
 pub fn enter_main(window: &AppWindow, server: &Arc<dyn MusicServer>) {
     let app = window.global::<AppState>();
+    app.invoke_reset_history();
     app.set_server_name(server.config().name.as_str().into());
     sharing::show_availability(window, server.as_ref());
     app.set_page(Page::Main);

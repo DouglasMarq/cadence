@@ -8,7 +8,7 @@ use super::{
     AlbumDetailState, AppState, AppWindow, ArtistDetailState, Page, PlaylistDetailState, Route,
 };
 
-type Loads = Rc<RefCell<Vec<String>>>;
+pub(super) type Loads = Rc<RefCell<Vec<String>>>;
 
 const FRAME: Duration = Duration::from_millis(16);
 
@@ -17,7 +17,7 @@ fn recorder(loads: &Loads) -> impl Fn(slint::SharedString) + 'static {
     move |id| loads.borrow_mut().push(id.to_string())
 }
 
-fn open_detail(route: Route, detail_id: &str) -> (AppWindow, Loads) {
+pub(super) fn open_detail(route: Route, detail_id: &str) -> (AppWindow, Loads) {
     i_slint_backend_testing::init_no_event_loop();
     let window = AppWindow::new().unwrap();
     let loads = Loads::default();
@@ -40,7 +40,7 @@ fn open_detail(route: Route, detail_id: &str) -> (AppWindow, Loads) {
     (window, loads)
 }
 
-fn settle() {
+pub(super) fn settle() {
     for _ in 0..3 {
         i_slint_backend_testing::mock_elapsed_time(FRAME);
         slint::platform::update_timers_and_animations();

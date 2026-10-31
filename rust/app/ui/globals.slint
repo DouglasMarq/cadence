@@ -39,9 +39,12 @@ export global AppState {
     in property <Route> route: Route.tracks;
     in property <string> detail-id;
     in property <bool> can-go-back;
+    in property <bool> can-go-forward;
     in property <bool> has-inset-title-bar;
     callback navigate(route: Route, detail-id: string);
     callback back();
+    callback forward();
+    callback reset-history();
 }
 
 export global Actions {
