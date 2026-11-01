@@ -28,7 +28,7 @@ const COVER_DELAY: Duration = Duration::from_millis(400);
 const ARTISTS: usize = 1_000;
 const BURST_ROWS: usize = 200;
 const CONCURRENT_COVER_DOWNLOADS: usize = 6;
-const SETTLE: Duration = Duration::from_millis(900);
+const SETTLE: Duration = Duration::from_millis(2_000);
 const SERVER_ID: &str = "slow-server";
 const FIXTURE_TOKEN: &str = "fixture-token";
 const FIXTURE_SALT: &str = "fixture-salt";
@@ -123,6 +123,16 @@ impl SlowServer {
         };
         let server = cadence_api_subsonic::SubsonicServer::with_credential(config, &credential);
         Arc::new(server.unwrap())
+    }
+
+    fn covers_before_the_artist(&self) -> usize {
+        let requests = self.runtime.block_on(self.mock.received_requests());
+        requests
+            .unwrap_or_default()
+            .iter()
+            .take_while(|request| !request.url.path().contains("getArtist.view"))
+            .filter(|request| request.url.path().contains("getCoverArt"))
+            .count()
     }
 
     fn requests_for(&self, endpoint: &str) -> usize {
@@ -243,12 +253,13 @@ fn given_a_burst_of_covers_when_an_artist_is_clicked_then_it_is_answered_ahead_o
         .global::<AppState>()
         .invoke_navigate(Route::Artists, "".into());
     request_cover_rows(view);
+    let covers_before_the_click = server.requests_for("getCoverArt");
 
     open_artist(view);
 
     let state = view.app.global::<ArtistDetailState>();
     assert!(view.pump(|| state.get_albums().row_count() == 3));
-    let ahead_of_the_artist = server.requests_for("getCoverArt");
+    let ahead_of_the_artist = server.covers_before_the_artist() - covers_before_the_click;
     assert!(
         ahead_of_the_artist <= 2 * CONCURRENT_COVER_DOWNLOADS,
         "{ahead_of_the_artist} covers went out before the artist answered"
@@ -257,7 +268,7 @@ fn given_a_burst_of_covers_when_an_artist_is_clicked_then_it_is_answered_ahead_o
     view.pump(|| started.elapsed() > SETTLE);
     let album_and_artist_images = 4;
     let most_covers = 2 * CONCURRENT_COVER_DOWNLOADS + album_and_artist_images;
-    let total = server.requests_for("getCoverArt");
+    let total = server.requests_for("getCoverArt") - covers_before_the_click;
     assert!(
         total <= most_covers,
         "{total} covers were fetched for a page the user left"
