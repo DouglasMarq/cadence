@@ -6,6 +6,8 @@ mod image_url;
 mod keep_awake;
 #[cfg(target_os = "macos")]
 mod macos;
+#[cfg(target_os = "macos")]
+mod polled_color_scheme;
 mod tray;
 mod url_opener;
 
