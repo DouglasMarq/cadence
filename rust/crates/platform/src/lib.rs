@@ -1,3 +1,5 @@
+#[cfg(all(unix, not(target_os = "macos")))]
+mod cover_art;
 mod discord;
 #[cfg(all(unix, not(target_os = "macos")))]
 mod freedesktop;

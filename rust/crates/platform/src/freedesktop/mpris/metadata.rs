@@ -3,7 +3,7 @@ use url::Url;
 
 use super::conversions::time_from_ms;
 use crate::NowPlaying;
-use crate::image_url::is_free_of_credentials;
+use crate::cover_art::{CoverArt, cover_art};
 
 const TRACK_PATH_PREFIX: &str = "/org/cadence/track/";
 const REPLACEMENT_CHARACTER: char = '_';
@@ -28,12 +28,10 @@ pub(super) fn metadata_for(now_playing: &NowPlaying) -> Metadata {
 }
 
 fn art_url(now_playing: &NowPlaying) -> Option<String> {
-    non_empty(now_playing.cover_url.as_ref())
-        .filter(|url| is_free_of_credentials(url))
-        .or_else(|| {
-            let cover_file = now_playing.cover_file.as_deref()?;
-            Url::from_file_path(cover_file).ok().map(String::from)
-        })
+    match cover_art(now_playing)? {
+        CoverArt::Url(url) => Some(url.to_owned()),
+        CoverArt::File(cover_file) => Url::from_file_path(cover_file).ok().map(String::from),
+    }
 }
 
 fn track_id_for(id: &str) -> Option<TrackId> {
