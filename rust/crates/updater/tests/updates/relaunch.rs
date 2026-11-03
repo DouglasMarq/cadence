@@ -8,14 +8,34 @@ use cadence_updater::Relaunch;
 
 const QUIET_PERIOD: Duration = Duration::from_millis(500);
 const LAUNCH_TIMEOUT: Duration = Duration::from_secs(5);
+#[cfg(unix)]
 const GIVE_UP_TIMEOUT: Duration = Duration::from_secs(20);
 
+#[cfg(unix)]
 fn running_process() -> Child {
     Command::new("sleep").arg("60").spawn().unwrap()
 }
 
+#[cfg(windows)]
+fn running_process() -> Child {
+    Command::new("powershell.exe")
+        .args(["-NoProfile", "-Command", "Start-Sleep -Seconds 60"])
+        .spawn()
+        .unwrap()
+}
+
+#[cfg(unix)]
 fn touch(marker: &Path) -> Relaunch {
     Relaunch::new("touch", [OsString::from(marker)])
+}
+
+#[cfg(windows)]
+fn touch(marker: &Path) -> Relaunch {
+    let create_directory = ["/c", "mkdir"].map(OsString::from);
+    Relaunch::new(
+        "cmd.exe",
+        create_directory.into_iter().chain([OsString::from(marker)]),
+    )
 }
 
 fn appears_within(timeout: Duration, marker: &Path) -> bool {
@@ -71,6 +91,7 @@ fn given_a_path_with_spaces_when_relaunching_then_it_stays_one_argument() {
     assert!(appears_within(LAUNCH_TIMEOUT, &marker));
 }
 
+#[cfg(unix)]
 #[test]
 fn given_a_process_nobody_reaps_when_relaunching_then_the_wait_gives_up() {
     let directory = tempfile::tempdir().unwrap();

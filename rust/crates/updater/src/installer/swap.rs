@@ -27,6 +27,36 @@ pub(super) fn put_in_place(
     }
 }
 
+#[cfg(any(windows, test))]
+pub(super) fn put_all_in_place(
+    swaps: &[Swap],
+    rename: impl Fn(&Path, &Path) -> io::Result<()>,
+) -> Result<()> {
+    for (swapped_count, swap) in swaps.iter().enumerate() {
+        if let Err(error) = put_in_place(swap, &rename) {
+            put_back(swaps.iter().take(swapped_count).rev(), &rename)?;
+            return Err(error);
+        }
+    }
+    Ok(())
+}
+
+#[cfg(any(windows, test))]
+fn put_back<'swaps>(
+    swapped: impl Iterator<Item = &'swaps Swap>,
+    rename: impl Fn(&Path, &Path) -> io::Result<()>,
+) -> Result<()> {
+    for swap in swapped {
+        rename(&swap.installed, &swap.staged)
+            .and_then(|()| rename(&swap.backup, &swap.installed))
+            .map_err(|source| UpdateError::RollbackFailed {
+                backup: swap.backup.clone(),
+                source,
+            })?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs;
@@ -120,5 +150,89 @@ mod tests {
         };
         assert_eq!(backup, versions.swap.backup);
         assert_eq!(version_at(&versions.swap.backup), "1.0.0");
+    }
+
+    struct Release {
+        _directory: TempDir,
+        swaps: [Swap; 2],
+    }
+
+    impl Release {
+        fn new() -> Self {
+            let directory = tempfile::tempdir().unwrap();
+            let swap_of = |name: &str| {
+                let swap = Swap {
+                    installed: directory.path().join(name),
+                    staged: directory.path().join("extracted").join(name),
+                    backup: directory.path().join("previous").join(name),
+                };
+                fs::create_dir_all(swap.staged.parent().unwrap()).unwrap();
+                fs::create_dir_all(swap.backup.parent().unwrap()).unwrap();
+                fs::write(&swap.installed, "1.0.0").unwrap();
+                fs::write(&swap.staged, "2.0.0").unwrap();
+                swap
+            };
+            let swaps = [swap_of("libmpv-2.dll"), swap_of("cadence.exe")];
+            Self {
+                _directory: directory,
+                swaps,
+            }
+        }
+
+        fn installed_versions(&self) -> Vec<String> {
+            self.swaps
+                .iter()
+                .map(|swap| version_at(&swap.installed))
+                .collect()
+        }
+    }
+
+    #[test]
+    fn given_every_file_of_a_release_when_putting_them_in_place_then_each_one_is_replaced() {
+        let release = Release::new();
+
+        put_all_in_place(&release.swaps, real_rename).unwrap();
+
+        assert_eq!(release.installed_versions(), ["2.0.0", "2.0.0"]);
+        assert!(
+            release
+                .swaps
+                .iter()
+                .all(|swap| version_at(&swap.backup) == "1.0.0")
+        );
+    }
+
+    #[test]
+    fn given_a_later_file_fails_when_putting_them_in_place_then_the_earlier_ones_are_put_back() {
+        let release = Release::new();
+        let [_, executable] = &release.swaps;
+        fs::remove_file(&executable.staged).unwrap();
+
+        let error = put_all_in_place(&release.swaps, real_rename).unwrap_err();
+
+        assert!(matches!(error, UpdateError::Io { .. }), "{error}");
+        assert_eq!(release.installed_versions(), ["1.0.0", "1.0.0"]);
+        assert!(release.swaps.iter().all(|swap| !swap.backup.exists()));
+    }
+
+    #[test]
+    fn given_an_earlier_file_cannot_be_put_back_when_a_later_one_fails_then_its_backup_is_reported()
+    {
+        let release = Release::new();
+        let [library, executable] = &release.swaps;
+        fs::remove_file(&executable.staged).unwrap();
+        let refuse_to_restore_the_library = |from: &Path, to: &Path| match from == library.backup {
+            true => Err(io::Error::from(io::ErrorKind::PermissionDenied)),
+            false => fs::rename(from, to),
+        };
+
+        let error = put_all_in_place(&release.swaps, refuse_to_restore_the_library).unwrap_err();
+
+        let UpdateError::RollbackFailed { backup, .. } = error else {
+            panic!("expected a failed rollback, got {error}");
+        };
+        assert_eq!(backup, library.backup);
+        assert_eq!(version_at(&library.backup), "1.0.0");
+        assert_eq!(version_at(&executable.installed), "1.0.0");
     }
 }
