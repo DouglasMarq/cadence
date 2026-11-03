@@ -1,5 +1,6 @@
 mod app_image;
 mod mac_bundle;
+mod swap;
 
 use std::fs;
 use std::io;

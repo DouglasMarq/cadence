@@ -1,6 +1,5 @@
 use std::ffi::OsString;
 use std::fs;
-use std::io;
 use std::os::unix::fs::PermissionsExt as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -8,6 +7,7 @@ use std::sync::Arc;
 
 use semver::Version;
 
+use super::swap::{Swap, put_in_place};
 use super::{Installer, Launch, writable_staging_beside};
 use crate::error::{Result, UpdateError, io_error};
 use crate::relaunch::Relaunch;
@@ -33,12 +33,6 @@ pub struct MacBundle {
     staging: PathBuf,
 }
 
-struct BundleSwap<'a> {
-    installed: &'a Path,
-    staged: &'a Path,
-    backup: &'a Path,
-}
-
 impl MacBundle {
     pub fn detect(launch: &Launch) -> Option<Arc<dyn Installer>> {
         let bundle = bundle_of(&launch.executable)?;
@@ -57,12 +51,12 @@ impl Installer for MacBundle {
         extract_zip(download, &extracted)?;
         let staged = extracted.join(BUNDLE_NAME);
         validate_bundle(&staged, version)?;
-        let swap = BundleSwap {
-            installed: &self.bundle,
-            staged: &staged,
-            backup: &self.staging.join(PREVIOUS_BUNDLE),
+        let swap = Swap {
+            installed: self.bundle.clone(),
+            staged,
+            backup: self.staging.join(PREVIOUS_BUNDLE),
         };
-        swap_bundles(&swap, |from, to| fs::rename(from, to))
+        put_in_place(&swap, |from, to| fs::rename(from, to))
     }
 
     fn relaunch(&self) -> Relaunch {
@@ -134,24 +128,8 @@ fn bundle_version(plist: &str) -> Option<&str> {
     Some(value.trim())
 }
 
-fn swap_bundles(swap: &BundleSwap, rename: impl Fn(&Path, &Path) -> io::Result<()>) -> Result<()> {
-    rename(swap.installed, swap.backup).map_err(io_error("moving the installed app aside"))?;
-    let Err(replace_error) = rename(swap.staged, swap.installed) else {
-        return Ok(());
-    };
-    match rename(swap.backup, swap.installed) {
-        Ok(()) => Err(io_error("putting the new app in place")(replace_error)),
-        Err(source) => Err(UpdateError::RollbackFailed {
-            backup: swap.backup.to_owned(),
-            source,
-        }),
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use tempfile::TempDir;
-
     use super::*;
 
     const VERSION: Version = Version::new(2, 0, 0);
@@ -166,102 +144,6 @@ mod tests {
              {VERSION_KEY}\n    <string>{version}</string>\n</dict></plist>\n"
         );
         fs::write(bundle.join(CONTENTS_DIRECTORY).join(INFO_PLIST), plist).unwrap();
-    }
-
-    fn installed_version(bundle: &Path) -> String {
-        fs::read_to_string(executable_in(bundle)).unwrap()
-    }
-
-    struct Bundles {
-        _directory: TempDir,
-        installed: PathBuf,
-        staged: PathBuf,
-        backup: PathBuf,
-    }
-
-    impl Bundles {
-        fn new() -> Self {
-            let directory = tempfile::tempdir().unwrap();
-            let installed = directory.path().join("Cadence.app");
-            let staged = directory.path().join("staged.app");
-            let backup = directory.path().join("backup.app");
-            write_bundle(&installed, "1.0.0");
-            write_bundle(&staged, "2.0.0");
-            Self {
-                _directory: directory,
-                installed,
-                staged,
-                backup,
-            }
-        }
-
-        fn swap(&self) -> BundleSwap<'_> {
-            BundleSwap {
-                installed: &self.installed,
-                staged: &self.staged,
-                backup: &self.backup,
-            }
-        }
-    }
-
-    fn real_rename(from: &Path, to: &Path) -> io::Result<()> {
-        fs::rename(from, to)
-    }
-
-    #[test]
-    fn given_a_staged_bundle_when_swapping_then_it_replaces_the_installed_one() {
-        let bundles = Bundles::new();
-
-        swap_bundles(&bundles.swap(), real_rename).unwrap();
-
-        assert_eq!(installed_version(&bundles.installed), "2.0.0");
-        assert_eq!(installed_version(&bundles.backup), "1.0.0");
-        assert!(!bundles.staged.exists());
-    }
-
-    #[test]
-    fn given_the_new_bundle_cannot_be_moved_when_swapping_then_the_old_one_is_put_back() {
-        let bundles = Bundles::new();
-        fs::remove_dir_all(&bundles.staged).unwrap();
-
-        let error = swap_bundles(&bundles.swap(), real_rename).unwrap_err();
-
-        assert!(matches!(error, UpdateError::Io { .. }), "{error}");
-        assert_eq!(installed_version(&bundles.installed), "1.0.0");
-        assert!(!bundles.backup.exists());
-    }
-
-    #[test]
-    fn given_the_installed_bundle_cannot_be_moved_when_swapping_then_nothing_changes() {
-        let bundles = Bundles::new();
-        let missing_parent = bundles.backup.join("missing").join("backup.app");
-
-        let swap = BundleSwap {
-            backup: &missing_parent,
-            ..bundles.swap()
-        };
-        let error = swap_bundles(&swap, real_rename).unwrap_err();
-
-        assert!(matches!(error, UpdateError::Io { .. }), "{error}");
-        assert_eq!(installed_version(&bundles.installed), "1.0.0");
-        assert_eq!(installed_version(&bundles.staged), "2.0.0");
-    }
-
-    #[test]
-    fn given_the_rollback_also_fails_when_swapping_then_the_backup_location_is_reported() {
-        let bundles = Bundles::new();
-        let refuse_to_restore = |from: &Path, to: &Path| match to == bundles.installed {
-            true => Err(io::Error::from(io::ErrorKind::PermissionDenied)),
-            false => fs::rename(from, to),
-        };
-
-        let error = swap_bundles(&bundles.swap(), refuse_to_restore).unwrap_err();
-
-        let UpdateError::RollbackFailed { backup, .. } = error else {
-            panic!("expected a failed rollback, got {error}");
-        };
-        assert_eq!(backup, bundles.backup);
-        assert_eq!(installed_version(&bundles.backup), "1.0.0");
     }
 
     #[test]
