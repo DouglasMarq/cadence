@@ -1,4 +1,4 @@
-import { ScrollView } from "std-widgets.slint";
+import { PageScrollView } from "page_scroll.slint";
 import { Motion, Theme, Icons, Typography } from "theme.slint";
 import { Actions, AppState, PlayerState, Route } from "globals.slint";
 import { AmbientBackdrop, IconButton, LinkText, TooltipAnchor } from "widgets.slint";
@@ -286,7 +286,7 @@ export component AlbumDetailView inherits Rectangle {
         }
     }
 
-    scroll := ScrollView {
+    scroll := PageScrollView {
         content-width: self.visible-width;
         content-height: content.preferred-height;
 

@@ -1,4 +1,5 @@
 import { Icons, Theme } from "theme.slint";
+import { PageFlickable } from "page_scroll.slint";
 import { AppState } from "globals.slint";
 import { ActionChip, Icon, IconButton, SearchField, TooltipAnchor, TooltipComboBox } from "widgets.slint";
 import { DiscoverIcons, DiscoverNotice, DiscoverSection, DiscoverState } from "discover_state.slint";
@@ -135,7 +136,7 @@ component SectionsPage inherits Rectangle {
     property <bool> is-showing-moods: DiscoverState.section == DiscoverSection.moods;
     property <bool> is-empty: !DiscoverState.is-loading && DiscoverState.error == "" && DiscoverState.shelves.length == 0;
 
-    page := Flickable {
+    page := PageFlickable {
         content-width: self.width;
         content-height: content.preferred-height;
 

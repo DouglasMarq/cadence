@@ -1,4 +1,4 @@
-import { ScrollView } from "std-widgets.slint";
+import { PageScrollView } from "page_scroll.slint";
 import { Theme, Icons } from "theme.slint";
 import { AppState, PlayerState } from "globals.slint";
 import { IconButton, TooltipAnchor } from "widgets.slint";
@@ -261,7 +261,7 @@ component PageActions inherits HorizontalLayout {
 }
 
 export component DiscoverCollectionPage inherits Rectangle {
-    scroll := ScrollView {
+    scroll := PageScrollView {
         content-width: self.visible-width;
         content-height: content.preferred-height;
 

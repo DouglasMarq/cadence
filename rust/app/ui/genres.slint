@@ -1,4 +1,4 @@
-import { ListView } from "std-widgets.slint";
+import { ListView as PageListView } from "page_scroll.slint";
 import { Motion, Theme, Icons } from "theme.slint";
 import { AppState, PlayerState, Route, TrackRow } from "globals.slint";
 import { TrackRowView } from "tracks.slint";
@@ -141,7 +141,7 @@ export component CardGrid inherits Rectangle {
         root.columns-changed(root.columns);
     }
 
-    ListView {
+    PageListView {
         for row in root.rows: HorizontalLayout {
             padding-left: root.side-padding;
             padding-right: root.side-padding;
@@ -192,7 +192,7 @@ export component TrackTable inherits Rectangle {
             min-width: 0px;
             clip: true;
 
-            list := ListView {
+            list := PageListView {
                 for item in root.rows: Rectangle {
                     height: 36px;
 
@@ -316,7 +316,7 @@ component GenreList inherits VerticalLayout {
     }
 
     Rectangle {
-        ListView {
+        PageListView {
             for genre in GenresState.genres: Rectangle {
                 height: 40px;
                 background: touch.has-hover ? Theme.hover : transparent;

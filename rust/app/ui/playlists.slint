@@ -1,4 +1,4 @@
-import { ListView } from "std-widgets.slint";
+import { ListView as PageListView } from "page_scroll.slint";
 import { Motion, Theme, Icons } from "theme.slint";
 import { AppState, Route } from "globals.slint";
 import { IconButton, TooltipAnchor, TooltipButton } from "widgets.slint";
@@ -300,7 +300,7 @@ export component PlaylistsView inherits Rectangle {
                 for placeholder in 6: SkeletonRow { }
             }
 
-            ListView {
+            PageListView {
                 for row in PlaylistsState.rows: PlaylistRowView {
                     item: row;
                 }

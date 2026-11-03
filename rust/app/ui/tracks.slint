@@ -1,4 +1,4 @@
-import { ListView } from "std-widgets.slint";
+import { ListView as PageListView } from "page_scroll.slint";
 import { Theme } from "theme.slint";
 import { TracksState } from "globals.slint";
 import { ShareState } from "share.slint";
@@ -83,7 +83,7 @@ export component TracksView inherits Rectangle {
                         TracksState.go-to-artist();
                     }
 
-                    list := ListView {
+                    list := PageListView {
                         for row in TracksState.rows: TrackRowView {
                             track: row;
                             list-width: list.visible-width;
