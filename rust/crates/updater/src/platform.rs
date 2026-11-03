@@ -1,21 +1,25 @@
-use std::env::consts::ARCH;
+use std::env::consts::{ARCH, OS};
 
 use semver::Version;
 
 const RUST_ARM_ARCHITECTURE: &str = "aarch64";
 const MACOS_ARM_ARCHITECTURE: &str = "arm64";
+const MACOS: &str = "macos";
+const WINDOWS: &str = "windows";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Platform {
     MacOs(&'static str),
     Linux(&'static str),
+    Windows(&'static str),
 }
 
 impl Platform {
     pub fn current() -> Self {
-        match cfg!(target_os = "macos") {
-            true => Self::MacOs(ARCH),
-            false => Self::Linux(ARCH),
+        match OS {
+            MACOS => Self::MacOs(ARCH),
+            WINDOWS => Self::Windows(ARCH),
+            _ => Self::Linux(ARCH),
         }
     }
 
@@ -23,6 +27,7 @@ impl Platform {
         match self {
             Self::MacOs(arch) => format!("Cadence-{version}-macos-{}.zip", macos_machine(arch)),
             Self::Linux(arch) => format!("Cadence-{version}-{arch}.AppImage"),
+            Self::Windows(arch) => format!("Cadence-{version}-windows-{arch}.zip"),
         }
     }
 }
@@ -62,5 +67,19 @@ mod tests {
             Platform::Linux("x86_64").asset_name(&VERSION),
             "Cadence-1.2.3-x86_64.AppImage"
         );
+    }
+
+    #[test]
+    fn given_windows_when_naming_the_asset_then_it_uses_the_name_of_the_portable_zip() {
+        assert_eq!(
+            Platform::Windows("x86_64").asset_name(&VERSION),
+            "Cadence-1.2.3-windows-x86_64.zip"
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn given_a_windows_build_when_naming_its_platform_then_it_is_windows() {
+        assert_eq!(Platform::current(), Platform::Windows(ARCH));
     }
 }

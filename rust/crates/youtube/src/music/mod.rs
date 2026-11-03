@@ -5,12 +5,14 @@ mod countries;
 mod error;
 mod locale;
 mod model;
+mod private_permissions;
 mod raw;
 mod request;
 
 #[cfg(test)]
 mod client_tests;
 #[cfg(test)]
+#[cfg(unix)]
 mod cookie_export_tests;
 
 pub use auth::MusicAuth;

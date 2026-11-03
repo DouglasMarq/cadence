@@ -1,4 +1,5 @@
 mod connection_saves;
+#[cfg(unix)]
 mod discover_sign_in;
 mod folder_streaming;
 mod harness;
@@ -26,6 +27,9 @@ mod sleep_timer;
 mod slow_server;
 mod surfaced_errors;
 mod view_refresh;
+#[cfg(unix)]
 mod youtube_playback;
+#[cfg(unix)]
 mod youtube_side_effects;
+#[cfg(unix)]
 mod youtube_support;

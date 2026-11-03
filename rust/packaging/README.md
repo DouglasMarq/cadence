@@ -1,6 +1,6 @@
 # Packaging the native app
 
-Everything needed to ship Cadence on Linux and macOS.
+Everything needed to ship Cadence on Linux, macOS and Windows.
 
 | Path | What it is |
 | --- | --- |
@@ -12,6 +12,8 @@ Everything needed to ship Cadence on Linux and macOS.
 | `appimage/build-libmpv.sh` | Builds libmpv from a pinned source for bases whose mpv is older than 0.38 |
 | `macos/build-app.sh` | Builds `Cadence.app` (and a zip of it) with libmpv bundled |
 | `macos/Info.plist` | Bundle metadata, including the local network and Bonjour declarations |
+| `windows/fetch-libmpv.sh` | Downloads a pinned, checksummed libmpv build for Windows |
+| `windows/build-zip.sh` | Builds the portable `Cadence-<version>-windows-<arch>.zip` with libmpv |
 | `../../.github/workflows/release.yml` | Builds, verifies and publishes a release when a `v*` tag is pushed |
 
 The app id is `io.github.douglasmarq.cadence`. The binary sets it as the Wayland app id and X11
@@ -154,6 +156,33 @@ The bundle is not notarized: on another Mac, open it once from Finder with right
 or allow it in System Settings > Privacy & Security. yt-dlp is not bundled; the app finds it in
 `/opt/homebrew/bin` or `/usr/local/bin` even when started from Finder.
 
+## Windows zip
+
+From Git Bash (Git for Windows), with 7-Zip on the `PATH` and the Visual Studio Build Tools (C++
+workload) installed:
+
+```sh
+export CADENCE_LIBMPV_DIR="$(cygpath -w "$(rust/packaging/windows/fetch-libmpv.sh ~/libmpv)")"
+rust/packaging/windows/build-zip.sh
+```
+
+`fetch-libmpv.sh` downloads a pinned libmpv build of
+[shinchiro/mpv-winbuild-cmake](https://github.com/shinchiro/mpv-winbuild-cmake) from SourceForge,
+whose copies are kept while the project's GitHub releases are pruned after about a month. It stops
+if the download does not match its SHA-256 checksum, extracts `libmpv-2.dll` and its import library
+and copies the import library to `mpv.lib`, the name the MSVC linker looks for. `build-zip.sh` builds
+the release binary and zips it with `libmpv-2.dll` as
+`rust/target/windows/Cadence-<version>-windows-<arch>.zip`. `OUT_DIR` changes the output folder.
+
+The player crate finds `mpv.lib` through `CADENCE_LIBMPV_DIR`. To use `cargo run` or the tests, put
+that folder on the `PATH` too, so that `libmpv-2.dll` is found at startup. The C runtime is linked
+statically (`rust/.cargo/config.toml`), so the zip runs without the Visual C++ Redistributable.
+
+The zip holds `cadence.exe` and `libmpv-2.dll`, which must stay together; it needs Windows 10
+version 1803 or newer. The executable is not signed, so SmartScreen warns on the first launch
+(More info > Run anyway). yt-dlp is not bundled; Discover finds it on the `PATH`
+(`winget install yt-dlp.yt-dlp`).
+
 ## Cutting a release
 
 A release is made by pushing a tag. The tag must be `v` plus the version in `rust/Cargo.toml`:
@@ -172,10 +201,11 @@ git push origin v1.2.3
 `.github/workflows/release.yml` then runs these jobs:
 
 1. `tag` fails at once if the tag is not the workspace version.
-2. `linux` (`ubuntu-24.04`) and `macos` (`macos-15`) each run clippy and the tests, then build
-   `Cadence-<version>-x86_64.AppImage` and `Cadence-<version>-macos-arm64.zip`. The test step is
+2. `linux` (`ubuntu-24.04`), `macos` (`macos-15`) and `windows` (`windows-2025`) each run clippy
+   and the tests, then build `Cadence-<version>-x86_64.AppImage`,
+   `Cadence-<version>-macos-arm64.zip` and `Cadence-<version>-windows-x86_64.zip`. The test step is
    limited to 30 minutes, so a test that hangs fails the job instead of using up all of it.
-3. `publish` runs only if both succeeded. It checks that both assets exist, writes `SHA256SUMS`,
+3. `publish` runs only if all three succeeded. It checks that every asset exists, writes `SHA256SUMS`,
    creates a draft release with every asset and generated notes, and only then makes it visible.
    Drafts are invisible to `/releases/latest`, so clients never see a partial release.
 
@@ -192,6 +222,8 @@ Runner choices:
 - `macos-15` is the oldest arm64 macOS runner still supported. Homebrew's libraries are built for
   the runner's macOS, so releases are only tested on macOS 15 and newer, even though `Info.plist`
   declares 11.0.
+- `windows-2025` builds with the MSVC toolchain of the image and runs its steps in Git Bash, so the
+  packaging scripts are the same shell scripts as on the other platforms.
 
 ## How updates work
 
@@ -208,28 +240,38 @@ prompt offers depends on how the app was installed:
 | --- | --- | --- |
 | macOS `.app` | The running executable is `*.app/Contents/MacOS/*` and the folder holding the bundle is writable | Replaces the bundle and relaunches |
 | AppImage | `$APPIMAGE` is set, the running executable is inside `$APPDIR` and the folder holding the file is writable | Replaces the file and relaunches |
+| Windows zip | `libmpv-2.dll` is next to the running executable and their folder is writable | Replaces both files and relaunches |
 | Anything else (`install.sh`, the Arch package, `cargo run`, a read-only location) | | "Open release page" in the browser |
 
 `$APPDIR` is checked because `$APPIMAGE` is inherited by child processes: a source build started
 from a terminal inside another AppImage must not overwrite that AppImage.
 
-"Update and restart" works in a hidden `.cadence-update` folder next to the installed app, so
-that the final renames stay on one volume:
+"Update and restart" works in a hidden `.cadence-update` folder next to the installed app (inside
+its folder on Windows), so that the final renames stay on one volume:
 
 1. Download over HTTPS only, also across redirects, and verify the SHA-256 against `SHA256SUMS`.
 2. On macOS, extract the zip with `ditto -x -k`, which keeps symlinks and the signature, and check
-   that the executable exists and that `Info.plist` has the release's version.
+   that the executable exists and that `Info.plist` has the release's version. On Windows, extract
+   it with the `tar.exe` that ships with Windows and check that `cadence.exe` and `libmpv-2.dll`
+   are in it.
 3. Move the new version into place. On macOS the old bundle is moved aside first and moved back if
-   the new one cannot be placed. An AppImage is replaced by a single rename, keeping its mode.
+   the new one cannot be placed. An AppImage is replaced by a single rename, keeping its mode. On
+   Windows, `libmpv-2.dll` and then the executable are each moved aside and replaced, because
+   Windows refuses to rename the folder of a running executable but allows renaming the running
+   files; if one cannot be placed, the ones already replaced are put back.
 4. Quit the normal way, which saves the queue, then relaunch.
 
 A failure at any step removes the staging folder, leaves the installed app untouched and shows the
 reason in the status message. If putting the old bundle back fails too, the staging folder is
 kept and the message says where the old bundle is.
 
-The relaunch is a small detached `sh` that waits for the old process to exit, because the
-single-instance lock is only released then: started any earlier, the new version would just raise
-the old window and exit. It gives up waiting after about ten seconds and starts anyway.
+The relaunch is a small detached `sh` (a hidden PowerShell on Windows) that waits for the old
+process to exit, because the single-instance lock is only released then: started any earlier, the
+new version would just raise the old window and exit. It gives up waiting after about ten seconds
+and starts anyway.
+
+On Windows the old executable is still running when the staging folder is removed, so a warning is
+logged and the folder stays until the next launch removes it.
 
 Known limits of an ad hoc signature on macOS: each build has a new code identity, so after an update
 the system may ask again for access to the saved passwords in the keychain and to the local

@@ -11,6 +11,7 @@ const ICON_PNG: &[u8] = include_bytes!("../assets/tray-template.png");
 #[cfg(not(target_os = "macos"))]
 const ICON_PNG: &[u8] = include_bytes!("../assets/tray-color.png");
 const IS_TEMPLATE_ICON: bool = cfg!(target_os = "macos");
+const IS_MENU_ON_LEFT_CLICK: bool = !cfg!(windows);
 
 const PLAY_PAUSE: &str = "play-pause";
 const NEXT: &str = "next";
@@ -56,6 +57,7 @@ impl Tray {
             .with_tooltip(identity.name)
             .with_icon(tray_icon_image()?)
             .with_icon_as_template(IS_TEMPLATE_ICON)
+            .with_menu_on_left_click(IS_MENU_ON_LEFT_CLICK)
             .with_menu(Box::new(menu(labels, None)?))
             .build()
             .map_err(tray_error)?;

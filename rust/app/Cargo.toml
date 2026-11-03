@@ -32,6 +32,9 @@ tokio = { workspace = true, features = ["signal"] }
 tracing.workspace = true
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
+[target.'cfg(windows)'.dependencies]
+uds_windows = "1.2.1"
+
 [dev-dependencies]
 i-slint-backend-testing = "1.18"
 tempfile = "3.27.0"
@@ -41,6 +44,7 @@ wiremock = "0.6.5"
 [build-dependencies]
 rspolib = "0.1.2"
 slint-build = "1.18"
+winresource = { version = "0.1.34", default-features = false }
 
 [lints]
 workspace = true

@@ -11,7 +11,7 @@ Jellyfin), with YouTube Music discovery, personal mixes and player-to-player con
 
 It is written in Rust with a [Slint](https://slint.dev) interface and [mpv](https://mpv.io) for
 playback, and uses a fraction of the memory of an Electron player (about 90 MB PSS with every
-view open). Runs on Linux and macOS.
+view open). Runs on Linux, macOS and Windows.
 
 ## Features
 
@@ -23,7 +23,7 @@ view open). Runs on Linux and macOS.
 - Playback through libmpv: gapless, crossfade, ReplayGain, output device, maximum bitrate and
   transcoding, sleep timer, full-screen now playing, play queue synced with the server.
 - Synced and plain lyrics (server, lrclib, NetEase, Genius), scrobbling, MPRIS media keys,
-  macOS Now Playing and media keys, Discord Rich Presence, share links, internet radio (server stations and radio-browser.info).
+  macOS Now Playing and media keys, Windows media controls and media keys, Discord Rich Presence, share links, internet radio (server stations and radio-browser.info).
 - Discover: YouTube Music recommendations, new releases, charts and moods; songs in your
   library play from your server, others through `yt-dlp`. Personal mixes built from what you
   play and favorite: up to four Daily Mixes that blend your songs with similar ones, and a
@@ -66,17 +66,31 @@ Privacy & Security. Discover needs `brew install yt-dlp`.
 Settings live in `~/Library/Application Support/cadence`, the cache in
 `~/Library/Caches/cadence` and passwords in the login keychain.
 
+### Windows
+
+Download `Cadence-<version>-windows-x86_64.zip` from the
+[releases](https://github.com/DouglasMarq/cadence/releases), extract it into a folder you can write
+to and run `cadence.exe`; `libmpv-2.dll` must stay next to it. Windows 10 version 1803 or newer is
+required. The executable is not signed, so SmartScreen asks once (More info > Run anyway). Discover
+needs `winget install yt-dlp.yt-dlp`. `rust/packaging/windows/build-zip.sh` builds the same zip; see
+[rust/packaging/README.md](rust/packaging/README.md#windows-zip).
+
+Settings live in `%APPDATA%\cadence`, the cache in `%LOCALAPPDATA%\cadence` and passwords in the
+Windows Credential Manager.
+
 ### Updates
 
 Cadence checks GitHub for a new release once per launch and offers it in a small prompt; it never
-restarts on its own. The macOS app and the AppImage update themselves after you accept, verifying
-the download's SHA-256 first. Other installs get a link to the release page. See
+restarts on its own. The macOS app, the AppImage and the Windows zip update themselves after you
+accept, verifying the download's SHA-256 first. Other installs get a link to the release page. See
 [rust/packaging/README.md](rust/packaging/README.md#how-updates-work).
 
 ## Development
 
 The Cargo workspace is in [`rust/`](rust). It needs a Rust toolchain, `libmpv`, `fontconfig`,
-`xkbcommon` and `dbus` development files on Linux, and `brew install mpv pkg-config` on macOS.
+`xkbcommon` and `dbus` development files on Linux, `brew install mpv pkg-config` on macOS, and on
+Windows the Visual Studio Build Tools plus the libmpv folder of `rust/packaging/windows/fetch-libmpv.sh`
+in `CADENCE_LIBMPV_DIR` and on the `PATH`.
 
 ```sh
 cd rust

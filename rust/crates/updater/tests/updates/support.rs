@@ -1,4 +1,5 @@
 use std::fs;
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt as _;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -141,8 +142,10 @@ impl Installer for RecordingInstaller {
     }
 }
 
+#[cfg(unix)]
 pub struct ReadOnlyDirectory<'a>(&'a Path);
 
+#[cfg(unix)]
 impl<'a> ReadOnlyDirectory<'a> {
     pub fn new(directory: &'a Path) -> Self {
         fs::set_permissions(directory, fs::Permissions::from_mode(0o555)).unwrap();
@@ -157,6 +160,7 @@ impl<'a> ReadOnlyDirectory<'a> {
     }
 }
 
+#[cfg(unix)]
 impl Drop for ReadOnlyDirectory<'_> {
     fn drop(&mut self) {
         fs::set_permissions(self.0, fs::Permissions::from_mode(0o755)).unwrap();

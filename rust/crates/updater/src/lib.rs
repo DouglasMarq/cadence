@@ -10,7 +10,11 @@ mod updater;
 
 pub use error::{Result, UpdateError};
 pub use feed::{ReleaseFeed, USER_AGENT, https_only_client};
-pub use installer::{AppImage, Installer, Launch, MacBundle, STAGING_DIRECTORY, installer_for};
+#[cfg(unix)]
+pub use installer::MacBundle;
+#[cfg(windows)]
+pub use installer::PortableFolder;
+pub use installer::{AppImage, Installer, Launch, STAGING_DIRECTORY, installer_for};
 pub use platform::Platform;
 pub use relaunch::Relaunch;
 pub use release::{Offer, Release, ReleaseAsset};

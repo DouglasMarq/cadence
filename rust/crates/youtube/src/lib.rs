@@ -9,6 +9,7 @@ mod stream_url;
 mod yt_dlp;
 
 #[cfg(test)]
+#[cfg(unix)]
 mod tests;
 
 pub use browser::CookieBrowser;

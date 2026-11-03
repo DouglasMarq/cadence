@@ -15,6 +15,7 @@ pub use demo_source::DemoDiscover;
 pub use feed::{DiscoverFeed, FeedNotice, FeedRequest, default_chart_country};
 pub use library_match::{LibraryMatcher, LibraryPresence};
 #[cfg(test)]
+#[cfg(unix)]
 pub use sign_in::SignIn;
 pub use source::DiscoverSource;
 pub use tracks::resolve_tracks;

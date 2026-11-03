@@ -6,6 +6,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use tokio::process::Command;
+#[cfg(windows)]
+use windows::Win32::System::Threading::CREATE_NO_WINDOW;
 
 use crate::YouTubeError;
 
@@ -27,6 +29,8 @@ pub(crate) async fn run(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true);
+    #[cfg(windows)]
+    command.creation_flags(CREATE_NO_WINDOW.0);
     if let Some(search_path) = search_path_with(std::env::var_os("PATH"), EXTRA_SEARCH_DIRECTORIES)
     {
         command.env("PATH", search_path);
@@ -83,6 +87,7 @@ fn failure_message(output: &Output) -> String {
 }
 
 #[cfg(test)]
+#[cfg(unix)]
 mod tests {
     use super::*;
 
