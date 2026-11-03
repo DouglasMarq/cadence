@@ -25,6 +25,21 @@ objc2-foundation = { version = "0.3.2", default-features = false, features = ["s
 souvlaki = { version = "0.8.3", default-features = false }
 tray-icon = { version = "0.24.1", default-features = false }
 
+[target.'cfg(windows)'.dependencies]
+keepawake = "0.6.1"
+tray-icon = { version = "0.25.1", default-features = false }
+windows = { version = "0.62.2", features = [
+    "Foundation",
+    "Media",
+    "Media_Playback",
+    "Storage",
+    "Storage_Streams",
+    "Win32_Foundation",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+windows-registry = "0.6.1"
+
 [dev-dependencies]
 serde_json.workspace = true
 tempfile = "3"

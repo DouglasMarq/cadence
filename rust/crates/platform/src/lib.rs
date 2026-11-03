@@ -1,17 +1,19 @@
-#[cfg(all(unix, not(target_os = "macos")))]
+#[cfg(not(target_os = "macos"))]
 mod cover_art;
 mod discord;
 #[cfg(all(unix, not(target_os = "macos")))]
 mod freedesktop;
 mod image_url;
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", windows))]
 mod keep_awake;
 #[cfg(target_os = "macos")]
 mod macos;
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", windows))]
 mod polled_color_scheme;
 mod tray;
 mod url_opener;
+#[cfg(windows)]
+mod windows_desktop;
 
 use std::path::PathBuf;
 
@@ -22,6 +24,10 @@ pub use freedesktop::{MediaControls, SleepInhibitor, current_color_scheme, watch
 pub use macos::{MediaControls, SleepInhibitor, current_color_scheme, watch_color_scheme};
 pub use tray::{ConnectedDevices, Tray, TrayLabels};
 pub use url_opener::open_url;
+#[cfg(windows)]
+pub use windows_desktop::{
+    MediaControls, SleepInhibitor, current_color_scheme, watch_color_scheme,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct MediaIdentity<'text> {
