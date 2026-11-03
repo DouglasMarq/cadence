@@ -6,24 +6,48 @@ use crate::{Result, StorageError};
 pub const APP_DIR_NAME: &str = "cadence";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct BaseDirectory {
+    variable: &'static str,
+    subdirectory: &'static str,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct HomeLayout {
-    pub(crate) config: &'static str,
-    cache: &'static str,
-    data: &'static str,
+    pub(crate) config: BaseDirectory,
+    cache: BaseDirectory,
+    data: BaseDirectory,
 }
 
 #[cfg(any(test, not(target_os = "macos")))]
 const FREEDESKTOP_LAYOUT: HomeLayout = HomeLayout {
-    config: ".config",
-    cache: ".cache",
-    data: ".local/share",
+    config: BaseDirectory {
+        variable: "HOME",
+        subdirectory: ".config",
+    },
+    cache: BaseDirectory {
+        variable: "HOME",
+        subdirectory: ".cache",
+    },
+    data: BaseDirectory {
+        variable: "HOME",
+        subdirectory: ".local/share",
+    },
 };
 
 #[cfg(any(test, target_os = "macos"))]
 const MACOS_LAYOUT: HomeLayout = HomeLayout {
-    config: "Library/Application Support",
-    cache: "Library/Caches",
-    data: "Library/Application Support",
+    config: BaseDirectory {
+        variable: "HOME",
+        subdirectory: "Library/Application Support",
+    },
+    cache: BaseDirectory {
+        variable: "HOME",
+        subdirectory: "Library/Caches",
+    },
+    data: BaseDirectory {
+        variable: "HOME",
+        subdirectory: "Library/Application Support",
+    },
 };
 
 #[cfg(target_os = "macos")]
@@ -71,20 +95,27 @@ impl Paths {
 fn xdg_base(
     lookup: &impl Fn(&str) -> Option<OsString>,
     variable_name: &str,
-    home_fallback: &str,
+    fallback: BaseDirectory,
 ) -> Result<PathBuf> {
     match absolute_path_from(lookup, variable_name) {
         Some(base) => Ok(base),
-        None => home_directory(lookup, variable_name).map(|home| home.join(home_fallback)),
+        None => fallback_directory(lookup, variable_name, fallback),
     }
 }
 
-fn home_directory(
+fn fallback_directory(
     lookup: &impl Fn(&str) -> Option<OsString>,
     variable_name: &str,
+    fallback: BaseDirectory,
 ) -> Result<PathBuf> {
-    absolute_path_from(lookup, "HOME")
-        .ok_or_else(|| StorageError::Invalid(format!("neither {variable_name} nor HOME is set")))
+    absolute_path_from(lookup, fallback.variable)
+        .map(|base| base.join(fallback.subdirectory))
+        .ok_or_else(|| {
+            StorageError::Invalid(format!(
+                "neither {variable_name} nor {} is set",
+                fallback.variable
+            ))
+        })
 }
 
 fn absolute_path_from(
