@@ -3,6 +3,8 @@ mod discord;
 mod freedesktop;
 mod image_url;
 #[cfg(target_os = "macos")]
+mod keep_awake;
+#[cfg(target_os = "macos")]
 mod macos;
 mod tray;
 mod url_opener;
