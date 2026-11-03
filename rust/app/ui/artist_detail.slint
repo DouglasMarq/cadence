@@ -1,4 +1,4 @@
-import { ScrollView } from "std-widgets.slint";
+import { PageScrollView } from "page_scroll.slint";
 import { Behaviour, Theme, Icons, Typography } from "theme.slint";
 import { AppState, Route, TrackRow } from "globals.slint";
 import { AmbientBackdrop, IconButton, LinkText, TooltipAnchor } from "widgets.slint";
@@ -127,12 +127,11 @@ export component ArtistDetailView inherits Rectangle {
 
     changed id => {
         if (AppState.route == Route.artist-detail) {
-            page.content-y = 0;
             ArtistDetailState.load(root.id);
         }
     }
 
-    page := ScrollView {
+    page := PageScrollView {
         content-width: self.visible-width;
         content-height: content.preferred-height;
 

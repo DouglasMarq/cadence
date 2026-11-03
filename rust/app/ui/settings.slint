@@ -1,4 +1,5 @@
-import { AboutSlint, LineEdit, ScrollView } from "std-widgets.slint";
+import { AboutSlint, LineEdit } from "std-widgets.slint";
+import { PageScrollView } from "page_scroll.slint";
 import { Behaviour, Theme, Icons } from "theme.slint";
 import { AppState, PlayerState } from "globals.slint";
 import { ActionChip, Bar, IconButton, SettingRow, TooltipAnchor, TooltipButton, TooltipComboBox, TooltipSwitch } from "widgets.slint";
@@ -394,7 +395,7 @@ export component SettingsView inherits Rectangle {
         SettingsState.load(AppState.detail-id);
     }
 
-    scroll := ScrollView {
+    scroll := PageScrollView {
         VerticalLayout {
             width: scroll.visible-width;
             padding: 28px;

@@ -70,6 +70,8 @@ mod nav_session_tests;
 #[cfg(test)]
 mod nav_tests;
 #[cfg(test)]
+mod scroll_history_tests;
+#[cfg(test)]
 mod sharing_view_tests;
 #[cfg(test)]
 pub mod test_window;

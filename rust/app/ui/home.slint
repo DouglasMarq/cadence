@@ -1,4 +1,5 @@
 import { Theme, Icons } from "theme.slint";
+import { PageFlickable } from "page_scroll.slint";
 import { AppState, Route } from "globals.slint";
 import { Icon, TooltipAnchor } from "widgets.slint";
 import { CoverArt, PlayButton } from "cover_art.slint";
@@ -151,7 +152,7 @@ export component HomeView inherits Rectangle {
         HomeState.load(AppState.detail-id);
     }
 
-    page := Flickable {
+    page := PageFlickable {
         content-width: self.width;
         content-height: content.preferred-height;
 

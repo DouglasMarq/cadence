@@ -1,0 +1,84 @@
+import { ScrollView } from "std-widgets.slint";
+import { AppState, Route } from "globals.slint";
+
+export global PageScroll {
+    in-out property <length> restore-y;
+    in property <int> restore-request;
+    in-out property <length> shown-y;
+}
+
+component PageScrollMemory {
+    in-out property <length> content-y;
+    in property <length> content-height;
+    property <Route> page-route;
+    property <int> restore-request: PageScroll.restore-request;
+    property <length> restore-y;
+    property <bool> is-restoring;
+    property <length> remembered-y: self.is-restoring ? self.restore-y : self.content-y;
+
+    public function stop-restoring() {
+        self.is-restoring = false;
+    }
+
+    function start-restoring() {
+        self.restore-y = PageScroll.restore-y;
+        PageScroll.restore-y = 0;
+        self.is-restoring = true;
+        self.content-y = self.restore-y;
+        PageScroll.shown-y = self.remembered-y;
+    }
+
+    init => {
+        self.page-route = AppState.route;
+        self.start-restoring();
+    }
+
+    changed restore-request => {
+        if (AppState.route == self.page-route) {
+            self.start-restoring();
+        }
+    }
+
+    changed content-height => {
+        if (self.is-restoring) {
+            self.content-y = self.restore-y;
+        }
+    }
+
+    changed remembered-y => {
+        PageScroll.shown-y = self.remembered-y;
+    }
+}
+
+export component PageScrollView inherits ScrollView {
+    scrolled => {
+        memory.stop-restoring();
+    }
+
+    memory := PageScrollMemory {
+        content-y <=> root.content-y;
+        content-height: root.content-height;
+    }
+
+    @children
+}
+
+export component ListView inherits PageScrollView {
+    accessible-role: list;
+    accessible-orientation: Orientation.vertical;
+
+    @children
+}
+
+export component PageFlickable inherits Flickable {
+    flicked => {
+        memory.stop-restoring();
+    }
+
+    memory := PageScrollMemory {
+        content-y <=> root.content-y;
+        content-height: root.content-height;
+    }
+
+    @children
+}

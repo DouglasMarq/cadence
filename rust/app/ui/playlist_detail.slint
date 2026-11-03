@@ -1,4 +1,4 @@
-import { ListView } from "std-widgets.slint";
+import { ListView as PageListView } from "page_scroll.slint";
 import { Theme, Icons, Typography } from "theme.slint";
 import { AppState, PlayerState, Route, TrackRow } from "globals.slint";
 import { AmbientBackdrop, Icon, IconButton, TooltipAnchor, TooltipButton } from "widgets.slint";
@@ -380,7 +380,7 @@ export component PlaylistDetailView inherits Rectangle {
                 min-width: 0px;
                 clip: true;
 
-                list := ListView {
+                list := PageListView {
                     for row[row-index] in PlaylistDetailState.rows: SongRow {
                         item: row;
                         index: row-index;

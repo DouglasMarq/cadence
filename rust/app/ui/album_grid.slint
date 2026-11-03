@@ -1,4 +1,4 @@
-import { ListView } from "std-widgets.slint";
+import { ListView as PageListView } from "page_scroll.slint";
 import { Theme, Icons } from "theme.slint";
 import { Icon, TooltipAnchor } from "widgets.slint";
 import { CoverArt, PlayButton } from "cover_art.slint";
@@ -191,7 +191,7 @@ export component AlbumGrid inherits Rectangle {
         root.columns-changed(root.columns);
     }
 
-    ListView {
+    PageListView {
         for row in root.rows: HorizontalLayout {
             padding-left: root.pad;
             padding-bottom: root.gap;
