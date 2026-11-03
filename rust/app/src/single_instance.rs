@@ -1,10 +1,13 @@
 use std::fs::{self, File, OpenOptions, TryLockError};
 use std::io;
+#[cfg(unix)]
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
 use std::thread;
 
 use cadence_storage::{APP_DIR_NAME, Paths};
+#[cfg(windows)]
+use uds_windows::{UnixListener, UnixStream};
 
 const LOCK_FILE: &str = "instance.lock";
 const SOCKET_FILE: &str = "instance.sock";

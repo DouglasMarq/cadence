@@ -148,6 +148,7 @@ impl Controller {
     }
 
     #[cfg(test)]
+    #[cfg(unix)]
     pub fn is_resolving(&self) -> bool {
         self.youtube.is_loading()
     }
