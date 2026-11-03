@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Back and forward arrows in the sidebar, available on every page.
 - Update prompt: Cadence checks the latest GitHub release after launch and, on request, downloads, verifies and installs it on the macOS app and the AppImage, then restarts. Other installs get a link to the release page.
 - Release pipeline: pushing a `v*` tag publishes the macOS app, the AppImage and `SHA256SUMS`.
+- Windows: each release also publishes a portable `Cadence-<version>-windows-x86_64.zip` (`cadence.exe` and `libmpv-2.dll`) with the system media controls, a tray icon, sleep inhibition while playing, light and dark following the system, and in-place updates.
 
 ### Changed
 
