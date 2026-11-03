@@ -1,6 +1,5 @@
-use std::fs::{DirBuilder, DirEntry, OpenOptions, Permissions};
+use std::fs::DirEntry;
 use std::io::Write;
-use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -10,11 +9,12 @@ use cadence_core::unix_time::unix_now_seconds;
 
 use super::auth::MusicAuth;
 use super::error::MusicError;
+use super::private_permissions::{
+    private_directory_builder, private_file_options, restrict_directory,
+};
 use crate::{YouTubeError, YtDlp};
 
 const RUNTIME_SUBDIRECTORY: &str = "cadence";
-const PRIVATE_DIRECTORY_MODE: u32 = 0o700;
-const PRIVATE_FILE_MODE: u32 = 0o600;
 const COOKIE_FILE_PREFIX: &str = "youtube-music-cookies-";
 const STALE_AFTER: Duration = Duration::from_secs(600);
 const NETSCAPE_HEADER: &[u8] = b"# Netscape HTTP Cookie File\n";
@@ -95,9 +95,7 @@ fn cookie_file_error(context: &'static str, error: std::io::Error) -> MusicError
 
 fn prepare_private_dir(directory: &Path) -> Result<(), MusicError> {
     let failed = |error: std::io::Error| cookie_file_error(PREPARING_PRIVATE_FOLDER, error);
-    DirBuilder::new()
-        .recursive(true)
-        .mode(PRIVATE_DIRECTORY_MODE)
+    private_directory_builder()
         .create(directory)
         .map_err(failed)?;
     let metadata = std::fs::symlink_metadata(directory).map_err(failed)?;
@@ -106,8 +104,7 @@ fn prepare_private_dir(directory: &Path) -> Result<(), MusicError> {
             "the private cookie folder is not a folder".to_owned(),
         ));
     }
-    std::fs::set_permissions(directory, Permissions::from_mode(PRIVATE_DIRECTORY_MODE))
-        .map_err(failed)
+    restrict_directory(directory).map_err(failed)
 }
 
 fn remove_stale_cookie_files(directory: &Path) {
@@ -155,12 +152,7 @@ impl PrivateFile {
             tracing::debug!("could not remove a stale cookie file: {error}");
         }
         let failed = |error: std::io::Error| cookie_file_error(CREATING_COOKIE_FILE, error);
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .mode(PRIVATE_FILE_MODE)
-            .open(&path)
-            .map_err(failed)?;
+        let mut file = private_file_options().open(&path).map_err(failed)?;
         let created = Self { path };
         file.write_all(NETSCAPE_HEADER).map_err(failed)?;
         Ok(created)

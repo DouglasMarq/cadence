@@ -5,6 +5,7 @@ mod countries;
 mod error;
 mod locale;
 mod model;
+mod private_permissions;
 mod raw;
 mod request;
 
