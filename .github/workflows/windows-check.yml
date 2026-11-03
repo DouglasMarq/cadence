@@ -1,0 +1,51 @@
+name: Windows check
+
+on:
+  push:
+    branches:
+      - feat/windows
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  windows:
+    name: Windows x86_64
+    runs-on: windows-2025
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download libmpv
+        run: |
+          fetched="$(rust/packaging/windows/fetch-libmpv.sh "$RUNNER_TEMP/libmpv")"
+          libmpv_dir="$(cygpath -w "$fetched")"
+          echo "CADENCE_LIBMPV_DIR=$libmpv_dir" >> "$GITHUB_ENV"
+          echo "$libmpv_dir" >> "$GITHUB_PATH"
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component clippy --no-self-update
+          rustup default stable
+      - name: Clippy
+        working-directory: rust
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Tests
+        timeout-minutes: 30
+        working-directory: rust
+        run: cargo test --workspace --locked
+      - name: Build the zip
+        run: rust/packaging/windows/build-zip.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-x86_64
+          path: rust/target/windows/Cadence-*.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
