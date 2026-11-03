@@ -83,6 +83,7 @@ fn failure_message(output: &Output) -> String {
 }
 
 #[cfg(test)]
+#[cfg(unix)]
 mod tests {
     use super::*;
 

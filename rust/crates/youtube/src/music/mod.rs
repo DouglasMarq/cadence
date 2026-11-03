@@ -12,6 +12,7 @@ mod request;
 #[cfg(test)]
 mod client_tests;
 #[cfg(test)]
+#[cfg(unix)]
 mod cookie_export_tests;
 
 pub use auth::MusicAuth;

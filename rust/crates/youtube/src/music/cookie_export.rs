@@ -41,7 +41,12 @@ fn per_user_temporary_dir() -> Option<PathBuf> {
     non_empty_directory("TMPDIR")
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+fn per_user_temporary_dir() -> Option<PathBuf> {
+    Some(std::env::temp_dir())
+}
+
+#[cfg(not(any(target_os = "macos", windows)))]
 fn per_user_temporary_dir() -> Option<PathBuf> {
     None
 }

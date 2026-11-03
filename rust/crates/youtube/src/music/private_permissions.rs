@@ -1,5 +1,6 @@
 use std::fs::{DirBuilder, OpenOptions};
 
+#[cfg(unix)]
 mod owner_only {
     use std::fs::{DirBuilder, OpenOptions, Permissions};
     use std::io;
@@ -20,6 +21,23 @@ mod owner_only {
     pub(super) fn restrict_new_files(options: &mut OpenOptions) {
         options.mode(PRIVATE_FILE_MODE);
     }
+}
+
+#[cfg(windows)]
+mod owner_only {
+    use std::fs::{DirBuilder, OpenOptions};
+    use std::io;
+    use std::path::Path;
+
+    pub(super) fn restrict_new_directories(_inherits_the_user_folder_acl: &mut DirBuilder) {}
+
+    pub(in crate::music) fn restrict_directory(
+        _inherits_the_user_folder_acl: &Path,
+    ) -> io::Result<()> {
+        Ok(())
+    }
+
+    pub(super) fn restrict_new_files(_inherits_the_user_folder_acl: &mut OpenOptions) {}
 }
 
 pub(super) use owner_only::restrict_directory;
