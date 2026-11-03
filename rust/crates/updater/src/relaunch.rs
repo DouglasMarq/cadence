@@ -6,6 +6,9 @@ use std::io;
 use std::os::windows::process::CommandExt as _;
 use std::process::{Command, Stdio};
 
+#[cfg(windows)]
+use windows::Win32::System::Threading::CREATE_NO_WINDOW;
+
 #[cfg(unix)]
 const SHELL: &str = "/bin/sh";
 #[cfg(unix)]
@@ -24,8 +27,6 @@ exec "$@"
 "#;
 #[cfg(windows)]
 const POWERSHELL: &str = "powershell.exe";
-#[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 #[cfg(any(windows, test))]
 const WAIT_SECONDS: u32 = 10;
 #[cfg(any(windows, test))]
@@ -70,7 +71,7 @@ impl Relaunch {
         Command::new(POWERSHELL)
             .args(["-NoProfile", "-NonInteractive", "-Command"])
             .arg(self.windows_waiter(process_id))
-            .creation_flags(CREATE_NO_WINDOW)
+            .creation_flags(CREATE_NO_WINDOW.0)
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())

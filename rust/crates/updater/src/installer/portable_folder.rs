@@ -1,9 +1,11 @@
 use std::fs;
+use std::os::windows::process::CommandExt as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::Arc;
 
 use semver::Version;
+use windows::Win32::System::Threading::CREATE_NO_WINDOW;
 
 use super::swap::{Swap, put_all_in_place};
 use super::{Installer, Launch, writable_staging_beside};
@@ -78,6 +80,7 @@ fn extract_zip(archive: &Path, destination: &Path) -> Result<()> {
         .arg(archive)
         .arg("-C")
         .arg(destination)
+        .creation_flags(CREATE_NO_WINDOW.0)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
