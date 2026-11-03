@@ -18,7 +18,7 @@ pub(crate) struct HomeLayout {
     data: BaseDirectory,
 }
 
-#[cfg(any(test, not(target_os = "macos")))]
+#[cfg(any(all(test, unix), not(any(target_os = "macos", windows))))]
 const FREEDESKTOP_LAYOUT: HomeLayout = HomeLayout {
     config: BaseDirectory {
         variable: "HOME",
@@ -34,7 +34,7 @@ const FREEDESKTOP_LAYOUT: HomeLayout = HomeLayout {
     },
 };
 
-#[cfg(any(test, target_os = "macos"))]
+#[cfg(any(all(test, unix), target_os = "macos"))]
 const MACOS_LAYOUT: HomeLayout = HomeLayout {
     config: BaseDirectory {
         variable: "HOME",
@@ -50,10 +50,29 @@ const MACOS_LAYOUT: HomeLayout = HomeLayout {
     },
 };
 
+#[cfg(any(test, windows))]
+const WINDOWS_LAYOUT: HomeLayout = HomeLayout {
+    config: BaseDirectory {
+        variable: "APPDATA",
+        subdirectory: "",
+    },
+    cache: BaseDirectory {
+        variable: "LOCALAPPDATA",
+        subdirectory: "",
+    },
+    data: BaseDirectory {
+        variable: "APPDATA",
+        subdirectory: "",
+    },
+};
+
 #[cfg(target_os = "macos")]
 pub(crate) const PLATFORM_LAYOUT: HomeLayout = MACOS_LAYOUT;
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+pub(crate) const PLATFORM_LAYOUT: HomeLayout = WINDOWS_LAYOUT;
+
+#[cfg(not(any(target_os = "macos", windows)))]
 pub(crate) const PLATFORM_LAYOUT: HomeLayout = FREEDESKTOP_LAYOUT;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -141,10 +160,20 @@ mod tests {
         move |name| environment.get(name).cloned()
     }
 
+    #[cfg(unix)]
     fn freedesktop(variables: &[(&str, &str)]) -> Result<Paths> {
         Paths::from_lookup_with_layout(lookup(variables), FREEDESKTOP_LAYOUT)
     }
 
+    fn windows(variables: &[(&str, &Path)]) -> Result<Paths> {
+        let variables: Vec<(&str, &str)> = variables
+            .iter()
+            .map(|(name, path)| (*name, path.to_str().unwrap()))
+            .collect();
+        Paths::from_lookup_with_layout(lookup(&variables), WINDOWS_LAYOUT)
+    }
+
+    #[cfg(unix)]
     #[test]
     fn home_fallbacks() {
         let paths = freedesktop(&[("HOME", "/home/u")]).unwrap();
@@ -156,6 +185,7 @@ mod tests {
         );
     }
 
+    #[cfg(unix)]
     #[test]
     fn xdg_vars_win() {
         let paths = freedesktop(&[
@@ -170,6 +200,7 @@ mod tests {
         assert_eq!(paths.data_dir, PathBuf::from("/data/cadence"));
     }
 
+    #[cfg(unix)]
     #[test]
     fn relative_or_empty_xdg_is_ignored() {
         let paths = freedesktop(&[
@@ -182,6 +213,7 @@ mod tests {
         assert_eq!(paths.cache_dir, PathBuf::from("/home/u/.cache/cadence"));
     }
 
+    #[cfg(unix)]
     #[test]
     fn macos_home_fallbacks_use_the_library_folder() {
         let paths =
@@ -198,6 +230,38 @@ mod tests {
             paths.data_dir,
             PathBuf::from("/Users/u/Library/Application Support/cadence")
         );
+    }
+
+    #[test]
+    fn given_the_windows_layout_when_resolving_then_config_and_data_roam_and_the_cache_stays_local()
+    {
+        let roaming = std::env::temp_dir().join("Roaming");
+        let local = std::env::temp_dir().join("Local");
+        let paths = windows(&[("APPDATA", &roaming), ("LOCALAPPDATA", &local)]).unwrap();
+        assert_eq!(paths.config_dir, roaming.join(APP_DIR_NAME));
+        assert_eq!(paths.cache_dir, local.join(APP_DIR_NAME));
+        assert_eq!(paths.data_dir, roaming.join(APP_DIR_NAME));
+    }
+
+    #[test]
+    fn given_the_windows_layout_when_xdg_variables_are_set_then_they_win() {
+        let roaming = std::env::temp_dir().join("Roaming");
+        let config = std::env::temp_dir().join("config");
+        let paths = windows(&[
+            ("APPDATA", &roaming),
+            ("LOCALAPPDATA", &roaming),
+            ("XDG_CONFIG_HOME", &config),
+        ])
+        .unwrap();
+        assert_eq!(paths.config_dir, config.join(APP_DIR_NAME));
+        assert_eq!(paths.data_dir, roaming.join(APP_DIR_NAME));
+    }
+
+    #[test]
+    fn given_the_windows_layout_when_local_app_data_is_missing_then_it_is_named_in_the_error() {
+        let roaming = std::env::temp_dir().join("Roaming");
+        let error = windows(&[("APPDATA", &roaming)]).unwrap_err();
+        assert!(error.to_string().contains("LOCALAPPDATA"), "{error}");
     }
 
     #[test]

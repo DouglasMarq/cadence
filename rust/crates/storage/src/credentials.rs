@@ -90,7 +90,13 @@ fn platform_store() -> keyring_core::Result<Arc<keyring_core::CredentialStore>> 
     Ok(store)
 }
 
-#[cfg(any(not(unix), target_os = "ios", target_os = "android"))]
+#[cfg(windows)]
+fn platform_store() -> keyring_core::Result<Arc<keyring_core::CredentialStore>> {
+    let store: Arc<keyring_core::CredentialStore> = windows_native_keyring_store::Store::new()?;
+    Ok(store)
+}
+
+#[cfg(any(all(not(unix), not(windows)), target_os = "ios", target_os = "android"))]
 fn platform_store() -> keyring_core::Result<Arc<keyring_core::CredentialStore>> {
     Err(Error::NotSupportedByStore(
         "no keyring backend for this platform yet".into(),

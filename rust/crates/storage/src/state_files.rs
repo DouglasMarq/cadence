@@ -11,6 +11,7 @@ pub fn write(path: &Path, bytes: &[u8]) -> Result<()> {
 }
 
 #[cfg(test)]
+#[cfg(unix)]
 mod tests {
     use std::os::unix::fs::PermissionsExt;
 
