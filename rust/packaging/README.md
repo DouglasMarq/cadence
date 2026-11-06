@@ -9,8 +9,8 @@ Everything needed to ship Cadence on Linux, macOS and Windows.
 | `install-desktop-integration.sh` | Installs the desktop entry, metainfo and hicolor icons under a prefix |
 | `arch/PKGBUILD` | `cadence-git` package for Arch Linux |
 | `appimage/build-appimage.sh` | Builds a portable AppImage with libmpv bundled |
-| `appimage/build-libmpv.sh` | Builds libmpv from a pinned source for bases whose mpv is older than 0.38 |
-| `mpv-source.sh` | The pinned mpv version and source checksum used by `appimage/build-libmpv.sh` |
+| `appimage/build-libmpv.sh` | Builds libmpv and libplacebo from pinned sources for bases whose mpv is older than 0.38 |
+| `mpv-source.sh` | The pinned mpv version and source checksum, shared by the Linux and Windows scripts |
 | `macos/build-app.sh` | Builds `Cadence.app` (and a zip of it) with libmpv bundled |
 | `macos/Info.plist` | Bundle metadata, including the local network and Bonjour declarations |
 | `windows/fetch-libmpv.sh` | Downloads a pinned, checksummed libmpv build for Windows |
@@ -123,9 +123,12 @@ git clone /src /build && bash /build/rust/packaging/appimage/build-appimage.sh /
 
 Ubuntu 24.04's `libmpv-dev` is mpv 0.37, which has no `volume-gain` property, so an AppImage built
 as above, like any install from source against mpv older than 0.38, stops playing at the first
-crossfade. Release builds run `appimage/build-libmpv.sh` first: it installs mpv 0.41 from a
-checksummed source into `/usr/local`, and fails if an audio output, Lua or libavdevice is missing
-rather than leaving it out. `.github/workflows/release.yml` lists the packages it needs.
+crossfade. Release builds run `appimage/build-libmpv.sh` first: it installs the mpv version of
+`mpv-source.sh` from a checksummed source into `/usr/local`, and fails if an audio output, Lua or
+libavdevice is missing rather than leaving it out. mpv 0.42 needs libplacebo 7.387 or newer and
+Ubuntu 24.04 ships 6.338, so the script first builds a pinned, checksummed libplacebo without its
+GPU backends, which an audio-only player does not use. `.github/workflows/release.yml` lists the
+packages it needs.
 
 The result is about 106 MB. Run it with `chmod +x Cadence-*.AppImage && ./Cadence-*.AppImage`;
 on systems without FUSE use `./Cadence-*.AppImage --appimage-extract-and-run`. A headless smoke
@@ -153,6 +156,10 @@ Homebrew library it links into `Contents/Frameworks` with `dylibbundler`, drops 
 `LC_RPATH` entries that make dyld refuse to load libmpv, signs the bundle ad hoc and zips it as
 `Cadence-<version>-macos-<arch>.zip`. `OUT_DIR` changes the output folder.
 
+Unlike Linux and Windows, the macOS build is not pinned to the version of `mpv-source.sh`: it
+bundles whatever mpv Homebrew installs, because Homebrew keeps no older mpv versions and mpv
+publishes no libmpv for macOS. Check `brew info mpv` before a release.
+
 The bundle is not notarized: on another Mac, open it once from Finder with right-click > Open,
 or allow it in System Settings > Privacy & Security. yt-dlp is not bundled; the app finds it in
 `/opt/homebrew/bin` or `/usr/local/bin` even when started from Finder.
@@ -167,9 +174,9 @@ export CADENCE_LIBMPV_DIR="$(cygpath -w "$(rust/packaging/windows/fetch-libmpv.s
 rust/packaging/windows/build-zip.sh
 ```
 
-`fetch-libmpv.sh` downloads a pinned libmpv build of
-[shinchiro/mpv-winbuild-cmake](https://github.com/shinchiro/mpv-winbuild-cmake) from SourceForge,
-whose copies are kept while the project's GitHub releases are pruned after about a month. It stops
+`fetch-libmpv.sh` downloads the official LGPL libmpv build of the mpv version of `mpv-source.sh`
+from the [mpv release](https://github.com/mpv-player/mpv/releases) assets. The LGPL build is used
+because Cadence is MIT licensed and it is smaller than the GPL one. It stops
 if the download does not match its SHA-256 checksum, extracts `libmpv-2.dll` and its import library
 and copies the import library to `mpv.lib`, the name the MSVC linker looks for. `build-zip.sh` builds
 the release binary and zips it with `libmpv-2.dll` as

@@ -1,5 +1,5 @@
-mpv_version="0.41.0"
-mpv_source_checksum="ee21092a5ee427353392360929dc64645c54479aefdb5babc5cfbb5fad626209"
+mpv_version="0.42.0"
+mpv_source_checksum="bcfebbfa2b65a6d88dc97ea18117831072373e38b5785a2afb874ed4df5070dd"
 
 download_verified() {
     local url="$1" checksum="$2" output="$3"

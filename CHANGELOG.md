@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- The AppImage and the Windows zip are built with mpv 0.42.0; the Windows zip uses the official libmpv build of the mpv project. The macOS app bundles the mpv that Homebrew provides, 0.42.0 today, whose CoreAudio output no longer makes the channel map call that macOS 27 rejects.
 - Views show their last saved content at once, also after a restart, and refresh it in place.
 - Opening a view stops the work of the previous one, and cover downloads are limited to six at a time, newest first.
 - The artist page shows each section as it arrives instead of waiting for all of them and for the image.

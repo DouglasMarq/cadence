@@ -46,8 +46,8 @@ jobs:
             appstream build-essential dbus desktop-file-utils file \
             libasound2-dev libass-dev libavcodec-dev libavdevice-dev libavfilter-dev \
             libavformat-dev libavutil-dev libfontconfig1-dev libjack-jackd2-dev liblua5.2-dev \
-            libpipewire-0.3-dev libplacebo-dev libpulse-dev libswresample-dev libswscale-dev \
-            meson ninja-build pkg-config
+            libpipewire-0.3-dev libpulse-dev libswresample-dev libswscale-dev libvulkan-dev \
+            meson ninja-build pkg-config python3-jinja2
       - name: Build libmpv
         run: rust/packaging/appimage/build-libmpv.sh
       - name: Install Rust
