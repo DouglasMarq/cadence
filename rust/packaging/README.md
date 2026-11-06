@@ -10,6 +10,7 @@ Everything needed to ship Cadence on Linux, macOS and Windows.
 | `arch/PKGBUILD` | `cadence-git` package for Arch Linux |
 | `appimage/build-appimage.sh` | Builds a portable AppImage with libmpv bundled |
 | `appimage/build-libmpv.sh` | Builds libmpv from a pinned source for bases whose mpv is older than 0.38 |
+| `mpv-source.sh` | The pinned mpv version and source checksum used by `appimage/build-libmpv.sh` |
 | `macos/build-app.sh` | Builds `Cadence.app` (and a zip of it) with libmpv bundled |
 | `macos/Info.plist` | Bundle metadata, including the local network and Bonjour declarations |
 | `windows/fetch-libmpv.sh` | Downloads a pinned, checksummed libmpv build for Windows |
